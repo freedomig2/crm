@@ -1,0 +1,43 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width, 272px) 1fr;
+  min-height: 100vh;
+  background: #f5f7fb;
+  color: #1f2937;
+}
+
+.shellCollapsed {
+  --sidebar-width: 76px;
+}
+
+.mainArea {
+  display: grid;
+  grid-template-rows: 52px auto;
+  min-width: 0;
+}
+
+.topRow {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.contentArea {
+  padding: 8px;
+  min-width: 0;
+}
+
+.pageCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+@media (max-width: 980px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+}

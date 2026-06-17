@@ -1,0 +1,112 @@
+.formSurface {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #dde3ec;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  padding: 10px;
+}
+
+.summaryStack {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.skeletonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tabs {
+  margin-bottom: 8px;
+}
+
+.tabPanel {
+  margin-top: 6px;
+}
+
+.section {
+  border: 1px solid #e8edf5;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fdfefe;
+  margin-bottom: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 6px 10px;
+}
+
+.sectionGridWide {
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+}
+
+.fieldItem {
+  margin-bottom: 0;
+}
+
+.fieldItem :global(textarea) {
+  min-height: 76px;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.placeholderPanel {
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 12px;
+  color: #64748b;
+  background: #f8fafc;
+}
+
+.stickyHeader {
+  position: sticky;
+  top: 52px;
+  z-index: 25;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  margin: -8px -8px 8px;
+  padding: 4px 8px 6px;
+}
+
+@media (min-width: 1380px) {
+  .sectionGrid {
+    grid-template-columns: repeat(3, minmax(190px, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .sectionGrid,
+  .sectionGridWide,
+  .skeletonGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stickyHeader {
+    position: static;
+    border-bottom: none;
+    margin: 0 0 6px;
+    padding: 0;
+  }
+}

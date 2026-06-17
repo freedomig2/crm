@@ -1,0 +1,90 @@
+.sidebar {
+  background: #0f3a5c;
+  color: #f3f4f6;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+.brand {
+  height: 56px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.group {
+  margin: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.24);
+}
+
+.groupHeader {
+  width: 100%;
+  background: transparent;
+  color: #e5e7eb;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.links {
+  display: grid;
+  gap: 2px;
+  padding: 0 4px 6px;
+}
+
+.link {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 8px;
+  color: #dbe5f4;
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 7px 8px;
+  font-size: 12px;
+}
+
+.link:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.linkActive {
+  background: rgba(15, 185, 177, 0.22);
+  color: #ecfeff;
+}
+
+.collapsed .label,
+.collapsed .groupTitle,
+.collapsed .toggleIcon,
+.collapsed .brandText {
+  display: none;
+}
+
+.collapsed .link {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.collapsed .links {
+  padding: 0 0 6px;
+}
+
+.collapsed .group {
+  margin: 8px 6px;
+}
