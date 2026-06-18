@@ -13,17 +13,33 @@ export function Sidebar({
   groups: NavGroup[]
   hasPermission: (permission?: string) => boolean
 }) {
-  const initialState = useMemo(() => Object.fromEntries(groups.map((g) => [g.key, true])) as Record<string, boolean>, [groups])
+  const initialState = useMemo(() => {
+    const raw = localStorage.getItem('crm.sidebar.expanded-groups')
+    if (raw) {
+      try {
+        return JSON.parse(raw) as Record<string, boolean>
+      } catch {
+        localStorage.removeItem('crm.sidebar.expanded-groups')
+      }
+    }
+
+    return Object.fromEntries(groups.map((g) => [g.key, true])) as Record<string, boolean>
+  }, [groups])
   const [expanded, setExpanded] = useState<Record<string, boolean>>(initialState)
 
   const toggleGroup = (key: string) => {
-    setExpanded((current) => ({ ...current, [key]: !current[key] }))
+    setExpanded((current) => {
+      const next = { ...current, [key]: !current[key] }
+      localStorage.setItem('crm.sidebar.expanded-groups', JSON.stringify(next))
+      return next
+    })
   }
 
   const visibleGroups = groups
+    .filter((group) => group.enabled !== false)
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => hasPermission(item.permission)),
+      items: group.items.filter((item) => item.enabled !== false && hasPermission(item.permission)),
     }))
     .filter((group) => group.items.length > 0)
 

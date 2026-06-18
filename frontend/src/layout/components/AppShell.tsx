@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { navGroups } from '../navigation'
 import { useAuth } from '../../auth/AuthContext'
 import { Sidebar } from './Sidebar'
@@ -7,14 +7,30 @@ import { TopBar } from './TopBar'
 import styles from './AppShell.module.css'
 
 export function AppShell({ darkMode, onToggleDarkMode }: { darkMode: boolean; onToggleDarkMode: (value: boolean) => void }) {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState<boolean>(() => localStorage.getItem('crm.sidebar.collapsed') === '1')
   const { hasPermission, user } = useAuth()
+
+  useEffect(() => {
+    localStorage.setItem('crm.sidebar.collapsed', collapsed ? '1' : '0')
+  }, [collapsed])
+
+  const permissionAliases: Record<string, string[]> = {
+    'Dashboard.View': ['Users.View'],
+    'Permissions.View': ['Roles.View'],
+    'Security.View': ['AuditLogs.View', 'Users.View', 'Settings.Update'],
+    'Configuration.View': ['Settings.View', 'ReferenceData.View'],
+  }
 
   const canAccess = (permission?: string) => {
     if (!permission) {
       return true
     }
-    return hasPermission(permission)
+
+    if (hasPermission(permission)) {
+      return true
+    }
+
+    return (permissionAliases[permission] ?? []).some((alias) => hasPermission(alias))
   }
 
   return (
