@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -10,9 +11,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260618071551_BaseEntityInheritanceRefactor")]
+    partial class BaseEntityInheritanceRefactor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -122,41 +125,10 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("AccountNumber")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AccountTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AlternatePhone")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("AnnualRevenue")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CustomerSegmentId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CustomerStatusId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Fax")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("IndustryId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
@@ -165,18 +137,12 @@ namespace backend.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("LegalName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MainPhone")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("NumberOfEmployees")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Number")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid?>("OwnerTeamId")
                         .HasColumnType("TEXT");
@@ -184,34 +150,13 @@ namespace backend.Migrations
                     b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("OwnershipTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ParentAccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("PrimaryContactId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RegistrationNumber")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TaxNumber")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TradingName")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Website")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -228,16 +173,8 @@ namespace backend.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("ActivityDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ActivityTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AssignedToUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ContactId")
+                    b.Property<string>("ActivityType")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -246,41 +183,10 @@ namespace backend.Migrations
                     b.Property<Guid?>("CreatedById")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("FollowUpDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("FollowUpRequired")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsPrivate")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("OutcomeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("PriorityId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("RelatedEntityId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RelatedEntityType")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("StatusId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
+                    b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TenantId")
@@ -306,16 +212,7 @@ namespace backend.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("AddressTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AttentionTo")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("City")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CountryId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -327,38 +224,11 @@ namespace backend.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsBilling")
-                        .HasColumnType("INTEGER");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsShipping")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Landmark")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("Latitude")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Line1")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Line2")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("Longitude")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PostalCode")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("StateProvince")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TenantId")
@@ -387,28 +257,17 @@ namespace backend.Migrations
                     b.Property<Guid?>("CreatedById")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Notes")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("RelationshipTypeId")
+                    b.Property<string>("RelationshipType")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("SourceAccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("StrengthId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("TargetAccountId")
@@ -624,28 +483,13 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ContactRoleId")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("CreatedById")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DepartmentName")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Email")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Extension")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FirstName")
@@ -658,35 +502,14 @@ namespace backend.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsPrimaryContact")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("JobTitle")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MiddleName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MobilePhone")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("OwnerTeamId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("OwnerUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("PreferredCommunicationId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("SalutationId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TenantId")
@@ -696,9 +519,6 @@ namespace backend.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("WorkPhone")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -715,55 +535,19 @@ namespace backend.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("ChurnRiskScore")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("CreatedById")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("CreditLimit")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("CustomerSince")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("LastReviewDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("LifecycleStageId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("NextReviewDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("PaymentTermsId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("PreferredCurrencyId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("PreferredLanguageId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("RiskRatingId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("SatisfactionScore")
+                    b.Property<string>("Segment")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("TimeZoneId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")

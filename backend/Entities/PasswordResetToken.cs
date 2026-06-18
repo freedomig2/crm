@@ -1,6 +1,8 @@
+using CRM.Domain.Common;
+
 namespace backend.Entities;
 
-public class PasswordResetToken : AuditableEntity
+public class PasswordResetToken : BaseEntity
 {
     public Guid UserId { get; set; }
     public AppUser User { get; set; } = default!;

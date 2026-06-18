@@ -10,12 +10,14 @@ import {
   Switch,
   Tooltip,
 } from '@fluentui/react-components'
+import { useNavigate } from 'react-router-dom'
 import {
   AlertRegular,
   PanelLeftRegular,
   SearchRegular,
   SettingsRegular,
 } from '@fluentui/react-icons'
+import { useAuth } from '../../auth/AuthContext'
 import styles from './TopBar.module.css'
 
 export function TopBar({
@@ -31,6 +33,14 @@ export function TopBar({
   onToggleDarkMode: (value: boolean) => void
   userEmail?: string
 }) {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login', { replace: true })
+  }
+
   return (
     <div className={styles.bar}>
       <div className={styles.left}>
@@ -67,8 +77,8 @@ export function TopBar({
           <MenuPopover>
             <MenuList>
               <MenuItem>{userEmail ?? 'Unknown user'}</MenuItem>
-              <MenuItem>My Profile</MenuItem>
-              <MenuItem>Preferences</MenuItem>
+              <MenuItem onClick={() => navigate('/security/change-password')}>Change Password</MenuItem>
+              <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </MenuList>
           </MenuPopover>
         </Menu>

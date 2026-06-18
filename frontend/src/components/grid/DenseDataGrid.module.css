@@ -45,6 +45,20 @@
   background: #f8fbff;
 }
 
+.cellLink {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #0f6cbd;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cellLink:hover {
+  text-decoration: underline;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;

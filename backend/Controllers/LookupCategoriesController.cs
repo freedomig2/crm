@@ -2,7 +2,6 @@ using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
 using backend.Entities;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +14,11 @@ public class LookupCategoriesController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public LookupCategoriesController(AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public LookupCategoriesController(AppDbContext dbContext, IAuditService auditService)
     {
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -78,8 +75,7 @@ public class LookupCategoriesController : ControllerBase
             Name = dto.Name,
             Code = dto.Code,
             Description = dto.Description,
-            IsActive = dto.IsActive,
-            CreatedBy = _currentUser.UserEmail
+            IsActive = dto.IsActive
         };
 
         _dbContext.LookupCategories.Add(item);
@@ -102,8 +98,6 @@ public class LookupCategoriesController : ControllerBase
         item.Code = dto.Code;
         item.Description = dto.Description;
         item.IsActive = dto.IsActive;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("LookupCategory", id.ToString(), "Update", newValues: item.Code);
@@ -121,8 +115,6 @@ public class LookupCategoriesController : ControllerBase
         }
 
         item.IsDeleted = true;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("LookupCategory", id.ToString(), "Delete");

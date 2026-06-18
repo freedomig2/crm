@@ -2,7 +2,6 @@ using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
 using backend.Entities;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +14,11 @@ public class DepartmentsController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public DepartmentsController(AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public DepartmentsController(AppDbContext dbContext, IAuditService auditService)
     {
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -78,8 +75,7 @@ public class DepartmentsController : ControllerBase
             Name = dto.Name,
             Description = dto.Description,
             ParentDepartmentId = dto.ParentDepartmentId,
-            IsActive = dto.IsActive,
-            CreatedBy = _currentUser.UserEmail
+            IsActive = dto.IsActive
         };
 
         _dbContext.Departments.Add(item);
@@ -110,8 +106,6 @@ public class DepartmentsController : ControllerBase
         item.Description = dto.Description;
         item.ParentDepartmentId = dto.ParentDepartmentId;
         item.IsActive = dto.IsActive;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Departments", id.ToString(), "Update", newValues: item.Name);
@@ -129,8 +123,6 @@ public class DepartmentsController : ControllerBase
         }
 
         item.IsDeleted = true;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Departments", id.ToString(), "Delete");

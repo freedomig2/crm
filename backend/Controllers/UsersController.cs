@@ -2,7 +2,6 @@ using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
 using backend.Entities;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +16,12 @@ public class UsersController : ControllerBase
     private readonly UserManager<AppUser> _userManager;
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public UsersController(UserManager<AppUser> userManager, AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public UsersController(UserManager<AppUser> userManager, AppDbContext dbContext, IAuditService auditService)
     {
         _userManager = userManager;
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -89,8 +86,7 @@ public class UsersController : ControllerBase
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             IsEnabled = dto.IsEnabled,
-            EmailConfirmed = true,
-            CreatedBy = _currentUser.UserEmail
+            EmailConfirmed = true
         };
 
         var result = await _userManager.CreateAsync(user, dto.Password);
@@ -117,8 +113,6 @@ public class UsersController : ControllerBase
         user.FirstName = dto.FirstName;
         user.LastName = dto.LastName;
         user.IsEnabled = dto.IsEnabled;
-        user.UpdatedAt = DateTime.UtcNow;
-        user.UpdatedBy = _currentUser.UserEmail;
         await _userManager.UpdateAsync(user);
 
         var @new = $"{{\"FirstName\":\"{user.FirstName}\",\"LastName\":\"{user.LastName}\",\"IsEnabled\":{user.IsEnabled.ToString().ToLowerInvariant()}}}";
@@ -139,8 +133,6 @@ public class UsersController : ControllerBase
 
         user.IsDeleted = true;
         user.IsEnabled = false;
-        user.UpdatedAt = DateTime.UtcNow;
-        user.UpdatedBy = _currentUser.UserEmail;
 
         await _userManager.UpdateAsync(user);
         await _auditService.LogAsync("Users", user.Id.ToString(), "Delete");
@@ -184,8 +176,7 @@ public class UsersController : ControllerBase
             _dbContext.UserTeams.Add(new UserTeam
             {
                 UserId = id,
-                TeamId = teamId,
-                CreatedBy = _currentUser.UserEmail
+                TeamId = teamId
             });
         }
 
@@ -211,8 +202,7 @@ public class UsersController : ControllerBase
             _dbContext.UserDepartments.Add(new UserDepartment
             {
                 UserId = id,
-                DepartmentId = departmentId,
-                CreatedBy = _currentUser.UserEmail
+                DepartmentId = departmentId
             });
         }
 

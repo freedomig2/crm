@@ -2,7 +2,6 @@ using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
 using backend.Entities;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +14,11 @@ public class TeamsController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public TeamsController(AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public TeamsController(AppDbContext dbContext, IAuditService auditService)
     {
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -78,8 +75,7 @@ public class TeamsController : ControllerBase
             Name = dto.Name,
             Description = dto.Description,
             OwnerUserId = dto.OwnerUserId,
-            IsActive = dto.IsActive,
-            CreatedBy = _currentUser.UserEmail
+            IsActive = dto.IsActive
         };
 
         _dbContext.Teams.Add(team);
@@ -102,8 +98,6 @@ public class TeamsController : ControllerBase
         team.Description = dto.Description;
         team.OwnerUserId = dto.OwnerUserId;
         team.IsActive = dto.IsActive;
-        team.UpdatedAt = DateTime.UtcNow;
-        team.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Teams", id.ToString(), "Update", newValues: dto.Name);
@@ -121,8 +115,6 @@ public class TeamsController : ControllerBase
         }
 
         team.IsDeleted = true;
-        team.UpdatedAt = DateTime.UtcNow;
-        team.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Teams", id.ToString(), "Delete");

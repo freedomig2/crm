@@ -17,10 +17,18 @@ const labelMap: Record<string, string> = {
   'lookup-categories': 'Lookup Categories',
   'lookup-values': 'Lookup Values',
   'audit-logs': 'Audit Logs',
+  'change-password': 'Change Password',
   configuration: 'Configuration',
   security: 'Security',
   audit: 'Audit',
   'crm-setup': 'CRM Setup',
+  crm: 'CRM',
+  accounts: 'Accounts',
+  contacts: 'Contacts',
+  'account-addresses': 'Account Addresses',
+  'customer-profiles': 'Customer Profiles',
+  'account-relationships': 'Account Relationships',
+  'account-activities': 'Account Activities',
 }
 
 export function Breadcrumbs() {

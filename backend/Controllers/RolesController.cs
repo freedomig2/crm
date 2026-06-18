@@ -2,7 +2,6 @@ using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
 using backend.Entities;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +14,11 @@ public class RolesController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public RolesController(AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public RolesController(AppDbContext dbContext, IAuditService auditService)
     {
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -78,8 +75,7 @@ public class RolesController : ControllerBase
         {
             Name = dto.Name,
             NormalizedName = dto.Name.ToUpperInvariant(),
-            Description = dto.Description,
-            CreatedBy = _currentUser.UserEmail
+            Description = dto.Description
         };
 
         _dbContext.Roles.Add(role);
@@ -103,8 +99,6 @@ public class RolesController : ControllerBase
         role.Name = dto.Name;
         role.NormalizedName = dto.Name.ToUpperInvariant();
         role.Description = dto.Description;
-        role.UpdatedAt = DateTime.UtcNow;
-        role.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Roles", role.Id.ToString(), "Update", old, role.Name);
@@ -122,8 +116,6 @@ public class RolesController : ControllerBase
         }
 
         role.IsDeleted = true;
-        role.UpdatedAt = DateTime.UtcNow;
-        role.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Roles", id.ToString(), "Delete");
@@ -148,8 +140,7 @@ public class RolesController : ControllerBase
             _dbContext.RolePermissions.Add(new RolePermission
             {
                 RoleId = id,
-                PermissionId = permissionId,
-                CreatedBy = _currentUser.UserEmail
+                PermissionId = permissionId
             });
         }
 

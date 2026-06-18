@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   Checkbox,
@@ -78,6 +78,25 @@ export function DenseDataGrid<T extends { id: string }>({
     Object.fromEntries(columns.map((column) => [String(column.key), true])),
   )
 
+  useEffect(() => {
+    // Keep column visibility aligned with the active view's column definitions.
+    setVisibleColumns((current) => {
+      const next = Object.fromEntries(
+        columns.map((column) => {
+          const key = String(column.key)
+          return [key, key in current ? current[key] : true]
+        }),
+      ) as Record<string, boolean>
+
+      const hasVisible = columns.some((column) => next[String(column.key)])
+      if (!hasVisible) {
+        return Object.fromEntries(columns.map((column) => [String(column.key), true]))
+      }
+
+      return next
+    })
+  }, [columns])
+
   const isControlled =
     controlledPage !== undefined &&
     controlledPageSize !== undefined &&
@@ -128,6 +147,7 @@ export function DenseDataGrid<T extends { id: string }>({
   const totalRows = isControlled ? totalCount ?? rows.length : filtered.length
   const pages = Math.max(1, Math.ceil(totalRows / effectivePageSize))
   const selectedCount = Object.values(selected).filter(Boolean).length
+  const visibleDataColumns = columns.filter((column) => visibleColumns[String(column.key)])
 
   const toggleSort = (key: keyof T) => {
     const next = !effectiveSort || effectiveSort.key !== key
@@ -231,9 +251,7 @@ export function DenseDataGrid<T extends { id: string }>({
                   }}
                 />
               </th>
-              {columns
-                .filter((column) => visibleColumns[String(column.key)])
-                .map((column) => (
+              {visibleDataColumns.map((column) => (
                   <th key={String(column.key)}>
                     <Button
                       size="small"
@@ -274,13 +292,21 @@ export function DenseDataGrid<T extends { id: string }>({
                         }
                       />
                     </td>
-                    {columns
-                      .filter((column) => visibleColumns[String(column.key)])
-                      .map((column) => (
+                    {visibleDataColumns.map((column, columnIndex) => (
                         <td key={String(column.key)}>
-                          {column.render
-                            ? column.render(row)
-                            : String(row[column.key] ?? '')}
+                          {onView && columnIndex === 0 ? (
+                            <button
+                              type="button"
+                              className={styles.cellLink}
+                              onClick={() => onView(row)}
+                            >
+                              {column.render ? column.render(row) : String(row[column.key] ?? '-')}
+                            </button>
+                          ) : (
+                            column.render
+                              ? column.render(row)
+                              : String(row[column.key] ?? '-')
+                          )}
                         </td>
                       ))}
                     <td>

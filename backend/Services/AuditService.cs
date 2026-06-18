@@ -30,7 +30,7 @@ public class AuditService : IAuditService
             UserId = userId ?? _currentUserContext.UserId,
             IpAddress = context?.Connection.RemoteIpAddress?.ToString(),
             UserAgent = context?.Request.Headers.UserAgent.ToString(),
-            CreatedBy = _currentUserContext.UserEmail
+            CreatedById = _currentUserContext.UserId
         });
 
         await _dbContext.SaveChangesAsync();

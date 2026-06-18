@@ -1,6 +1,8 @@
+using CRM.Domain.Common;
+
 namespace backend.Entities;
 
-public class LookupValue : AuditableEntity
+public class LookupValue : ActivatableEntity
 {
     public Guid LookupCategoryId { get; set; }
     public LookupCategory LookupCategory { get; set; } = default!;
@@ -8,5 +10,4 @@ public class LookupValue : AuditableEntity
     public string Code { get; set; } = string.Empty;
     public int SortOrder { get; set; }
     public bool IsDefault { get; set; }
-    public bool IsActive { get; set; } = true;
 }

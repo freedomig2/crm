@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppShell } from './layout/components/AppShell'
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
+import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './dashboard/DashboardPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -12,7 +13,13 @@ import { useState } from 'react'
 import { FluentProvider, webDarkTheme, webLightTheme } from '@fluentui/react-components'
 import './index.css'
 import {
+  accountActivitiesConfig,
+  accountAddressesConfig,
+  accountRelationshipsConfig,
+  accountsConfig,
   auditLogsConfig,
+  contactsConfig,
+  customerProfilesConfig,
   departmentsConfig,
   lookupCategoriesConfig,
   lookupValuesConfig,
@@ -85,6 +92,36 @@ function App() {
               <Route path="/admin/audit-logs" element={<EntityListPage config={auditLogsConfig} title={auditLogsConfig.title} subtitle={auditLogsConfig.subtitle} endpoint={auditLogsConfig.endpoint} columns={auditLogsConfig.columns} listPath={auditLogsConfig.listPath} createPath={auditLogsConfig.createPath} detailsPath={auditLogsConfig.detailsPath} editPath={auditLogsConfig.editPath} permissions={auditLogsConfig.permissions} />} />
               <Route path="/admin/audit-logs/:id" element={<EntityDetailsPage config={auditLogsConfig} />} />
 
+              <Route path="/crm/accounts" element={<EntityListPage config={accountsConfig} title={accountsConfig.title} subtitle={accountsConfig.subtitle} endpoint={accountsConfig.endpoint} columns={accountsConfig.columns} listPath={accountsConfig.listPath} createPath={accountsConfig.createPath} detailsPath={accountsConfig.detailsPath} editPath={accountsConfig.editPath} permissions={accountsConfig.permissions} />} />
+              <Route path="/crm/accounts/create" element={<EntityCreatePage config={accountsConfig} />} />
+              <Route path="/crm/accounts/:id/edit" element={<EntityEditPage config={accountsConfig} />} />
+              <Route path="/crm/accounts/:id" element={<EntityDetailsPage config={accountsConfig} />} />
+
+              <Route path="/crm/contacts" element={<EntityListPage config={contactsConfig} title={contactsConfig.title} subtitle={contactsConfig.subtitle} endpoint={contactsConfig.endpoint} columns={contactsConfig.columns} listPath={contactsConfig.listPath} createPath={contactsConfig.createPath} detailsPath={contactsConfig.detailsPath} editPath={contactsConfig.editPath} permissions={contactsConfig.permissions} />} />
+              <Route path="/crm/contacts/create" element={<EntityCreatePage config={contactsConfig} />} />
+              <Route path="/crm/contacts/:id/edit" element={<EntityEditPage config={contactsConfig} />} />
+              <Route path="/crm/contacts/:id" element={<EntityDetailsPage config={contactsConfig} />} />
+
+              <Route path="/crm/account-addresses" element={<EntityListPage config={accountAddressesConfig} title={accountAddressesConfig.title} subtitle={accountAddressesConfig.subtitle} endpoint={accountAddressesConfig.endpoint} columns={accountAddressesConfig.columns} listPath={accountAddressesConfig.listPath} createPath={accountAddressesConfig.createPath} detailsPath={accountAddressesConfig.detailsPath} editPath={accountAddressesConfig.editPath} permissions={accountAddressesConfig.permissions} />} />
+              <Route path="/crm/account-addresses/create" element={<EntityCreatePage config={accountAddressesConfig} />} />
+              <Route path="/crm/account-addresses/:id/edit" element={<EntityEditPage config={accountAddressesConfig} />} />
+              <Route path="/crm/account-addresses/:id" element={<EntityDetailsPage config={accountAddressesConfig} />} />
+
+              <Route path="/crm/customer-profiles" element={<EntityListPage config={customerProfilesConfig} title={customerProfilesConfig.title} subtitle={customerProfilesConfig.subtitle} endpoint={customerProfilesConfig.endpoint} columns={customerProfilesConfig.columns} listPath={customerProfilesConfig.listPath} createPath={customerProfilesConfig.createPath} detailsPath={customerProfilesConfig.detailsPath} editPath={customerProfilesConfig.editPath} permissions={customerProfilesConfig.permissions} />} />
+              <Route path="/crm/customer-profiles/create" element={<EntityCreatePage config={customerProfilesConfig} />} />
+              <Route path="/crm/customer-profiles/:id/edit" element={<EntityEditPage config={customerProfilesConfig} />} />
+              <Route path="/crm/customer-profiles/:id" element={<EntityDetailsPage config={customerProfilesConfig} />} />
+
+              <Route path="/crm/account-relationships" element={<EntityListPage config={accountRelationshipsConfig} title={accountRelationshipsConfig.title} subtitle={accountRelationshipsConfig.subtitle} endpoint={accountRelationshipsConfig.endpoint} columns={accountRelationshipsConfig.columns} listPath={accountRelationshipsConfig.listPath} createPath={accountRelationshipsConfig.createPath} detailsPath={accountRelationshipsConfig.detailsPath} editPath={accountRelationshipsConfig.editPath} permissions={accountRelationshipsConfig.permissions} />} />
+              <Route path="/crm/account-relationships/create" element={<EntityCreatePage config={accountRelationshipsConfig} />} />
+              <Route path="/crm/account-relationships/:id/edit" element={<EntityEditPage config={accountRelationshipsConfig} />} />
+              <Route path="/crm/account-relationships/:id" element={<EntityDetailsPage config={accountRelationshipsConfig} />} />
+
+              <Route path="/crm/account-activities" element={<EntityListPage config={accountActivitiesConfig} title={accountActivitiesConfig.title} subtitle={accountActivitiesConfig.subtitle} endpoint={accountActivitiesConfig.endpoint} columns={accountActivitiesConfig.columns} listPath={accountActivitiesConfig.listPath} createPath={accountActivitiesConfig.createPath} detailsPath={accountActivitiesConfig.detailsPath} editPath={accountActivitiesConfig.editPath} permissions={accountActivitiesConfig.permissions} />} />
+              <Route path="/crm/account-activities/create" element={<EntityCreatePage config={accountActivitiesConfig} />} />
+              <Route path="/crm/account-activities/:id/edit" element={<EntityEditPage config={accountActivitiesConfig} />} />
+              <Route path="/crm/account-activities/:id" element={<EntityDetailsPage config={accountActivitiesConfig} />} />
+
               <Route path="/users" element={<Navigate to="/admin/users" replace />} />
               <Route path="/roles" element={<Navigate to="/admin/roles" replace />} />
               <Route path="/permissions" element={<Navigate to="/admin/permissions" replace />} />
@@ -94,10 +131,13 @@ function App() {
               <Route path="/configuration/lookup-categories" element={<Navigate to="/admin/lookup-categories" replace />} />
               <Route path="/configuration/lookup-values" element={<Navigate to="/admin/lookup-values" replace />} />
               <Route path="/audit-logs" element={<Navigate to="/admin/audit-logs" replace />} />
+              <Route path="/accounts" element={<Navigate to="/crm/accounts" replace />} />
+              <Route path="/contacts" element={<Navigate to="/crm/contacts" replace />} />
 
               <Route path="/security/login-history" element={<SimpleStatePage title="Login History" subtitle="Review login timeline, devices, and geolocation details." />} />
               <Route path="/security/active-sessions" element={<SimpleStatePage title="Active Sessions" subtitle="Monitor active sessions and terminate risky sessions quickly." />} />
               <Route path="/security/failed-logins" element={<SimpleStatePage title="Failed Login Attempts" subtitle="Analyze failed sign-in patterns and suspicious accounts." />} />
+              <Route path="/security/change-password" element={<ChangePasswordPage />} />
               <Route path="/security/password-policies" element={<SimpleStatePage title="Password Policies" subtitle="Configure enterprise-grade password complexity and expiry rules." />} />
               <Route path="/security/mfa-settings" element={<SimpleStatePage title="MFA Settings" subtitle="Enforce multi-factor authentication and authentication methods." />} />
 

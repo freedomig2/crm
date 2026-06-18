@@ -1,7 +1,6 @@
 using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,13 +13,11 @@ public class SystemSettingsController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public SystemSettingsController(AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public SystemSettingsController(AppDbContext dbContext, IAuditService auditService)
     {
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -85,8 +82,7 @@ public class SystemSettingsController : ControllerBase
             Key = dto.Key,
             Value = dto.Value,
             DataType = dto.DataType,
-            Description = dto.Description,
-            CreatedBy = _currentUser.UserEmail
+            Description = dto.Description
         };
 
         _dbContext.SystemSettings.Add(setting);
@@ -125,8 +121,6 @@ public class SystemSettingsController : ControllerBase
         setting.Value = dto.Value;
         setting.DataType = dto.DataType;
         setting.Description = dto.Description;
-        setting.UpdatedAt = DateTime.UtcNow;
-        setting.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         var @new = $"{{\"Category\":\"{setting.Category}\",\"Key\":\"{setting.Key}\",\"Value\":\"{setting.Value}\"}}";
@@ -145,8 +139,6 @@ public class SystemSettingsController : ControllerBase
         }
 
         setting.IsDeleted = true;
-        setting.UpdatedAt = DateTime.UtcNow;
-        setting.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("SystemSettings", id.ToString(), "Delete");

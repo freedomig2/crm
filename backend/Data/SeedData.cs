@@ -23,7 +23,13 @@ public static class SeedData
             "Departments.View", "Departments.Create", "Departments.Update", "Departments.Delete",
             "Settings.View", "Settings.Update",
             "AuditLogs.View",
-            "ReferenceData.View", "ReferenceData.Create", "ReferenceData.Update", "ReferenceData.Delete"
+            "ReferenceData.View", "ReferenceData.Create", "ReferenceData.Update", "ReferenceData.Delete",
+            "Accounts.View", "Accounts.Create", "Accounts.Update", "Accounts.Delete",
+            "Contacts.View", "Contacts.Create", "Contacts.Update", "Contacts.Delete",
+            "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
+            "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
+            "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
+            "AccountActivities.View", "AccountActivities.Create", "AccountActivities.Update", "AccountActivities.Delete"
         };
 
         foreach (var fullName in permissionNames)
@@ -38,8 +44,7 @@ public static class SeedData
             {
                 Name = fullName,
                 Module = split[0],
-                Action = split[1],
-                CreatedBy = "Seeder"
+                Action = split[1]
             });
         }
 
@@ -61,7 +66,7 @@ public static class SeedData
                 {
                     Name = roleName,
                     NormalizedName = roleName.ToUpperInvariant(),
-                    CreatedBy = "Seeder"
+                    Description = null
                 });
             }
         }
@@ -79,8 +84,7 @@ public static class SeedData
                     db.RolePermissions.Add(new RolePermission
                     {
                         RoleId = adminRole.Id,
-                        PermissionId = permission.Id,
-                        CreatedBy = "Seeder"
+                        PermissionId = permission.Id
                     });
                 }
             }
@@ -97,8 +101,7 @@ public static class SeedData
                 FirstName = "System",
                 LastName = "Administrator",
                 EmailConfirmed = true,
-                IsEnabled = true,
-                CreatedBy = "Seeder"
+                IsEnabled = true
             };
 
             await userManager.CreateAsync(adminUser, "Admin@12345");
@@ -125,8 +128,7 @@ public static class SeedData
                 db.LookupCategories.Add(new LookupCategory
                 {
                     Name = name,
-                    Code = code,
-                    CreatedBy = "Seeder"
+                    Code = code
                 });
             }
         }

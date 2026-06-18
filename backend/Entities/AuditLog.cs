@@ -1,6 +1,8 @@
+using CRM.Domain.Common;
+
 namespace backend.Entities;
 
-public class AuditLog : AuditableEntity
+public class AuditLog : BaseEntity
 {
     public string EntityName { get; set; } = string.Empty;
     public string EntityId { get; set; } = string.Empty;

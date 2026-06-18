@@ -2,7 +2,6 @@ using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
 using backend.Entities;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +14,11 @@ public class PermissionsController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public PermissionsController(AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public PermissionsController(AppDbContext dbContext, IAuditService auditService)
     {
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -84,8 +81,7 @@ public class PermissionsController : ControllerBase
         {
             Name = name,
             Module = dto.Module,
-            Action = dto.Action,
-            CreatedBy = _currentUser.UserEmail
+            Action = dto.Action
         };
 
         _dbContext.Permissions.Add(entity);
@@ -115,8 +111,6 @@ public class PermissionsController : ControllerBase
         entity.Module = dto.Module;
         entity.Action = dto.Action;
         entity.Name = $"{dto.Module}.{dto.Action}";
-        entity.UpdatedAt = DateTime.UtcNow;
-        entity.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Permissions", id.ToString(), "Update", old, entity.Name);
@@ -134,8 +128,6 @@ public class PermissionsController : ControllerBase
         }
 
         entity.IsDeleted = true;
-        entity.UpdatedAt = DateTime.UtcNow;
-        entity.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("Permissions", id.ToString(), "Delete");

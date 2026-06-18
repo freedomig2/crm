@@ -31,3 +31,124 @@ export type SystemSetting = { id: string; category: string; key: string; value: 
 export type AuditLog = { id: string; entityName: string; entityId: string; action: string; oldValues?: string; newValues?: string; userId?: string; ipAddress?: string; userAgent?: string; createdAt: string }
 export type LookupCategory = { id: string; name: string; code: string; description?: string; isActive: boolean }
 export type LookupValue = { id: string; lookupCategoryId: string; name: string; code: string; sortOrder: number; isDefault: boolean; isActive: boolean }
+
+export type Account = {
+  id: string
+  accountNumber: string
+  name: string
+  legalName?: string
+  tradingName?: string
+  accountTypeId?: string
+  industryId?: string
+  ownershipTypeId?: string
+  customerStatusId?: string
+  customerSegmentId?: string
+  website?: string
+  mainPhone?: string
+  alternatePhone?: string
+  email?: string
+  fax?: string
+  taxNumber?: string
+  registrationNumber?: string
+  annualRevenue?: number
+  numberOfEmployees?: number
+  description?: string
+  parentAccountId?: string
+  primaryContactId?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+}
+
+export type Contact = {
+  id: string
+  accountId: string
+  contactRoleId?: string
+  salutationId?: string
+  firstName: string
+  middleName?: string
+  lastName: string
+  jobTitle?: string
+  departmentName?: string
+  email?: string
+  mobilePhone?: string
+  workPhone?: string
+  extension?: string
+  preferredCommunicationId?: string
+  isPrimaryContact: boolean
+  dateOfBirth?: string
+  notes?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+}
+
+export type AccountAddress = {
+  id: string
+  accountId: string
+  addressTypeId?: string
+  attentionTo?: string
+  line1: string
+  line2?: string
+  landmark?: string
+  city?: string
+  stateProvince?: string
+  postalCode?: string
+  countryId?: string
+  latitude?: number
+  longitude?: number
+  isPrimary: boolean
+  isBilling: boolean
+  isShipping: boolean
+  isActive: boolean
+}
+
+export type CustomerProfile = {
+  id: string
+  accountId: string
+  creditLimit?: number
+  paymentTermsId?: string
+  preferredCurrencyId?: string
+  preferredLanguageId?: string
+  timeZoneId?: string
+  riskRatingId?: string
+  lifecycleStageId?: string
+  customerSince?: string
+  lastReviewDate?: string
+  nextReviewDate?: string
+  churnRiskScore?: number
+  satisfactionScore?: number
+  notes?: string
+}
+
+export type AccountRelationship = {
+  id: string
+  sourceAccountId: string
+  targetAccountId: string
+  relationshipTypeId?: string
+  startDate?: string
+  endDate?: string
+  strengthId?: string
+  notes?: string
+  isActive: boolean
+}
+
+export type AccountActivity = {
+  id: string
+  accountId: string
+  contactId?: string
+  activityTypeId?: string
+  subject: string
+  description?: string
+  activityDate: string
+  dueDate?: string
+  priorityId?: string
+  statusId?: string
+  outcomeId?: string
+  assignedToUserId?: string
+  relatedEntityType?: string
+  relatedEntityId?: string
+  isPrivate: boolean
+  followUpRequired: boolean
+  followUpDate?: string
+}

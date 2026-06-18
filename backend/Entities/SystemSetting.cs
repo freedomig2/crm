@@ -1,3 +1,5 @@
+using CRM.Domain.Common;
+
 namespace backend.Entities;
 
 public enum SettingDataType
@@ -8,7 +10,7 @@ public enum SettingDataType
     Json = 4
 }
 
-public class SystemSetting : AuditableEntity
+public class SystemSetting : BaseEntity
 {
     public string Category { get; set; } = string.Empty;
     public string Key { get; set; } = string.Empty;

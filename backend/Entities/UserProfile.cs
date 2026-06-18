@@ -1,6 +1,8 @@
+using CRM.Domain.Common;
+
 namespace backend.Entities;
 
-public class UserProfile : AuditableEntity
+public class UserProfile : BaseEntity
 {
     public Guid UserId { get; set; }
     public AppUser User { get; set; } = default!;

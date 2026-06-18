@@ -49,6 +49,12 @@ api.interceptors.response.use(
 
       localStorage.setItem('crm.accessToken', data.accessToken)
       localStorage.setItem('crm.refreshToken', data.refreshToken)
+      if (data.user) {
+        localStorage.setItem('crm.user', JSON.stringify(data.user))
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('crm-auth-updated'))
+      }
       queued.forEach((cb) => cb(data.accessToken))
       queued = []
       original.headers.Authorization = `Bearer ${data.accessToken}`

@@ -7,5 +7,4 @@ public class UserDepartment
     public Guid DepartmentId { get; set; }
     public Department Department { get; set; } = default!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public string? CreatedBy { get; set; }
 }

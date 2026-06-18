@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { Button, Card, Field, Input, MessageBar, MessageBarBody, Text } from '@fluentui/react-components'
 import { api } from '../api/client'
 
@@ -47,6 +48,10 @@ export function ResetPasswordPage() {
             <Input type="password" value={newPassword} onChange={(_, d) => setNewPassword(d.value)} />
           </Field>
           <Button appearance="primary" type="submit">Reset Password</Button>
+          <div style={{ marginTop: 8, display: 'flex', gap: 12 }}>
+            <Link to="/forgot-password">Request a new token</Link>
+            <Link to="/login">Back to login</Link>
+          </div>
         </form>
       </Card>
     </div>

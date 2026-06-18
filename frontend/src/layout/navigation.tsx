@@ -16,6 +16,12 @@ import {
   BranchRequestRegular,
   BuildingRegular,
   AppsListRegular,
+  BuildingBankRegular,
+  PersonCallRegular,
+  LocationRegular,
+  ClipboardTextLtrRegular,
+  NetworkCheckRegular,
+  CalendarAgendaRegular,
 } from '@fluentui/react-icons'
 
 export type NavItem = {
@@ -94,6 +100,19 @@ export const navGroups: NavGroup[] = [
       { key: 'industries', label: 'Industries', to: '/crm-setup/industries', icon: <BookDatabaseRegular />, permission: 'ReferenceData.View' },
       { key: 'case-statuses', label: 'Case Statuses', to: '/crm-setup/case-statuses', icon: <BookDatabaseRegular />, permission: 'ReferenceData.View' },
       { key: 'opportunity-stages', label: 'Opportunity Stages', to: '/crm-setup/opportunity-stages', icon: <BookDatabaseRegular />, permission: 'ReferenceData.View' },
+    ],
+  },
+  {
+    key: 'account-management',
+    label: 'Account Management',
+    icon: <BuildingBankRegular />,
+    items: [
+      { key: 'accounts', label: 'Accounts', to: '/crm/accounts', icon: <BuildingBankRegular />, permission: 'Accounts.View' },
+      { key: 'contacts', label: 'Contacts', to: '/crm/contacts', icon: <PersonCallRegular />, permission: 'Contacts.View' },
+      { key: 'account-addresses', label: 'Account Addresses', to: '/crm/account-addresses', icon: <LocationRegular />, permission: 'AccountAddresses.View' },
+      { key: 'customer-profiles', label: 'Customer Profiles', to: '/crm/customer-profiles', icon: <ClipboardTextLtrRegular />, permission: 'CustomerProfiles.View' },
+      { key: 'account-relationships', label: 'Account Relationships', to: '/crm/account-relationships', icon: <NetworkCheckRegular />, permission: 'AccountRelationships.View' },
+      { key: 'account-activities', label: 'Account Activities', to: '/crm/account-activities', icon: <CalendarAgendaRegular />, permission: 'AccountActivities.View' },
     ],
   },
 ]

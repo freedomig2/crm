@@ -52,8 +52,7 @@ public class AuthController : ControllerBase
             UserName = dto.Email,
             FirstName = dto.FirstName,
             LastName = dto.LastName,
-            EmailConfirmed = true,
-            CreatedBy = _currentUser.UserEmail ?? "System"
+            EmailConfirmed = true
         };
 
         var result = await _userManager.CreateAsync(user, dto.Password);
@@ -107,7 +106,6 @@ public class AuthController : ControllerBase
             UserId = user.Id,
             TokenHash = refresh.HashedToken,
             ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedBy = user.Email,
             CreatedFromIp = HttpContext.Connection.RemoteIpAddress?.ToString()
         });
 
@@ -135,15 +133,12 @@ public class AuthController : ControllerBase
         var newRefresh = _tokenService.CreateRefreshToken();
         existing.RevokedAt = DateTime.UtcNow;
         existing.ReplacedByTokenHash = newRefresh.HashedToken;
-        existing.UpdatedAt = DateTime.UtcNow;
-        existing.UpdatedBy = existing.User.Email;
 
         _dbContext.RefreshTokens.Add(new RefreshToken
         {
             UserId = existing.UserId,
             TokenHash = newRefresh.HashedToken,
             ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedBy = existing.User.Email,
             CreatedFromIp = HttpContext.Connection.RemoteIpAddress?.ToString()
         });
 
@@ -162,8 +157,6 @@ public class AuthController : ControllerBase
         if (token is not null)
         {
             token.RevokedAt = DateTime.UtcNow;
-            token.UpdatedAt = DateTime.UtcNow;
-            token.UpdatedBy = _currentUser.UserEmail;
             await _dbContext.SaveChangesAsync();
         }
 
@@ -192,8 +185,7 @@ public class AuthController : ControllerBase
         {
             UserId = user.Id,
             TokenHash = hash,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-            CreatedBy = user.Email
+            ExpiresAt = DateTime.UtcNow.AddMinutes(30)
         });
 
         await _dbContext.SaveChangesAsync();
@@ -229,8 +221,6 @@ public class AuthController : ControllerBase
         }
 
         token.UsedAt = DateTime.UtcNow;
-        token.UpdatedAt = DateTime.UtcNow;
-        token.UpdatedBy = user.Email;
         await _dbContext.SaveChangesAsync();
 
         await _auditService.LogAsync("Users", user.Id.ToString(), "ResetPassword", userId: user.Id);

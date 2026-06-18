@@ -2,7 +2,6 @@ using backend.Authorization;
 using backend.Data;
 using backend.DTOs;
 using backend.Entities;
-using backend.Middleware;
 using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +14,11 @@ public class LookupValuesController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
     private readonly IAuditService _auditService;
-    private readonly ICurrentUserContext _currentUser;
 
-    public LookupValuesController(AppDbContext dbContext, IAuditService auditService, ICurrentUserContext currentUser)
+    public LookupValuesController(AppDbContext dbContext, IAuditService auditService)
     {
         _dbContext = dbContext;
         _auditService = auditService;
-        _currentUser = currentUser;
     }
 
     [HttpGet]
@@ -88,8 +85,7 @@ public class LookupValuesController : ControllerBase
             Code = dto.Code,
             SortOrder = dto.SortOrder,
             IsDefault = dto.IsDefault,
-            IsActive = dto.IsActive,
-            CreatedBy = _currentUser.UserEmail
+            IsActive = dto.IsActive
         };
 
         _dbContext.LookupValues.Add(item);
@@ -124,8 +120,6 @@ public class LookupValuesController : ControllerBase
         item.SortOrder = dto.SortOrder;
         item.IsDefault = dto.IsDefault;
         item.IsActive = dto.IsActive;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("LookupValue", id.ToString(), "Update", newValues: item.Code);
@@ -143,8 +137,6 @@ public class LookupValuesController : ControllerBase
         }
 
         item.IsDeleted = true;
-        item.UpdatedAt = DateTime.UtcNow;
-        item.UpdatedBy = _currentUser.UserEmail;
 
         await _dbContext.SaveChangesAsync();
         await _auditService.LogAsync("LookupValue", id.ToString(), "Delete");
