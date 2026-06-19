@@ -1,0 +1,192 @@
+For a Dynamics 365 CRM–style application using **React TypeScript + .NET API in one .NET project**, include these core modules:
+
+## 1. Administration Module
+
+* Users
+* Roles and permissions
+* Teams / departments
+* System settings
+* Audit logs
+* Reference data / lookup values
+
+## 2. Account Management
+
+* Companies / organizations
+* Customer profiles
+* Contact persons
+* Addresses
+* Relationship hierarchy
+* Account activities
+
+## 3. Contact Management
+
+* Individual contacts
+* Communication details
+* Contact preferences
+* Relationship to accounts
+* Interaction history
+
+## 4. Lead Management
+
+* Lead capture
+* Lead qualification
+* Lead scoring
+* Lead assignment
+* Convert lead to opportunity/account/contact
+* Lead status tracking
+
+## 5. Opportunity Management
+
+* Sales opportunities
+* Sales pipeline stages
+* Estimated revenue
+* Probability
+* Competitors
+* Products/services linked to opportunity
+* Win/loss tracking
+
+## 6. Sales Pipeline Module
+
+* Pipeline board / Kanban
+* Stage movement
+* Forecasting
+* Sales targets
+* Revenue tracking
+* Sales performance dashboard
+
+## 7. Product & Price List Module
+
+* Products
+* Product categories
+* Price lists
+* Units of measure
+* Discounts
+* Bundles or packages
+
+## 8. Quote Management
+
+* Create quotes
+* Quote lines
+* Pricing calculation
+* Tax / discount handling
+* Quote approval
+* Convert quote to order
+
+## 9. Order Management
+
+* Customer orders
+* Order lines
+* Order status
+* Fulfilment tracking
+* Invoice generation link
+
+## 10. Invoice Module
+
+* Invoices
+* Invoice lines
+* Payment status
+* Due dates
+* Tax calculation
+* PDF invoice generation
+
+## 11. Case / Service Management
+
+* Customer cases
+* Case categories
+* Priority and SLA
+* Case assignment
+* Resolution tracking
+* Escalation rules
+
+## 12. Activity Management
+
+* Tasks
+* Phone calls
+* Emails
+* Appointments
+* Notes
+* Follow-ups
+* Reminders
+
+## 13. Document Management
+
+* File uploads
+* Attachments linked to records
+* Document categories
+* Version tracking
+* Azure Blob / local storage support
+
+## 14. Workflow / Business Process Module
+
+* Business process flows
+* Approval workflows
+* Stage-based validation
+* Automated notifications
+* Assignment rules
+
+## 15. Dashboard & Reporting Module
+
+* Sales dashboard
+* Lead conversion reports
+* Opportunity pipeline report
+* Case performance report
+* Revenue forecast
+* User activity report
+
+## 16. Notification Module
+
+* In-app notifications
+* Email notifications
+* Reminder alerts
+* SLA breach alerts
+
+## 17. Security Module
+
+* JWT authentication
+* Role-based access control
+* Record ownership
+* Team-based access
+* Field-level restrictions
+
+## 18. Integration Module
+
+* Email integration
+* Microsoft Graph integration
+* Dataverse-style API endpoints
+* Import/export Excel
+* External API connectors
+
+## 19. Configuration Module
+
+* Custom fields
+* Dynamic forms
+* Status reasons
+* Business rules
+* Number sequences
+* App settings
+
+## 20. AI / Copilot Module
+
+* Lead summary
+* Opportunity summary
+* Suggested next actions
+* Email draft generation
+* Case resolution suggestions
+* Natural language search
+
+Recommended first version:
+
+**MVP modules:**
+
+1. Administration
+2. Accounts
+3. Contacts
+4. Leads
+5. Opportunities
+6. Activities
+7. Products
+8. Quotes
+9. Cases
+10. Dashboards
+
+This gives you a strong Dynamics 365 CRM-style foundation without making the first version too large.
