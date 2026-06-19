@@ -21,7 +21,8 @@
 
   <Target Name="BuildFrontend" BeforeTargets="Build">
     <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" Condition="!Exists('$(SpaRoot)node_modules')" />
-    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="node ./node_modules/typescript/bin/tsc -b" Condition="Exists('$(SpaRoot)node_modules')" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="node ./node_modules/vite/bin/vite.js build" Condition="Exists('$(SpaRoot)node_modules')" />
   </Target>
 
 </Project>

@@ -178,6 +178,7 @@ public class AuditLogFilterDto : ListQueryDto
 {
     public Guid? UserId { get; set; }
     public string? EntityName { get; set; }
+    public string? EntityId { get; set; }
     public string? Action { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }

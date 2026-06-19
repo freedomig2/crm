@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Button,
   Checkbox,
@@ -78,24 +78,17 @@ export function DenseDataGrid<T extends { id: string }>({
     Object.fromEntries(columns.map((column) => [String(column.key), true])),
   )
 
-  useEffect(() => {
-    // Keep column visibility aligned with the active view's column definitions.
-    setVisibleColumns((current) => {
-      const next = Object.fromEntries(
-        columns.map((column) => {
-          const key = String(column.key)
-          return [key, key in current ? current[key] : true]
-        }),
-      ) as Record<string, boolean>
+  const effectiveVisibleColumns = useMemo(() => {
+    const next = Object.fromEntries(
+      columns.map((column) => {
+        const key = String(column.key)
+        return [key, key in visibleColumns ? visibleColumns[key] : true]
+      }),
+    ) as Record<string, boolean>
 
-      const hasVisible = columns.some((column) => next[String(column.key)])
-      if (!hasVisible) {
-        return Object.fromEntries(columns.map((column) => [String(column.key), true]))
-      }
-
-      return next
-    })
-  }, [columns])
+    const hasVisible = columns.some((column) => next[String(column.key)])
+    return hasVisible ? next : Object.fromEntries(columns.map((column) => [String(column.key), true]))
+  }, [columns, visibleColumns])
 
   const isControlled =
     controlledPage !== undefined &&
@@ -147,7 +140,7 @@ export function DenseDataGrid<T extends { id: string }>({
   const totalRows = isControlled ? totalCount ?? rows.length : filtered.length
   const pages = Math.max(1, Math.ceil(totalRows / effectivePageSize))
   const selectedCount = Object.values(selected).filter(Boolean).length
-  const visibleDataColumns = columns.filter((column) => visibleColumns[String(column.key)])
+  const visibleDataColumns = columns.filter((column) => effectiveVisibleColumns[String(column.key)])
 
   const toggleSort = (key: keyof T) => {
     const next = !effectiveSort || effectiveSort.key !== key
@@ -215,7 +208,7 @@ export function DenseDataGrid<T extends { id: string }>({
                   <MenuItem key={String(column.key)}>
                     <Checkbox
                       label={column.label}
-                      checked={visibleColumns[String(column.key)]}
+                      checked={effectiveVisibleColumns[String(column.key)]}
                       onChange={(_, data) =>
                         setVisibleColumns((current) => ({
                           ...current,
@@ -386,6 +379,7 @@ export function DenseDataGrid<T extends { id: string }>({
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function statusCell(value: string) {
   const lower = value.toLowerCase()
   if (lower.includes('active') || lower.includes('success')) return <StatusBadge label={value} tone="success" />

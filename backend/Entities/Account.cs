@@ -25,4 +25,6 @@ public class Account : OwnedEntity
     public string? Description { get; set; }
     public Guid? ParentAccountId { get; set; }
     public Guid? PrimaryContactId { get; set; }
+    public Contact? PrimaryContact { get; set; }
+    public ICollection<Contact> Contacts { get; set; } = new List<Contact>();
 }

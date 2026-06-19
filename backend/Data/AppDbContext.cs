@@ -36,6 +36,8 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<AccountAddress> AccountAddresses => Set<AccountAddress>();
     public DbSet<AccountRelationship> AccountRelationships => Set<AccountRelationship>();
     public DbSet<AccountActivity> AccountActivities => Set<AccountActivity>();
+    public DbSet<ContactCommunication> ContactCommunications => Set<ContactCommunication>();
+    public DbSet<ContactInteraction> ContactInteractions => Set<ContactInteraction>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -57,6 +59,96 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.OwnerUserId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Entity<Account>()
+            .HasOne(x => x.PrimaryContact)
+            .WithMany()
+            .HasForeignKey(x => x.PrimaryContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Contact>()
+            .HasOne(x => x.Account)
+            .WithMany(x => x.Contacts)
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Contact>()
+            .HasOne(x => x.ContactRole)
+            .WithMany()
+            .HasForeignKey(x => x.ContactRoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Contact>()
+            .HasOne(x => x.Salutation)
+            .WithMany()
+            .HasForeignKey(x => x.SalutationLookupId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Contact>()
+            .HasOne(x => x.Gender)
+            .WithMany()
+            .HasForeignKey(x => x.GenderLookupId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Contact>()
+            .HasOne(x => x.PreferredContactMethod)
+            .WithMany()
+            .HasForeignKey(x => x.PreferredContactMethodId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Contact>()
+            .HasOne(x => x.PreferredLanguage)
+            .WithMany()
+            .HasForeignKey(x => x.PreferredLanguageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Contact>()
+            .HasOne(x => x.PreferredTimeZone)
+            .WithMany()
+            .HasForeignKey(x => x.PreferredTimeZoneId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ContactCommunication>()
+            .HasOne(x => x.Contact)
+            .WithMany(x => x.Communications)
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ContactCommunication>()
+            .HasOne(x => x.CommunicationType)
+            .WithMany()
+            .HasForeignKey(x => x.CommunicationTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ContactInteraction>()
+            .HasOne(x => x.Contact)
+            .WithMany(x => x.Interactions)
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ContactInteraction>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ContactInteraction>()
+            .HasOne(x => x.InteractionType)
+            .WithMany()
+            .HasForeignKey(x => x.InteractionTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ContactInteraction>()
+            .HasOne(x => x.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<AccountActivity>()
+            .HasOne<Contact>()
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Entity<AppRole>().HasQueryFilter(x => !x.IsDeleted);
         builder.Entity<AppUser>().HasQueryFilter(x => !x.IsDeleted);
 
@@ -66,6 +158,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<SystemSetting>().HasIndex(x => new { x.Category, x.Key }).IsUnique();
         builder.Entity<LookupCategory>().HasIndex(x => x.Code).IsUnique();
         builder.Entity<LookupValue>().HasIndex(x => new { x.LookupCategoryId, x.Code }).IsUnique();
+        builder.Entity<Contact>().HasIndex(x => x.ContactNumber).IsUnique();
     }
 
     public override int SaveChanges()

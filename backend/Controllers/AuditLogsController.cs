@@ -34,6 +34,11 @@ public class AuditLogsController : ControllerBase
             query = query.Where(x => x.EntityName == filter.EntityName);
         }
 
+        if (!string.IsNullOrWhiteSpace(filter.EntityId))
+        {
+            query = query.Where(x => x.EntityId == filter.EntityId);
+        }
+
         if (!string.IsNullOrWhiteSpace(filter.Action))
         {
             query = query.Where(x => x.Action == filter.Action);

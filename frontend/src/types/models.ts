@@ -62,25 +62,74 @@ export type Account = {
 
 export type Contact = {
   id: string
+  contactNumber: string
   accountId: string
+  accountName?: string
   contactRoleId?: string
-  salutationId?: string
+  contactRoleName?: string
+  salutationLookupId?: string
+  salutationName?: string
+  genderLookupId?: string
+  genderName?: string
   firstName: string
   middleName?: string
   lastName: string
+  preferredName?: string
+  fullName: string
   jobTitle?: string
-  departmentName?: string
+  department?: string
   email?: string
-  mobilePhone?: string
+  alternateEmail?: string
   workPhone?: string
-  extension?: string
-  preferredCommunicationId?: string
+  mobilePhone?: string
+  homePhone?: string
+  fax?: string
+  preferredContactMethodId?: string
+  preferredContactMethodName?: string
+  preferredLanguageId?: string
+  preferredLanguageName?: string
+  preferredTimeZoneId?: string
+  preferredTimeZoneName?: string
+  marketingConsent: boolean
+  emailOptIn: boolean
+  smsOptIn: boolean
+  phoneOptIn: boolean
   isPrimaryContact: boolean
   dateOfBirth?: string
   notes?: string
   isActive: boolean
   ownerUserId?: string
   ownerTeamId?: string
+}
+
+export type ContactCommunication = {
+  id: string
+  contactId: string
+  contactName?: string
+  communicationTypeId?: string
+  communicationTypeName?: string
+  value: string
+  isPrimary: boolean
+  isVerified: boolean
+  verificationDate?: string
+  notes?: string
+}
+
+export type ContactInteraction = {
+  id: string
+  contactId: string
+  contactName?: string
+  accountId: string
+  accountName?: string
+  interactionTypeId?: string
+  interactionTypeName?: string
+  subject: string
+  description?: string
+  interactionDate: string
+  outcome?: string
+  followUpDate?: string
+  assignedToUserId?: string
+  assignedToUserName?: string
 }
 
 export type AccountAddress = {

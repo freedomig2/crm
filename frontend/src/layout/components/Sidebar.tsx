@@ -54,8 +54,11 @@ export function Sidebar({
         const isExpanded = collapsed ? false : expanded[group.key]
         return (
           <section className={styles.group} key={group.key}>
-            <button className={styles.groupHeader} type="button" onClick={() => toggleGroup(group.key)}>
-              <span className={styles.groupTitle}>{group.label}</span>
+            <button className={styles.groupHeader} type="button" onClick={() => toggleGroup(group.key)} title={group.label}>
+              <span className={styles.groupHeaderLeft}>
+                <span className={styles.groupIcon}>{group.icon}</span>
+                <span className={styles.groupTitle}>{group.label}</span>
+              </span>
               <span className={styles.toggleIcon}>{isExpanded ? <ChevronUp16Regular /> : <ChevronDown16Regular />}</span>
             </button>
             {(isExpanded || collapsed) && (

@@ -66,19 +66,38 @@ public class UpsertAccountRequestDto
 public class ContactDto
 {
     public Guid Id { get; set; }
+    public string ContactNumber { get; set; } = string.Empty;
     public Guid AccountId { get; set; }
+    public string? AccountName { get; set; }
     public Guid? ContactRoleId { get; set; }
-    public Guid? SalutationId { get; set; }
+    public string? ContactRoleName { get; set; }
+    public Guid? SalutationLookupId { get; set; }
+    public string? SalutationName { get; set; }
+    public Guid? GenderLookupId { get; set; }
+    public string? GenderName { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string? MiddleName { get; set; }
     public string LastName { get; set; } = string.Empty;
+    public string? PreferredName { get; set; }
+    public string FullName { get; set; } = string.Empty;
     public string? JobTitle { get; set; }
-    public string? DepartmentName { get; set; }
+    public string? Department { get; set; }
     public string? Email { get; set; }
-    public string? MobilePhone { get; set; }
+    public string? AlternateEmail { get; set; }
     public string? WorkPhone { get; set; }
-    public string? Extension { get; set; }
-    public Guid? PreferredCommunicationId { get; set; }
+    public string? MobilePhone { get; set; }
+    public string? HomePhone { get; set; }
+    public string? Fax { get; set; }
+    public Guid? PreferredContactMethodId { get; set; }
+    public string? PreferredContactMethodName { get; set; }
+    public Guid? PreferredLanguageId { get; set; }
+    public string? PreferredLanguageName { get; set; }
+    public Guid? PreferredTimeZoneId { get; set; }
+    public string? PreferredTimeZoneName { get; set; }
+    public bool MarketingConsent { get; set; }
+    public bool EmailOptIn { get; set; }
+    public bool SMSOptIn { get; set; }
+    public bool PhoneOptIn { get; set; }
     public bool IsPrimaryContact { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public string? Notes { get; set; }
@@ -90,10 +109,14 @@ public class ContactDto
 public class UpsertContactRequestDto
 {
     [Required]
+    public string ContactNumber { get; set; } = string.Empty;
+
+    [Required]
     public Guid AccountId { get; set; }
 
     public Guid? ContactRoleId { get; set; }
-    public Guid? SalutationId { get; set; }
+    public Guid? SalutationLookupId { get; set; }
+    public Guid? GenderLookupId { get; set; }
 
     [Required]
     public string FirstName { get; set; } = string.Empty;
@@ -102,19 +125,115 @@ public class UpsertContactRequestDto
     public string LastName { get; set; } = string.Empty;
 
     public string? MiddleName { get; set; }
+    public string? PreferredName { get; set; }
     public string? JobTitle { get; set; }
-    public string? DepartmentName { get; set; }
+    public string? Department { get; set; }
     public string? Email { get; set; }
-    public string? MobilePhone { get; set; }
+    public string? AlternateEmail { get; set; }
     public string? WorkPhone { get; set; }
-    public string? Extension { get; set; }
-    public Guid? PreferredCommunicationId { get; set; }
+    public string? MobilePhone { get; set; }
+    public string? HomePhone { get; set; }
+    public string? Fax { get; set; }
+    public Guid? PreferredContactMethodId { get; set; }
+    public Guid? PreferredLanguageId { get; set; }
+    public Guid? PreferredTimeZoneId { get; set; }
+    public bool MarketingConsent { get; set; }
+    public bool EmailOptIn { get; set; }
+    public bool SMSOptIn { get; set; }
+    public bool PhoneOptIn { get; set; }
     public bool IsPrimaryContact { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
     public Guid? OwnerUserId { get; set; }
     public Guid? OwnerTeamId { get; set; }
+}
+
+public class ContactFilterDto : ListQueryDto
+{
+    public Guid? AccountId { get; set; }
+    public Guid? ContactRoleId { get; set; }
+    public Guid? PreferredContactMethodId { get; set; }
+    public bool? IsActive { get; set; }
+}
+
+public class ContactCommunicationDto
+{
+    public Guid Id { get; set; }
+    public Guid ContactId { get; set; }
+    public string? ContactName { get; set; }
+    public Guid? CommunicationTypeId { get; set; }
+    public string? CommunicationTypeName { get; set; }
+    public string Value { get; set; } = string.Empty;
+    public bool IsPrimary { get; set; }
+    public bool IsVerified { get; set; }
+    public DateTime? VerificationDate { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class UpsertContactCommunicationRequestDto
+{
+    [Required]
+    public Guid ContactId { get; set; }
+
+    public Guid? CommunicationTypeId { get; set; }
+
+    [Required]
+    public string Value { get; set; } = string.Empty;
+
+    public bool IsPrimary { get; set; }
+    public bool IsVerified { get; set; }
+    public DateTime? VerificationDate { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class ContactCommunicationFilterDto : ListQueryDto
+{
+    public Guid? ContactId { get; set; }
+}
+
+public class ContactInteractionDto
+{
+    public Guid Id { get; set; }
+    public Guid ContactId { get; set; }
+    public string? ContactName { get; set; }
+    public Guid AccountId { get; set; }
+    public string? AccountName { get; set; }
+    public Guid? InteractionTypeId { get; set; }
+    public string? InteractionTypeName { get; set; }
+    public string Subject { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public DateTime InteractionDate { get; set; }
+    public string? Outcome { get; set; }
+    public DateTime? FollowUpDate { get; set; }
+    public Guid? AssignedToUserId { get; set; }
+    public string? AssignedToUserName { get; set; }
+}
+
+public class UpsertContactInteractionRequestDto
+{
+    [Required]
+    public Guid ContactId { get; set; }
+
+    [Required]
+    public Guid AccountId { get; set; }
+
+    public Guid? InteractionTypeId { get; set; }
+
+    [Required]
+    public string Subject { get; set; } = string.Empty;
+
+    public string? Description { get; set; }
+    public DateTime InteractionDate { get; set; }
+    public string? Outcome { get; set; }
+    public DateTime? FollowUpDate { get; set; }
+    public Guid? AssignedToUserId { get; set; }
+}
+
+public class ContactInteractionFilterDto : ListQueryDto
+{
+    public Guid? ContactId { get; set; }
+    public Guid? AccountId { get; set; }
 }
 
 public class AccountAddressDto

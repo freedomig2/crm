@@ -8,8 +8,26 @@ export type LookupOption = {
 }
 
 const cache = new Map<string, LookupOption[]>()
+const categoryIdCache = new Map<string, string | null>()
 
 const guidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
+  const map: Record<string, string> = {
+    salutationid: 'SALUTATION',
+    salutationlookupid: 'SALUTATION',
+    genderlookupid: 'GENDER',
+    contactroleid: 'CONTACT_ROLE',
+    preferredcommunicationid: 'CONTACT_METHOD',
+    preferredcontactmethodid: 'CONTACT_METHOD',
+    preferredlanguageid: 'LANGUAGE',
+    preferredtimezoneid: 'TIME_ZONE',
+    communicationtypeid: 'COMMUNICATION_TYPE',
+    interactiontypeid: 'INTERACTION_TYPE',
+  }
+
+  return map[fieldKey.toLowerCase()] ?? null
+}
 
 const endpointForFieldKey = (fieldKey: string): string => {
   if (fieldKey.includes('ownerUser') || fieldKey.includes('assignedToUser') || fieldKey.includes('createdBy') || fieldKey.includes('updatedBy')) {
@@ -57,10 +75,20 @@ const labelFromRecord = (record: AnyRecord): string => {
   const code = asText(record.code)
   const email = asText(record.email)
   const accountNumber = asText(record.accountNumber)
+  const contactNumber = asText(record.contactNumber)
+  const fullName = asText(record.fullName)
   const subject = asText(record.subject)
 
   if (name && accountNumber) {
     return `${name} (${accountNumber})`
+  }
+
+  if (fullName && contactNumber) {
+    return `${fullName} (${contactNumber})`
+  }
+
+  if (fullName) {
+    return fullName
   }
 
   if (name && code) {
@@ -106,8 +134,63 @@ export const isForeignKeyField = (fieldKey: string): boolean => {
   return lower !== 'id' && lower.endsWith('id')
 }
 
+const loadLookupCategoryId = async (categoryCode: string): Promise<string | null> => {
+  const code = categoryCode.toUpperCase()
+  if (categoryIdCache.has(code)) {
+    return categoryIdCache.get(code) ?? null
+  }
+
+  try {
+    const { data } = await api.get('api/lookup-categories', { params: { page: 1, pageSize: 200, search: code } })
+    const category = normalizeItems(data).find((item) => asText(item.code).toUpperCase() === code)
+    const id = category ? asText(category.id) : null
+    categoryIdCache.set(code, id)
+    return id
+  } catch {
+    categoryIdCache.set(code, null)
+    return null
+  }
+}
+
+export const loadLookupOptionsByCategoryCode = async (categoryCode: string): Promise<LookupOption[]> => {
+  const cacheKey = `category:${categoryCode.toUpperCase()}`
+  if (cache.has(cacheKey)) {
+    return cache.get(cacheKey) ?? []
+  }
+
+  const categoryId = await loadLookupCategoryId(categoryCode)
+  if (!categoryId) {
+    cache.set(cacheKey, [])
+    return []
+  }
+
+  try {
+    const { data } = await api.get('api/lookup-values', {
+      params: { categoryId, page: 1, pageSize: 200, sortBy: 'sortOrder', sortDir: 'asc' },
+    })
+    const items = normalizeItems(data)
+      .filter((record) => record.isActive !== false)
+      .map((record) => ({
+        value: asText(record.id),
+        label: labelFromRecord(record),
+      }))
+      .filter((item) => item.value.length > 0)
+
+    cache.set(cacheKey, items)
+    return items
+  } catch {
+    cache.set(cacheKey, [])
+    return []
+  }
+}
+
 export const loadLookupOptions = async (fieldKey: string): Promise<LookupOption[]> => {
   const key = fieldKey.toLowerCase()
+  const categoryCode = lookupCategoryCodeForFieldKey(key)
+  if (categoryCode) {
+    return loadLookupOptionsByCategoryCode(categoryCode)
+  }
+
   if (cache.has(key)) {
     return cache.get(key) ?? []
   }

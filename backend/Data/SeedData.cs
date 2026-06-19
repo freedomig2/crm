@@ -25,7 +25,9 @@ public static class SeedData
             "AuditLogs.View",
             "ReferenceData.View", "ReferenceData.Create", "ReferenceData.Update", "ReferenceData.Delete",
             "Accounts.View", "Accounts.Create", "Accounts.Update", "Accounts.Delete",
-            "Contacts.View", "Contacts.Create", "Contacts.Update", "Contacts.Delete",
+            "Contacts.View", "Contacts.Create", "Contacts.Update", "Contacts.Delete", "Contacts.SetPrimary",
+            "ContactCommunications.View", "ContactCommunications.Create", "ContactCommunications.Update", "ContactCommunications.Delete",
+            "ContactInteractions.View", "ContactInteractions.Create", "ContactInteractions.Update", "ContactInteractions.Delete",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -112,27 +114,106 @@ public static class SeedData
             await userManager.AddToRoleAsync(adminUser, adminRole.Name!);
         }
 
-        var lookupDefaults = new[]
-        {
-            ("Lead Source", "LEAD_SOURCE"),
-            ("Industry", "INDUSTRY"),
-            ("Priority", "PRIORITY"),
-            ("Case Status", "CASE_STATUS"),
-            ("Opportunity Stage", "OPPORTUNITY_STAGE")
-        };
+        await EnsureLookupCategoryAsync(db, "Lead Source", "LEAD_SOURCE");
+        await EnsureLookupCategoryAsync(db, "Industry", "INDUSTRY");
+        await EnsureLookupCategoryAsync(db, "Priority", "PRIORITY");
+        await EnsureLookupCategoryAsync(db, "Case Status", "CASE_STATUS");
+        await EnsureLookupCategoryAsync(db, "Opportunity Stage", "OPPORTUNITY_STAGE");
 
-        foreach (var (name, code) in lookupDefaults)
+        await EnsureLookupCategoryAsync(db, "Salutation", "SALUTATION", new[]
         {
-            if (!await db.LookupCategories.AnyAsync(x => x.Code == code))
-            {
-                db.LookupCategories.Add(new LookupCategory
-                {
-                    Name = name,
-                    Code = code
-                });
-            }
-        }
+            ("Mr", "MR"), ("Mrs", "MRS"), ("Ms", "MS"), ("Dr", "DR"), ("Prof", "PROF")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Gender", "GENDER", new[]
+        {
+            ("Male", "MALE"), ("Female", "FEMALE"), ("Non-Binary", "NON_BINARY"), ("Prefer Not To Say", "PREFER_NOT_TO_SAY")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Contact Method", "CONTACT_METHOD", new[]
+        {
+            ("Email", "EMAIL"), ("Phone", "PHONE"), ("Mobile", "MOBILE"), ("SMS", "SMS"), ("WhatsApp", "WHATSAPP"), ("Teams", "TEAMS"), ("In Person", "IN_PERSON")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Contact Role", "CONTACT_ROLE", new[]
+        {
+            ("Decision Maker", "DECISION_MAKER"), ("Influencer", "INFLUENCER"), ("Technical Contact", "TECHNICAL_CONTACT"), ("Billing Contact", "BILLING_CONTACT"),
+            ("Procurement Contact", "PROCUREMENT_CONTACT"), ("Executive Sponsor", "EXECUTIVE_SPONSOR"), ("End User", "END_USER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Communication Type", "COMMUNICATION_TYPE", new[]
+        {
+            ("Email", "EMAIL"), ("Mobile", "MOBILE"), ("Work Phone", "WORK_PHONE"), ("Home Phone", "HOME_PHONE"), ("LinkedIn", "LINKEDIN"),
+            ("WhatsApp", "WHATSAPP"), ("Telegram", "TELEGRAM"), ("Skype", "SKYPE"), ("Website", "WEBSITE")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Interaction Type", "INTERACTION_TYPE", new[]
+        {
+            ("Phone Call", "PHONE_CALL"), ("Email", "EMAIL"), ("SMS", "SMS"), ("Meeting", "MEETING"), ("Video Call", "VIDEO_CALL"), ("Site Visit", "SITE_VISIT"), ("Follow-up", "FOLLOW_UP")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Language", "LANGUAGE", new[]
+        {
+            ("English", "ENGLISH"), ("French", "FRENCH"), ("German", "GERMAN"), ("Spanish", "SPANISH"), ("Portuguese", "PORTUGUESE")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Time Zone", "TIME_ZONE", new[]
+        {
+            ("UTC", "UTC"),
+            ("Greenwich Mean Time", "GMT"),
+            ("Eastern Time", "EASTERN_TIME"),
+            ("Central Time", "CENTRAL_TIME"),
+            ("Mountain Time", "MOUNTAIN_TIME"),
+            ("Pacific Time", "PACIFIC_TIME"),
+            ("Central European Time", "CENTRAL_EUROPEAN_TIME"),
+            ("South Africa Standard Time", "SOUTH_AFRICA_STANDARD_TIME"),
+            ("India Standard Time", "INDIA_STANDARD_TIME"),
+            ("China Standard Time", "CHINA_STANDARD_TIME"),
+            ("Japan Standard Time", "JAPAN_STANDARD_TIME"),
+            ("Australian Eastern Time", "AUSTRALIAN_EASTERN_TIME")
+        });
 
         await db.SaveChangesAsync();
+    }
+
+    private static async Task EnsureLookupCategoryAsync(AppDbContext db, string name, string code, IEnumerable<(string Name, string Code)>? values = null)
+    {
+        var category = await db.LookupCategories.FirstOrDefaultAsync(x => x.Code == code);
+        if (category is null)
+        {
+            category = new LookupCategory
+            {
+                Name = name,
+                Code = code,
+                IsActive = true
+            };
+            db.LookupCategories.Add(category);
+            await db.SaveChangesAsync();
+        }
+
+        if (values is null)
+        {
+            return;
+        }
+
+        var sortOrder = 10;
+        foreach (var (valueName, valueCode) in values)
+        {
+            if (await db.LookupValues.AnyAsync(x => x.LookupCategoryId == category.Id && x.Code == valueCode))
+            {
+                sortOrder += 10;
+                continue;
+            }
+
+            db.LookupValues.Add(new LookupValue
+            {
+                LookupCategoryId = category.Id,
+                Name = valueName,
+                Code = valueCode,
+                SortOrder = sortOrder,
+                IsActive = true
+            });
+            sortOrder += 10;
+        }
     }
 }

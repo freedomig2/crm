@@ -118,7 +118,7 @@ export const navGroups: NavGroup[] = [
     enabled: isGroupEnabled('customers'),
     items: [
       { key: 'accounts', label: 'Accounts', to: '/crm/accounts', icon: <BuildingBankRegular />, permission: 'Accounts.View', enabled: isItemEnabled('accounts') },
-      { key: 'contacts', label: 'Contacts', to: '/crm/contacts', icon: <PersonCallRegular />, permission: 'Contacts.View', enabled: isItemEnabled('contacts') },
+      { key: 'contacts', label: 'Contacts', to: '/contacts', icon: <PersonCallRegular />, permission: 'Contacts.View', enabled: isItemEnabled('contacts') },
       { key: 'account-activities', label: 'Account Activities', to: '/crm/account-activities', icon: <CalendarAgendaRegular />, permission: 'AccountActivities.View', enabled: isItemEnabled('account-activities') },
       { key: 'relationships', label: 'Relationships', to: '/crm/account-relationships', icon: <NetworkCheckRegular />, permission: 'AccountRelationships.View', enabled: isItemEnabled('relationships') },
     ],

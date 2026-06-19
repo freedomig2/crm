@@ -12,6 +12,7 @@ namespace backend.Controllers;
 [Route("api/contacts")]
 public class ContactsController : ControllerBase
 {
+    private const string SetPrimaryPermission = "Contacts.SetPrimary";
     private readonly AppDbContext _dbContext;
 
     public ContactsController(AppDbContext dbContext)
@@ -21,80 +22,58 @@ public class ContactsController : ControllerBase
 
     [HttpGet]
     [HasPermission("Contacts.View")]
-    public async Task<ActionResult<PagedResult<ContactDto>>> GetContacts([FromQuery] ListQueryDto query)
+    public async Task<ActionResult<PagedResult<ContactDto>>> GetContacts([FromQuery] ContactFilterDto query)
     {
         var contactsQuery = _dbContext.Contacts.AsQueryable();
+
+        if (query.AccountId.HasValue)
+        {
+            contactsQuery = contactsQuery.Where(x => x.AccountId == query.AccountId.Value);
+        }
+
+        if (query.ContactRoleId.HasValue)
+        {
+            contactsQuery = contactsQuery.Where(x => x.ContactRoleId == query.ContactRoleId.Value);
+        }
+
+        if (query.PreferredContactMethodId.HasValue)
+        {
+            contactsQuery = contactsQuery.Where(x => x.PreferredContactMethodId == query.PreferredContactMethodId.Value);
+        }
+
+        if (query.IsActive.HasValue)
+        {
+            contactsQuery = contactsQuery.Where(x => x.IsActive == query.IsActive.Value);
+        }
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var search = query.Search.Trim().ToLower();
             contactsQuery = contactsQuery.Where(x =>
+                x.ContactNumber.ToLower().Contains(search) ||
+                x.FullName.ToLower().Contains(search) ||
                 x.FirstName.ToLower().Contains(search) ||
                 x.LastName.ToLower().Contains(search) ||
                 (x.Email ?? string.Empty).ToLower().Contains(search) ||
-                (x.JobTitle ?? string.Empty).ToLower().Contains(search));
+                (x.MobilePhone ?? string.Empty).ToLower().Contains(search) ||
+                (x.JobTitle ?? string.Empty).ToLower().Contains(search) ||
+                x.Account.Name.ToLower().Contains(search));
         }
 
         contactsQuery = contactsQuery.OrderByPropertyName(query.SortBy, query.SortDir);
-
-        var projected = contactsQuery.Select(x => new ContactDto
+        if (string.IsNullOrWhiteSpace(query.SortBy))
         {
-            Id = x.Id,
-            AccountId = x.AccountId,
-            ContactRoleId = x.ContactRoleId,
-            SalutationId = x.SalutationId,
-            FirstName = x.FirstName,
-            MiddleName = x.MiddleName,
-            LastName = x.LastName,
-            JobTitle = x.JobTitle,
-            DepartmentName = x.DepartmentName,
-            Email = x.Email,
-            MobilePhone = x.MobilePhone,
-            WorkPhone = x.WorkPhone,
-            Extension = x.Extension,
-            PreferredCommunicationId = x.PreferredCommunicationId,
-            IsPrimaryContact = x.IsPrimaryContact,
-            DateOfBirth = x.DateOfBirth,
-            Notes = x.Notes,
-            IsActive = x.IsActive,
-            OwnerUserId = x.OwnerUserId,
-            OwnerTeamId = x.OwnerTeamId
-        });
+            contactsQuery = contactsQuery.OrderBy(x => x.FullName);
+        }
 
-        return Ok(await projected.ToPagedAsync(query));
+        return Ok(await ProjectContacts(contactsQuery).ToPagedAsync(query));
     }
 
     [HttpGet("{id:guid}")]
     [HasPermission("Contacts.View")]
     public async Task<ActionResult<ContactDto>> GetContact(Guid id)
     {
-        var contact = await _dbContext.Contacts
-            .Where(x => x.Id == id)
-            .Select(x => new ContactDto
-            {
-                Id = x.Id,
-                AccountId = x.AccountId,
-                ContactRoleId = x.ContactRoleId,
-                SalutationId = x.SalutationId,
-                FirstName = x.FirstName,
-                MiddleName = x.MiddleName,
-                LastName = x.LastName,
-                JobTitle = x.JobTitle,
-                DepartmentName = x.DepartmentName,
-                Email = x.Email,
-                MobilePhone = x.MobilePhone,
-                WorkPhone = x.WorkPhone,
-                Extension = x.Extension,
-                PreferredCommunicationId = x.PreferredCommunicationId,
-                IsPrimaryContact = x.IsPrimaryContact,
-                DateOfBirth = x.DateOfBirth,
-                Notes = x.Notes,
-                IsActive = x.IsActive,
-                OwnerUserId = x.OwnerUserId,
-                OwnerTeamId = x.OwnerTeamId
-            })
-            .FirstOrDefaultAsync();
-
+        var contact = await GetContactDtoAsync(id);
         return contact is null ? NotFound() : Ok(contact);
     }
 
@@ -102,87 +81,91 @@ public class ContactsController : ControllerBase
     [HasPermission("Contacts.Create")]
     public async Task<ActionResult<ContactDto>> CreateContact(UpsertContactRequestDto dto)
     {
-        var item = new Contact
+        if (dto.IsPrimaryContact && !CanSetPrimary())
         {
-            AccountId = dto.AccountId,
-            ContactRoleId = dto.ContactRoleId,
-            SalutationId = dto.SalutationId,
-            FirstName = dto.FirstName,
-            MiddleName = dto.MiddleName,
-            LastName = dto.LastName,
-            JobTitle = dto.JobTitle,
-            DepartmentName = dto.DepartmentName,
-            Email = dto.Email,
-            MobilePhone = dto.MobilePhone,
-            WorkPhone = dto.WorkPhone,
-            Extension = dto.Extension,
-            PreferredCommunicationId = dto.PreferredCommunicationId,
-            IsPrimaryContact = dto.IsPrimaryContact,
-            DateOfBirth = dto.DateOfBirth,
-            Notes = dto.Notes,
-            IsActive = dto.IsActive,
-            OwnerUserId = dto.OwnerUserId,
-            OwnerTeamId = dto.OwnerTeamId
-        };
+            return Forbid();
+        }
 
-        _dbContext.Contacts.Add(item);
+        if (!await _dbContext.Accounts.AnyAsync(x => x.Id == dto.AccountId))
+        {
+            return BadRequest("Account is required.");
+        }
+
+        if (await _dbContext.Contacts.AnyAsync(x => x.ContactNumber == dto.ContactNumber.Trim()))
+        {
+            return BadRequest("Contact number already exists.");
+        }
+
+        var contact = new Contact { Id = Guid.NewGuid() };
+        await ApplyContactValuesAsync(contact, dto);
+        contact.IsPrimaryContact = false;
+
+        _dbContext.Contacts.Add(contact);
+
+        if (dto.IsPrimaryContact)
+        {
+            await MarkPrimaryAsync(contact);
+        }
+
         await _dbContext.SaveChangesAsync();
 
-        return Ok(new ContactDto
-        {
-            Id = item.Id,
-            AccountId = item.AccountId,
-            ContactRoleId = item.ContactRoleId,
-            SalutationId = item.SalutationId,
-            FirstName = item.FirstName,
-            MiddleName = item.MiddleName,
-            LastName = item.LastName,
-            JobTitle = item.JobTitle,
-            DepartmentName = item.DepartmentName,
-            Email = item.Email,
-            MobilePhone = item.MobilePhone,
-            WorkPhone = item.WorkPhone,
-            Extension = item.Extension,
-            PreferredCommunicationId = item.PreferredCommunicationId,
-            IsPrimaryContact = item.IsPrimaryContact,
-            DateOfBirth = item.DateOfBirth,
-            Notes = item.Notes,
-            IsActive = item.IsActive,
-            OwnerUserId = item.OwnerUserId,
-            OwnerTeamId = item.OwnerTeamId
-        });
+        var created = await GetContactDtoAsync(contact.Id);
+        return created is null ? Problem("Contact was created but could not be loaded.") : Ok(created);
     }
 
     [HttpPut("{id:guid}")]
     [HasPermission("Contacts.Update")]
     public async Task<IActionResult> UpdateContact(Guid id, UpsertContactRequestDto dto)
     {
-        var item = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == id);
-        if (item is null)
+        var contact = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == id);
+        if (contact is null)
         {
             return NotFound();
         }
 
-        item.AccountId = dto.AccountId;
-        item.ContactRoleId = dto.ContactRoleId;
-        item.SalutationId = dto.SalutationId;
-        item.FirstName = dto.FirstName;
-        item.MiddleName = dto.MiddleName;
-        item.LastName = dto.LastName;
-        item.JobTitle = dto.JobTitle;
-        item.DepartmentName = dto.DepartmentName;
-        item.Email = dto.Email;
-        item.MobilePhone = dto.MobilePhone;
-        item.WorkPhone = dto.WorkPhone;
-        item.Extension = dto.Extension;
-        item.PreferredCommunicationId = dto.PreferredCommunicationId;
-        item.IsPrimaryContact = dto.IsPrimaryContact;
-        item.DateOfBirth = dto.DateOfBirth;
-        item.Notes = dto.Notes;
-        item.IsActive = dto.IsActive;
-        item.OwnerUserId = dto.OwnerUserId;
-        item.OwnerTeamId = dto.OwnerTeamId;
+        if (dto.IsPrimaryContact && !contact.IsPrimaryContact && !CanSetPrimary())
+        {
+            return Forbid();
+        }
 
+        if (!await _dbContext.Accounts.AnyAsync(x => x.Id == dto.AccountId))
+        {
+            return BadRequest("Account is required.");
+        }
+
+        if (await _dbContext.Contacts.AnyAsync(x => x.Id != id && x.ContactNumber == dto.ContactNumber.Trim()))
+        {
+            return BadRequest("Contact number already exists.");
+        }
+
+        await ApplyContactValuesAsync(contact, dto);
+
+        if (dto.IsPrimaryContact)
+        {
+            await MarkPrimaryAsync(contact);
+        }
+        else if (contact.IsPrimaryContact)
+        {
+            await ClearPrimaryAsync(contact);
+        }
+
+        contact.IsPrimaryContact = dto.IsPrimaryContact;
+
+        await _dbContext.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/set-primary")]
+    [HasPermission(SetPrimaryPermission)]
+    public async Task<IActionResult> SetPrimary(Guid id)
+    {
+        var contact = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == id);
+        if (contact is null)
+        {
+            return NotFound();
+        }
+
+        await MarkPrimaryAsync(contact);
         await _dbContext.SaveChangesAsync();
         return NoContent();
     }
@@ -191,14 +174,156 @@ public class ContactsController : ControllerBase
     [HasPermission("Contacts.Delete")]
     public async Task<IActionResult> DeleteContact(Guid id)
     {
-        var item = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == id);
-        if (item is null)
+        var contact = await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == id);
+        if (contact is null)
         {
             return NotFound();
         }
 
-        item.IsDeleted = true;
+        await ClearPrimaryAsync(contact);
+        contact.IsDeleted = true;
         await _dbContext.SaveChangesAsync();
         return NoContent();
+    }
+
+    private bool CanSetPrimary()
+    {
+        return User.HasClaim("permission", SetPrimaryPermission);
+    }
+
+    private async Task ApplyContactValuesAsync(Contact contact, UpsertContactRequestDto dto)
+    {
+        contact.ContactNumber = dto.ContactNumber.Trim();
+        contact.AccountId = dto.AccountId;
+        contact.ContactRoleId = dto.ContactRoleId;
+        contact.SalutationLookupId = dto.SalutationLookupId;
+        contact.GenderLookupId = dto.GenderLookupId;
+        contact.FirstName = dto.FirstName.Trim();
+        contact.MiddleName = string.IsNullOrWhiteSpace(dto.MiddleName) ? null : dto.MiddleName.Trim();
+        contact.LastName = dto.LastName.Trim();
+        contact.PreferredName = string.IsNullOrWhiteSpace(dto.PreferredName) ? null : dto.PreferredName.Trim();
+        contact.JobTitle = string.IsNullOrWhiteSpace(dto.JobTitle) ? null : dto.JobTitle.Trim();
+        contact.Department = string.IsNullOrWhiteSpace(dto.Department) ? null : dto.Department.Trim();
+        contact.Email = string.IsNullOrWhiteSpace(dto.Email) ? null : dto.Email.Trim();
+        contact.AlternateEmail = string.IsNullOrWhiteSpace(dto.AlternateEmail) ? null : dto.AlternateEmail.Trim();
+        contact.WorkPhone = string.IsNullOrWhiteSpace(dto.WorkPhone) ? null : dto.WorkPhone.Trim();
+        contact.MobilePhone = string.IsNullOrWhiteSpace(dto.MobilePhone) ? null : dto.MobilePhone.Trim();
+        contact.HomePhone = string.IsNullOrWhiteSpace(dto.HomePhone) ? null : dto.HomePhone.Trim();
+        contact.Fax = string.IsNullOrWhiteSpace(dto.Fax) ? null : dto.Fax.Trim();
+        contact.PreferredContactMethodId = dto.PreferredContactMethodId;
+        contact.PreferredLanguageId = dto.PreferredLanguageId;
+        contact.PreferredTimeZoneId = dto.PreferredTimeZoneId;
+        contact.MarketingConsent = dto.MarketingConsent;
+        contact.EmailOptIn = dto.EmailOptIn;
+        contact.SMSOptIn = dto.SMSOptIn;
+        contact.PhoneOptIn = dto.PhoneOptIn;
+        contact.DateOfBirth = dto.DateOfBirth;
+        contact.Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim();
+        contact.IsActive = dto.IsActive;
+        contact.OwnerUserId = dto.OwnerUserId;
+        contact.OwnerTeamId = dto.OwnerTeamId;
+
+        var salutationName = dto.SalutationLookupId.HasValue
+            ? await _dbContext.LookupValues
+                .Where(x => x.Id == dto.SalutationLookupId.Value)
+                .Select(x => x.Name)
+                .FirstOrDefaultAsync()
+            : null;
+
+        contact.FullName = BuildFullName(salutationName, contact.PreferredName, contact.FirstName, contact.MiddleName, contact.LastName);
+    }
+
+    private async Task MarkPrimaryAsync(Contact contact)
+    {
+        var siblingPrimaries = await _dbContext.Contacts
+            .Where(x => x.AccountId == contact.AccountId && x.Id != contact.Id && x.IsPrimaryContact)
+            .ToListAsync();
+
+        foreach (var sibling in siblingPrimaries)
+        {
+            sibling.IsPrimaryContact = false;
+        }
+
+        contact.IsPrimaryContact = true;
+
+        var account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == contact.AccountId);
+        if (account is not null)
+        {
+            account.PrimaryContactId = contact.Id;
+        }
+    }
+
+    private async Task ClearPrimaryAsync(Contact contact)
+    {
+        if (!contact.IsPrimaryContact)
+        {
+            return;
+        }
+
+        contact.IsPrimaryContact = false;
+        var account = await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == contact.AccountId);
+        if (account?.PrimaryContactId == contact.Id)
+        {
+            account.PrimaryContactId = null;
+        }
+    }
+
+    private async Task<ContactDto?> GetContactDtoAsync(Guid id)
+    {
+        return await ProjectContacts(_dbContext.Contacts.Where(x => x.Id == id)).FirstOrDefaultAsync();
+    }
+
+    private static string BuildFullName(string? salutation, string? preferredName, string firstName, string? middleName, string lastName)
+    {
+        var displayFirstName = string.IsNullOrWhiteSpace(preferredName) ? firstName : preferredName;
+        return string.Join(' ', new[] { salutation, displayFirstName, middleName, lastName }
+            .Where(part => !string.IsNullOrWhiteSpace(part))
+            .Select(part => part!.Trim()));
+    }
+
+    private static IQueryable<ContactDto> ProjectContacts(IQueryable<Contact> query)
+    {
+        return query.Select(x => new ContactDto
+        {
+            Id = x.Id,
+            ContactNumber = x.ContactNumber,
+            AccountId = x.AccountId,
+            AccountName = x.Account.Name,
+            ContactRoleId = x.ContactRoleId,
+            ContactRoleName = x.ContactRole != null ? x.ContactRole.Name : null,
+            SalutationLookupId = x.SalutationLookupId,
+            SalutationName = x.Salutation != null ? x.Salutation.Name : null,
+            GenderLookupId = x.GenderLookupId,
+            GenderName = x.Gender != null ? x.Gender.Name : null,
+            FirstName = x.FirstName,
+            MiddleName = x.MiddleName,
+            LastName = x.LastName,
+            PreferredName = x.PreferredName,
+            FullName = x.FullName,
+            JobTitle = x.JobTitle,
+            Department = x.Department,
+            Email = x.Email,
+            AlternateEmail = x.AlternateEmail,
+            WorkPhone = x.WorkPhone,
+            MobilePhone = x.MobilePhone,
+            HomePhone = x.HomePhone,
+            Fax = x.Fax,
+            PreferredContactMethodId = x.PreferredContactMethodId,
+            PreferredContactMethodName = x.PreferredContactMethod != null ? x.PreferredContactMethod.Name : null,
+            PreferredLanguageId = x.PreferredLanguageId,
+            PreferredLanguageName = x.PreferredLanguage != null ? x.PreferredLanguage.Name : null,
+            PreferredTimeZoneId = x.PreferredTimeZoneId,
+            PreferredTimeZoneName = x.PreferredTimeZone != null ? x.PreferredTimeZone.Name : null,
+            MarketingConsent = x.MarketingConsent,
+            EmailOptIn = x.EmailOptIn,
+            SMSOptIn = x.SMSOptIn,
+            PhoneOptIn = x.PhoneOptIn,
+            IsPrimaryContact = x.IsPrimaryContact,
+            DateOfBirth = x.DateOfBirth,
+            Notes = x.Notes,
+            IsActive = x.IsActive,
+            OwnerUserId = x.OwnerUserId,
+            OwnerTeamId = x.OwnerTeamId
+        });
     }
 }

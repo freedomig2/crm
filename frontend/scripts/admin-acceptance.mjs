@@ -439,14 +439,12 @@ async function run() {
 
   const results = []
   for (const routeConfig of routes) {
-    // eslint-disable-next-line no-await-in-loop
     const result = await checkRoute(page, routeConfig)
     results.push(result)
   }
 
   const crudResults = []
   for (const moduleConfig of crudModules) {
-    // eslint-disable-next-line no-await-in-loop
     const result = await checkCrudModule(page, moduleConfig, testContext)
     crudResults.push(result)
   }

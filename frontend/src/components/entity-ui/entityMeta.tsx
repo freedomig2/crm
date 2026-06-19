@@ -45,7 +45,13 @@ const friendlyOverrides: Record<string, string> = {
   customerSegmentId: 'Customer Segment',
   contactRoleId: 'Contact Role',
   salutationId: 'Salutation',
+  salutationLookupId: 'Salutation',
+  genderLookupId: 'Gender',
   preferredCommunicationId: 'Preferred Communication',
+  preferredContactMethodId: 'Preferred Contact Method',
+  preferredTimeZoneId: 'Preferred Time Zone',
+  communicationTypeId: 'Communication Type',
+  interactionTypeId: 'Interaction Type',
   addressTypeId: 'Address Type',
   countryId: 'Country',
   paymentTermsId: 'Payment Terms',
@@ -118,11 +124,13 @@ export const sectionMap = (configKey: string, fields: EntityField[]): SectionDef
 
   if (configKey === 'contacts') {
     return [
-      { key: 'general', title: 'General Information', icon: <PersonRegular />, fields: ['accountId', 'firstName', 'middleName', 'lastName', 'salutationId', 'contactRoleId', 'isPrimaryContact'] },
-      { key: 'professional', title: 'Professional', icon: <BookDatabaseRegular />, fields: ['jobTitle', 'departmentName'] },
-      { key: 'contact', title: 'Contact Information', icon: <ContactCardRegular />, fields: ['email', 'mobilePhone', 'workPhone', 'extension', 'preferredCommunicationId'] },
+      { key: 'general', title: 'General Information', icon: <PersonRegular />, fields: ['contactNumber', 'salutationLookupId', 'firstName', 'middleName', 'lastName', 'preferredName', 'genderLookupId', 'dateOfBirth'] },
+      { key: 'professional', title: 'Professional', icon: <BookDatabaseRegular />, fields: ['jobTitle', 'department'] },
+      { key: 'contact', title: 'Communication', icon: <ContactCardRegular />, fields: ['email', 'alternateEmail', 'mobilePhone', 'workPhone', 'homePhone', 'fax'] },
+      { key: 'preferences', title: 'Preferences', icon: <SettingsRegular />, fields: ['preferredContactMethodId', 'preferredLanguageId', 'preferredTimeZoneId', 'emailOptIn', 'smsOptIn', 'phoneOptIn', 'marketingConsent'] },
+      { key: 'relationships', title: 'Relationships', icon: <BuildingBankRegular />, fields: ['accountId', 'contactRoleId', 'isPrimaryContact'] },
       { key: 'ownership', title: 'Ownership', icon: <PersonRegular />, fields: ['ownerUserId', 'ownerTeamId'] },
-      { key: 'notes', title: 'Description', icon: <ClipboardTaskRegular />, fields: ['dateOfBirth', 'notes', 'isActive'] },
+      { key: 'notes', title: 'Notes', icon: <ClipboardTaskRegular />, fields: ['notes', 'isActive'] },
     ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
       .filter((section) => section.fields.length > 0)
   }
@@ -194,8 +202,10 @@ export const tabsForEntity = (configKey: string): Array<{ key: string; label: st
   if (configKey === 'contacts') {
     return [
       { key: 'general', label: 'General' },
-      { key: 'activities', label: 'Activities' },
-      { key: 'notes', label: 'Notes' },
+      { key: 'communication', label: 'Communication' },
+      { key: 'preferences', label: 'Preferences' },
+      { key: 'relationships', label: 'Relationships' },
+      { key: 'interaction-history', label: 'Interaction History' },
       { key: 'audit-history', label: 'Audit History' },
     ]
   }

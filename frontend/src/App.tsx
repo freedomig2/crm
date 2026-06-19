@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppShell } from './layout/components/AppShell'
@@ -18,7 +18,6 @@ import {
   accountRelationshipsConfig,
   accountsConfig,
   auditLogsConfig,
-  contactsConfig,
   customerProfilesConfig,
   departmentsConfig,
   lookupCategoriesConfig,
@@ -33,6 +32,18 @@ import { EntityListPage } from './components/crud/EntityListPage'
 import { EntityCreatePage } from './components/crud/EntityCreatePage'
 import { EntityEditPage } from './components/crud/EntityEditPage'
 import { EntityDetailsPage } from './components/crud/EntityDetailsPage'
+import { ContactsListPage } from './contacts/ContactsListPage'
+import { ContactFormPage } from './contacts/ContactFormPage'
+import { ContactDetailsPage } from './contacts/ContactDetailsPage'
+
+function LegacyContactRedirect({ edit }: { edit?: boolean }) {
+  const { id } = useParams()
+  if (!id) {
+    return <Navigate to="/contacts" replace />
+  }
+
+  return <Navigate to={`/contacts/${id}${edit ? '/edit' : ''}`} replace />
+}
 
 function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -97,10 +108,14 @@ function App() {
               <Route path="/crm/accounts/:id/edit" element={<EntityEditPage config={accountsConfig} />} />
               <Route path="/crm/accounts/:id" element={<EntityDetailsPage config={accountsConfig} />} />
 
-              <Route path="/crm/contacts" element={<EntityListPage config={contactsConfig} title={contactsConfig.title} subtitle={contactsConfig.subtitle} endpoint={contactsConfig.endpoint} columns={contactsConfig.columns} listPath={contactsConfig.listPath} createPath={contactsConfig.createPath} detailsPath={contactsConfig.detailsPath} editPath={contactsConfig.editPath} permissions={contactsConfig.permissions} />} />
-              <Route path="/crm/contacts/create" element={<EntityCreatePage config={contactsConfig} />} />
-              <Route path="/crm/contacts/:id/edit" element={<EntityEditPage config={contactsConfig} />} />
-              <Route path="/crm/contacts/:id" element={<EntityDetailsPage config={contactsConfig} />} />
+              <Route path="/contacts" element={<ContactsListPage />} />
+              <Route path="/contacts/create" element={<ContactFormPage mode="create" />} />
+              <Route path="/contacts/:id/edit" element={<ContactFormPage mode="edit" />} />
+              <Route path="/contacts/:id" element={<ContactDetailsPage />} />
+              <Route path="/crm/contacts" element={<Navigate to="/contacts" replace />} />
+              <Route path="/crm/contacts/create" element={<Navigate to="/contacts/create" replace />} />
+              <Route path="/crm/contacts/:id/edit" element={<LegacyContactRedirect edit />} />
+              <Route path="/crm/contacts/:id" element={<LegacyContactRedirect />} />
 
               <Route path="/crm/account-addresses" element={<EntityListPage config={accountAddressesConfig} title={accountAddressesConfig.title} subtitle={accountAddressesConfig.subtitle} endpoint={accountAddressesConfig.endpoint} columns={accountAddressesConfig.columns} listPath={accountAddressesConfig.listPath} createPath={accountAddressesConfig.createPath} detailsPath={accountAddressesConfig.detailsPath} editPath={accountAddressesConfig.editPath} permissions={accountAddressesConfig.permissions} />} />
               <Route path="/crm/account-addresses/create" element={<EntityCreatePage config={accountAddressesConfig} />} />
@@ -132,7 +147,6 @@ function App() {
               <Route path="/configuration/lookup-values" element={<Navigate to="/admin/lookup-values" replace />} />
               <Route path="/audit-logs" element={<Navigate to="/admin/audit-logs" replace />} />
               <Route path="/accounts" element={<Navigate to="/crm/accounts" replace />} />
-              <Route path="/contacts" element={<Navigate to="/crm/contacts" replace />} />
 
               <Route path="/security/login-history" element={<SimpleStatePage title="Login History" subtitle="Review login timeline, devices, and geolocation details." />} />
               <Route path="/security/active-sessions" element={<SimpleStatePage title="Active Sessions" subtitle="Monitor active sessions and terminate risky sessions quickly." />} />

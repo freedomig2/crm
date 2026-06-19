@@ -7,7 +7,10 @@ import { TopBar } from './TopBar'
 import styles from './AppShell.module.css'
 
 export function AppShell({ darkMode, onToggleDarkMode }: { darkMode: boolean; onToggleDarkMode: (value: boolean) => void }) {
-  const [collapsed, setCollapsed] = useState<boolean>(() => localStorage.getItem('crm.sidebar.collapsed') === '1')
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    const stored = localStorage.getItem('crm.sidebar.collapsed')
+    return stored === null ? true : stored === '1'
+  })
   const { hasPermission, user } = useAuth()
 
   useEffect(() => {
