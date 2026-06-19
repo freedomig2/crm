@@ -42,6 +42,10 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<LeadActivity> LeadActivities => Set<LeadActivity>();
     public DbSet<LeadScoreRule> LeadScoreRules => Set<LeadScoreRule>();
     public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
+    public DbSet<Opportunity> Opportunities => Set<Opportunity>();
+    public DbSet<OpportunityProduct> OpportunityProducts => Set<OpportunityProduct>();
+    public DbSet<OpportunityCompetitor> OpportunityCompetitors => Set<OpportunityCompetitor>();
+    public DbSet<OpportunityActivity> OpportunityActivities => Set<OpportunityActivity>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -267,6 +271,164 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.RuleTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.Lead)
+            .WithMany()
+            .HasForeignKey(x => x.LeadId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.OpportunityStage)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityStageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.OpportunityStatus)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.SalesProcessStage)
+            .WithMany()
+            .HasForeignKey(x => x.SalesProcessStageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.Rating)
+            .WithMany()
+            .HasForeignKey(x => x.RatingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.Priority)
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.Source)
+            .WithMany()
+            .HasForeignKey(x => x.SourceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.WinReason)
+            .WithMany()
+            .HasForeignKey(x => x.WinReasonId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.LossReason)
+            .WithMany()
+            .HasForeignKey(x => x.LossReasonId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.LostToCompetitor)
+            .WithMany()
+            .HasForeignKey(x => x.LostToCompetitorId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Opportunity>(entity =>
+        {
+            entity.Property(x => x.Probability).HasDefaultValue(0m);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<OpportunityProduct>()
+            .HasOne(x => x.Opportunity)
+            .WithMany(x => x.Products)
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityProduct>()
+            .Property(x => x.SortOrder)
+            .HasDefaultValue(0);
+
+        builder.Entity<OpportunityCompetitor>()
+            .HasOne(x => x.Opportunity)
+            .WithMany(x => x.Competitors)
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityCompetitor>()
+            .HasOne(x => x.ThreatLevel)
+            .WithMany()
+            .HasForeignKey(x => x.ThreatLevelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityCompetitor>()
+            .Property(x => x.IsPrimaryCompetitor)
+            .HasDefaultValue(false);
+
+        builder.Entity<OpportunityActivity>()
+            .HasOne(x => x.Opportunity)
+            .WithMany(x => x.Activities)
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityActivity>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<OpportunityActivity>()
+            .HasOne(x => x.ActivityType)
+            .WithMany()
+            .HasForeignKey(x => x.ActivityTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityActivity>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityActivity>()
+            .HasOne(x => x.Priority)
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityActivity>()
+            .HasOne(x => x.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.Entity<NumberSequence>()
             .HasOne(x => x.ResetFrequency)
             .WithMany()
@@ -298,6 +460,14 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Lead>().HasIndex(x => x.LeadNumber).IsUnique();
         builder.Entity<LeadScoreRule>().HasIndex(x => x.Code).IsUnique();
         builder.Entity<NumberSequence>().HasIndex(x => x.SequenceCode).IsUnique();
+        builder.Entity<Opportunity>().HasIndex(x => x.OpportunityNumber).IsUnique();
+        builder.Entity<Opportunity>().HasIndex(x => x.AccountId);
+        builder.Entity<Opportunity>().HasIndex(x => x.OpportunityStageId);
+        builder.Entity<Opportunity>().HasIndex(x => x.OpportunityStatusId);
+        builder.Entity<Opportunity>().HasIndex(x => x.EstimatedCloseDate);
+        builder.Entity<OpportunityProduct>().HasIndex(x => x.OpportunityId);
+        builder.Entity<OpportunityCompetitor>().HasIndex(x => x.OpportunityId);
+        builder.Entity<OpportunityActivity>().HasIndex(x => x.OpportunityId);
     }
 
     public override int SaveChanges()

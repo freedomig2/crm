@@ -177,7 +177,7 @@ export function LeadConversionPage() {
             <Input size="small" type="date" value={estimatedCloseDate} disabled={!createOpportunity} onChange={(_, data) => setEstimatedCloseDate(data.value)} />
           </Field>
           <Field label="Opportunity Module">
-            <Textarea value="Opportunity creation is reserved for the future Opportunity module; account and contact conversion will complete now." readOnly />
+            <Textarea value="When enabled, conversion creates an open opportunity linked to this lead, account, and contact." readOnly />
           </Field>
         </FormSectionCard>
       ) : null}
@@ -191,7 +191,7 @@ export function LeadConversionPage() {
             <Input size="small" value={createContact ? 'Create new contact' : 'Link existing contact'} readOnly />
           </Field>
           <Field label="Opportunity Action">
-            <Input size="small" value={createOpportunity ? 'Queue future opportunity creation adapter' : 'Skip opportunity'} readOnly />
+            <Input size="small" value={createOpportunity ? 'Create linked opportunity' : 'Skip opportunity'} readOnly />
           </Field>
           <div className={styles.inlineActions}>
             <Button appearance="primary" size="small" onClick={() => void submit()} disabled={saving || Boolean(validationMessage)}>
@@ -210,10 +210,11 @@ export function LeadConversionPage() {
             <Input size="small" value={result.convertedContactName ?? 'Converted contact'} readOnly />
           </Field>
           <Field label="Opportunity">
-            <Input size="small" value={result.opportunityMessage ?? 'No opportunity created'} readOnly />
+            <Input size="small" value={result.convertedOpportunityId ? 'Opportunity created' : result.opportunityMessage ?? 'No opportunity created'} readOnly />
           </Field>
           <div className={styles.inlineActions}>
             <Button size="small" appearance="secondary" onClick={() => navigate(`/leads/${result.leadId}`)}>Open Lead</Button>
+            {result.convertedOpportunityId ? <Button size="small" appearance="secondary" onClick={() => navigate(`/opportunities/${result.convertedOpportunityId}`)}>Open Opportunity</Button> : null}
           </div>
         </FormSectionCard>
       ) : null}

@@ -5,7 +5,7 @@ import { api } from '../api/client'
 import { DashboardCard } from '../components/common/DashboardCard'
 import { PageHeader } from '../layout/components/PageHeader'
 import { CommandBar } from '../layout/components/CommandBar'
-import type { LeadDashboardSummary } from '../types/models'
+import type { LeadDashboardSummary, OpportunityDashboardSummary } from '../types/models'
 import styles from './DashboardPage.module.css'
 
 const userGrowth = [
@@ -41,14 +41,20 @@ const departmentCounts = [
 
 export function DashboardPage() {
   const [leadSummary, setLeadSummary] = useState<LeadDashboardSummary | null>(null)
+  const [opportunitySummary, setOpportunitySummary] = useState<OpportunityDashboardSummary | null>(null)
 
   useEffect(() => {
     void (async () => {
       try {
-        const { data } = await api.get<LeadDashboardSummary>('api/leads/dashboard-summary')
-        setLeadSummary(data)
+        const [{ data: leads }, { data: opportunities }] = await Promise.all([
+          api.get<LeadDashboardSummary>('api/leads/dashboard-summary'),
+          api.get<OpportunityDashboardSummary>('api/opportunities/dashboard-summary'),
+        ])
+        setLeadSummary(leads)
+        setOpportunitySummary(opportunities)
       } catch {
         setLeadSummary(null)
+        setOpportunitySummary(null)
       }
     })()
   }, [])
@@ -76,6 +82,10 @@ export function DashboardPage() {
         <DashboardCard label="Disqualified Leads" value={leadSummary?.disqualifiedLeads ?? 0} />
         <DashboardCard label="Average Lead Score" value={leadSummary?.averageLeadScore ?? 0} />
         <DashboardCard label="Hot Leads" value={leadSummary?.hotLeads ?? 0} />
+        <DashboardCard label="Open Opportunities" value={opportunitySummary?.openOpportunities ?? 0} />
+        <DashboardCard label="Pipeline Value" value={new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(opportunitySummary?.pipelineValue ?? 0)} />
+        <DashboardCard label="Weighted Pipeline" value={new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(opportunitySummary?.weightedPipelineValue ?? 0)} />
+        <DashboardCard label="Closing This Month" value={opportunitySummary?.closingThisMonth ?? 0} />
       </section>
 
       <section className={styles.chartGrid}>
@@ -101,6 +111,19 @@ export function DashboardPage() {
             </PieChart>
           </ResponsiveContainer>
         </article>
+
+        <article className={styles.chartCard}>
+          <p className={styles.sectionTitle}>Opportunities by Stage</p>
+          <ResponsiveContainer width="100%" height={190}>
+            <BarChart data={opportunitySummary?.opportunitiesByStage ?? []}>
+              <CartesianGrid strokeDasharray="2 2" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#c2410c" />
+            </BarChart>
+          </ResponsiveContainer>
+        </article>
       </section>
 
       <section className={styles.widgetGrid}>
@@ -119,6 +142,15 @@ export function DashboardPage() {
             {(leadSummary?.recentlyConvertedLeads ?? []).length === 0 ? <li>No recently converted leads</li> : null}
             {(leadSummary?.recentlyConvertedLeads ?? []).map((lead) => (
               <li key={lead.id}>{lead.leadNumber} - {lead.topic}</li>
+            ))}
+          </ul>
+        </article>
+        <article className={styles.widgetCard}>
+          <p className={styles.sectionTitle}>Recent Opportunities</p>
+          <ul className={styles.widgetList}>
+            {(opportunitySummary?.recentOpportunities ?? []).length === 0 ? <li>No recent opportunities</li> : null}
+            {(opportunitySummary?.recentOpportunities ?? []).map((opportunity) => (
+              <li key={opportunity.id}>{opportunity.opportunityNumber} - {opportunity.topic}</li>
             ))}
           </ul>
         </article>

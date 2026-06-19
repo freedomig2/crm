@@ -28,6 +28,15 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     leadstatusid: 'LEAD_STATUS',
     qualificationstatusid: 'LEAD_QUALIFICATION_STATUS',
     ratingid: 'LEAD_RATING',
+    opportunitystageid: 'OPPORTUNITY_STAGE',
+    opportunitystatusid: 'OPPORTUNITY_STATUS',
+    salesprocessstageid: 'SALES_PROCESS_STAGE',
+    opportunityratingid: 'OPPORTUNITY_RATING',
+    opportunitysourceid: 'OPPORTUNITY_SOURCE',
+    currencyid: 'CURRENCY',
+    winreasonid: 'WIN_REASON',
+    lossreasonid: 'LOSS_REASON',
+    threatlevelid: 'COMPETITOR_THREAT_LEVEL',
     industryid: 'INDUSTRY',
     disqualifiedreasonid: 'LEAD_DISQUALIFICATION_REASON',
     activitytypeid: 'ACTIVITY_TYPE',
@@ -41,11 +50,11 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
 }
 
 const endpointForFieldKey = (fieldKey: string): string => {
-  if (fieldKey.includes('ownerUser') || fieldKey.includes('assignedToUser') || fieldKey.includes('createdBy') || fieldKey.includes('updatedBy')) {
+  if (fieldKey.includes('owneruser') || fieldKey.includes('assignedtouser') || fieldKey.includes('createdby') || fieldKey.includes('updatedby')) {
     return 'api/users'
   }
 
-  if (fieldKey.includes('ownerTeam') || fieldKey.includes('team')) {
+  if (fieldKey.includes('ownerteam') || fieldKey.includes('team')) {
     return 'api/teams'
   }
 
@@ -61,11 +70,19 @@ const endpointForFieldKey = (fieldKey: string): string => {
     return 'api/contacts'
   }
 
+  if (fieldKey.includes('lead')) {
+    return 'api/leads'
+  }
+
+  if (fieldKey.includes('competitor')) {
+    return 'api/opportunity-competitors'
+  }
+
   if (fieldKey.includes('role')) {
     return 'api/roles'
   }
 
-  if (fieldKey.includes('lookupCategory')) {
+  if (fieldKey.includes('lookupcategory')) {
     return 'api/lookup-categories'
   }
 
@@ -89,9 +106,21 @@ const labelFromRecord = (record: AnyRecord): string => {
   const contactNumber = asText(record.contactNumber)
   const fullName = asText(record.fullName)
   const subject = asText(record.subject)
+  const competitorName = asText(record.competitorName)
+  const topic = asText(record.topic)
+  const leadNumber = asText(record.leadNumber)
+  const opportunityNumber = asText(record.opportunityNumber)
 
   if (name && accountNumber) {
     return `${name} (${accountNumber})`
+  }
+
+  if (topic && leadNumber) {
+    return `${topic} (${leadNumber})`
+  }
+
+  if (topic && opportunityNumber) {
+    return `${topic} (${opportunityNumber})`
   }
 
   if (fullName && contactNumber) {
@@ -100,6 +129,10 @@ const labelFromRecord = (record: AnyRecord): string => {
 
   if (fullName) {
     return fullName
+  }
+
+  if (competitorName) {
+    return competitorName
   }
 
   if (name && code) {
@@ -120,6 +153,10 @@ const labelFromRecord = (record: AnyRecord): string => {
 
   if (subject) {
     return subject
+  }
+
+  if (topic) {
+    return topic
   }
 
   const firstName = asText(record.firstName)

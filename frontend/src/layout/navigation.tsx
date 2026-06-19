@@ -73,6 +73,8 @@ const defaultEnabledItems = new Set([
   'contacts',
   'leads',
   'lead-score-rules',
+  'opportunities',
+  'opportunity-pipeline',
   'account-activities',
   'relationships',
   'users',
@@ -137,7 +139,8 @@ export const navGroups: NavGroup[] = [
     items: [
       { key: 'leads', label: 'Leads', to: '/leads', icon: <PeopleRegular />, permission: 'Leads.View', enabled: isItemEnabled('leads') },
       { key: 'lead-score-rules', label: 'Lead Score Rules', to: '/lead-score-rules', icon: <ChartMultipleRegular />, permission: 'LeadScoreRules.View', enabled: isItemEnabled('lead-score-rules') },
-      { key: 'opportunities', label: 'Opportunities', to: '/sales/opportunities', icon: <DataPieRegular />, permission: 'Opportunities.View', enabled: isItemEnabled('opportunities') },
+      { key: 'opportunities', label: 'Opportunities', to: '/opportunities', icon: <DataPieRegular />, permission: 'Opportunities.View', enabled: isItemEnabled('opportunities') },
+      { key: 'opportunity-pipeline', label: 'Pipeline', to: '/opportunities/pipeline', icon: <BranchRequestRegular />, permission: 'Opportunities.ViewPipeline', enabled: isItemEnabled('opportunity-pipeline') },
       { key: 'quotes', label: 'Quotes', to: '/sales/quotes', icon: <DocumentSearchRegular />, permission: 'Quotes.View', enabled: isItemEnabled('quotes') },
       { key: 'orders', label: 'Orders', to: '/sales/orders', icon: <ClipboardTaskRegular />, permission: 'Orders.View', enabled: isItemEnabled('orders') },
       { key: 'invoices-sales', label: 'Invoices', to: '/sales/invoices', icon: <DocumentSearchRegular />, permission: 'Invoices.View', enabled: isItemEnabled('invoices-sales') },

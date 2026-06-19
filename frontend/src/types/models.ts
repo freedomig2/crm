@@ -364,3 +364,144 @@ export type LeadDashboardSummary = {
   recentLeads: LeadDashboardItem[]
   recentlyConvertedLeads: LeadDashboardItem[]
 }
+
+export type Opportunity = {
+  id: string
+  opportunityNumber: string
+  topic: string
+  accountId: string
+  accountName?: string
+  contactId?: string
+  contactName?: string
+  leadId?: string
+  leadTopic?: string
+  opportunityStageId: string
+  opportunityStageName?: string
+  opportunityStageCode?: string
+  opportunityStatusId: string
+  opportunityStatusName?: string
+  opportunityStatusCode?: string
+  salesProcessStageId?: string
+  salesProcessStageName?: string
+  ratingId?: string
+  ratingName?: string
+  priorityId?: string
+  priorityName?: string
+  estimatedRevenue?: number
+  estimatedCloseDate?: string
+  probability: number
+  weightedRevenue?: number
+  actualRevenue?: number
+  actualCloseDate?: string
+  currencyId?: string
+  currencyName?: string
+  sourceId?: string
+  sourceName?: string
+  winReasonId?: string
+  winReasonName?: string
+  lossReasonId?: string
+  lossReasonName?: string
+  lostToCompetitorId?: string
+  lostToCompetitorName?: string
+  description?: string
+  notes?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerUserName?: string
+  ownerTeamId?: string
+  ownerTeamName?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type OpportunityProduct = {
+  id: string
+  opportunityId: string
+  productId?: string
+  productName: string
+  description?: string
+  quantity: number
+  unitPrice: number
+  discountPercent?: number
+  discountAmount?: number
+  taxAmount?: number
+  lineTotal: number
+  sortOrder: number
+}
+
+export type OpportunityCompetitor = {
+  id: string
+  opportunityId: string
+  competitorName: string
+  strengths?: string
+  weaknesses?: string
+  threatLevelId?: string
+  threatLevelName?: string
+  isPrimaryCompetitor: boolean
+  notes?: string
+}
+
+export type OpportunityActivity = {
+  id: string
+  opportunityId: string
+  contactId?: string
+  contactName?: string
+  activityTypeId: string
+  activityTypeName?: string
+  subject: string
+  description?: string
+  activityDate: string
+  dueDate?: string
+  completedDate?: string
+  statusId: string
+  statusName?: string
+  priorityId?: string
+  priorityName?: string
+  assignedToUserId?: string
+  assignedToUserName?: string
+}
+
+export type OpportunityTimelineItem = {
+  id: string
+  itemType: string
+  title: string
+  description?: string
+  occurredAt: string
+  status?: string
+  priority?: string
+  assignedToName?: string
+}
+
+export type OpportunitySummary = {
+  opportunity: Opportunity
+  latestActivity?: OpportunityActivity
+  primaryCompetitor?: OpportunityCompetitor
+  productRevenue: number
+  productCount: number
+  competitorCount: number
+  activityCount: number
+}
+
+export type OpportunityPipelineStage = {
+  stageId: string
+  stageName: string
+  stageCode?: string
+  count: number
+  estimatedRevenue: number
+  weightedRevenue: number
+  opportunities: Opportunity[]
+}
+
+export type OpportunityDashboardSummary = {
+  totalOpportunities: number
+  openOpportunities: number
+  wonOpportunities: number
+  lostOpportunities: number
+  pipelineValue: number
+  weightedPipelineValue: number
+  averageProbability: number
+  closingThisMonth: number
+  opportunitiesByStage: LeadDashboardGroup[]
+  opportunitiesByOwner: LeadDashboardGroup[]
+  recentOpportunities: Opportunity[]
+}

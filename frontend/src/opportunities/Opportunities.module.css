@@ -1,0 +1,112 @@
+.pipelineGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
+  gap: 10px;
+  align-items: start;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.stageColumn {
+  min-height: 420px;
+  background: #f8fbff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.stageHeader {
+  display: grid;
+  gap: 2px;
+  border-bottom: 1px solid #e5edf7;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.stageTitle {
+  margin: 0;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stageMeta {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.cardList {
+  display: grid;
+  gap: 8px;
+}
+
+.pipelineCard {
+  width: 100%;
+  border: 1px solid #dbe3ef;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 9px;
+  text-align: left;
+  cursor: grab;
+}
+
+.pipelineCard:active {
+  cursor: grabbing;
+}
+
+.cardTitle {
+  margin: 0;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cardMeta {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.summaryStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+.summaryItem {
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.summaryLabel {
+  margin: 0;
+  color: #64748b;
+  font-size: 11px;
+}
+
+.summaryValue {
+  margin: 2px 0 0;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+@media (max-width: 1300px) {
+  .pipelineGrid {
+    grid-template-columns: repeat(5, minmax(240px, 260px));
+  }
+
+  .summaryStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .summaryStrip {
+    grid-template-columns: 1fr;
+  }
+}

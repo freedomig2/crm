@@ -34,6 +34,10 @@ public static class SeedData
             "LeadActivities.View", "LeadActivities.Create", "LeadActivities.Update", "LeadActivities.Delete", "LeadActivities.Complete",
             "LeadScoreRules.View", "LeadScoreRules.Create", "LeadScoreRules.Update", "LeadScoreRules.Delete", "LeadScoreRules.Run",
             "NumberSequences.View", "NumberSequences.Create", "NumberSequences.Update", "NumberSequences.Delete", "NumberSequences.Preview", "NumberSequences.Reset",
+            "Opportunities.View", "Opportunities.Create", "Opportunities.Update", "Opportunities.Delete", "Opportunities.AssignOwner", "Opportunities.ChangeStage", "Opportunities.MarkWon", "Opportunities.MarkLost", "Opportunities.ViewPipeline", "Opportunities.ViewTimeline",
+            "OpportunityProducts.View", "OpportunityProducts.Create", "OpportunityProducts.Update", "OpportunityProducts.Delete",
+            "OpportunityCompetitors.View", "OpportunityCompetitors.Create", "OpportunityCompetitors.Update", "OpportunityCompetitors.Delete", "OpportunityCompetitors.SetPrimary",
+            "OpportunityActivities.View", "OpportunityActivities.Create", "OpportunityActivities.Update", "OpportunityActivities.Delete", "OpportunityActivities.Complete",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -174,7 +178,54 @@ public static class SeedData
         });
 
         await EnsureLookupCategoryAsync(db, "Case Status", "CASE_STATUS");
-        await EnsureLookupCategoryAsync(db, "Opportunity Stage", "OPPORTUNITY_STAGE");
+        await EnsureLookupCategoryAsync(db, "Opportunity Stage", "OPPORTUNITY_STAGE", new[]
+        {
+            ("Qualify", "QUALIFY"), ("Develop", "DEVELOP"), ("Propose", "PROPOSE"), ("Negotiate", "NEGOTIATE"), ("Close", "CLOSE")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Opportunity Status", "OPPORTUNITY_STATUS", new[]
+        {
+            ("Open", "OPEN"), ("Won", "WON"), ("Lost", "LOST"), ("On Hold", "ON_HOLD"), ("Cancelled", "CANCELLED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Sales Process Stage", "SALES_PROCESS_STAGE", new[]
+        {
+            ("Identify Need", "IDENTIFY_NEED"), ("Confirm Interest", "CONFIRM_INTEREST"), ("Build Solution", "BUILD_SOLUTION"),
+            ("Present Proposal", "PRESENT_PROPOSAL"), ("Negotiate Terms", "NEGOTIATE_TERMS"), ("Final Decision", "FINAL_DECISION"), ("Closed", "CLOSED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Opportunity Rating", "OPPORTUNITY_RATING", new[]
+        {
+            ("Hot", "HOT"), ("Warm", "WARM"), ("Cold", "COLD")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Opportunity Source", "OPPORTUNITY_SOURCE", new[]
+        {
+            ("Lead Conversion", "LEAD_CONVERSION"), ("Existing Customer", "EXISTING_CUSTOMER"), ("Referral", "REFERRAL"),
+            ("Campaign", "CAMPAIGN"), ("Partner", "PARTNER"), ("Website", "WEBSITE"), ("Direct Sales", "DIRECT_SALES"), ("Other", "OTHER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Win Reason", "WIN_REASON", new[]
+        {
+            ("Best Price", "BEST_PRICE"), ("Best Solution", "BEST_SOLUTION"), ("Strong Relationship", "STRONG_RELATIONSHIP"),
+            ("Existing Customer", "EXISTING_CUSTOMER"), ("Fast Delivery", "FAST_DELIVERY"), ("Competitor Weakness", "COMPETITOR_WEAKNESS"), ("Other", "OTHER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Loss Reason", "LOSS_REASON", new[]
+        {
+            ("Price Too High", "PRICE_TOO_HIGH"), ("Competitor Selected", "COMPETITOR_SELECTED"), ("No Budget", "NO_BUDGET"),
+            ("No Decision", "NO_DECISION"), ("Poor Fit", "POOR_FIT"), ("Lost Contact", "LOST_CONTACT"), ("Timeline Changed", "TIMELINE_CHANGED"), ("Other", "OTHER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Competitor Threat Level", "COMPETITOR_THREAT_LEVEL", new[]
+        {
+            ("Low", "LOW"), ("Medium", "MEDIUM"), ("High", "HIGH"), ("Critical", "CRITICAL")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Currency", "CURRENCY", new[]
+        {
+            ("US Dollar", "USD"), ("Euro", "EUR"), ("British Pound", "GBP"), ("South African Rand", "ZAR")
+        });
 
         await EnsureLookupCategoryAsync(db, "Salutation", "SALUTATION", new[]
         {
