@@ -46,6 +46,10 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<OpportunityProduct> OpportunityProducts => Set<OpportunityProduct>();
     public DbSet<OpportunityCompetitor> OpportunityCompetitors => Set<OpportunityCompetitor>();
     public DbSet<OpportunityActivity> OpportunityActivities => Set<OpportunityActivity>();
+    public DbSet<OpportunityStageHistory> OpportunityStageHistory => Set<OpportunityStageHistory>();
+    public DbSet<SalesTarget> SalesTargets => Set<SalesTarget>();
+    public DbSet<RevenueForecast> RevenueForecasts => Set<RevenueForecast>();
+    public DbSet<SalesPerformanceSnapshot> SalesPerformanceSnapshots => Set<SalesPerformanceSnapshot>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -429,6 +433,88 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.AssignedToUserId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Entity<OpportunityStageHistory>()
+            .HasOne(x => x.Opportunity)
+            .WithMany(x => x.StageHistory)
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityStageHistory>()
+            .HasOne(x => x.PreviousStage)
+            .WithMany()
+            .HasForeignKey(x => x.PreviousStageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityStageHistory>()
+            .HasOne(x => x.NewStage)
+            .WithMany()
+            .HasForeignKey(x => x.NewStageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityStageHistory>()
+            .HasOne(x => x.ChangedByUser)
+            .WithMany()
+            .HasForeignKey(x => x.ChangedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<SalesTarget>()
+            .HasOne(x => x.TargetType)
+            .WithMany()
+            .HasForeignKey(x => x.TargetTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SalesTarget>()
+            .HasOne(x => x.TargetPeriod)
+            .WithMany()
+            .HasForeignKey(x => x.TargetPeriodId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SalesTarget>()
+            .HasOne(x => x.AssignedUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SalesTarget>()
+            .HasOne(x => x.AssignedTeam)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SalesTarget>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SalesTarget>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SalesTarget>()
+            .Property(x => x.IsActive)
+            .HasDefaultValue(true);
+
+        builder.Entity<RevenueForecast>()
+            .HasOne(x => x.ForecastType)
+            .WithMany()
+            .HasForeignKey(x => x.ForecastTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SalesPerformanceSnapshot>()
+            .HasOne(x => x.User)
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<SalesPerformanceSnapshot>()
+            .HasOne(x => x.Team)
+            .WithMany()
+            .HasForeignKey(x => x.TeamId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.Entity<NumberSequence>()
             .HasOne(x => x.ResetFrequency)
             .WithMany()
@@ -468,6 +554,14 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<OpportunityProduct>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityCompetitor>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityActivity>().HasIndex(x => x.OpportunityId);
+        builder.Entity<OpportunityStageHistory>().HasIndex(x => new { x.OpportunityId, x.ChangedAt });
+        builder.Entity<SalesTarget>().HasIndex(x => x.TargetTypeId);
+        builder.Entity<SalesTarget>().HasIndex(x => x.TargetPeriodId);
+        builder.Entity<SalesTarget>().HasIndex(x => x.AssignedUserId);
+        builder.Entity<SalesTarget>().HasIndex(x => x.AssignedTeamId);
+        builder.Entity<RevenueForecast>().HasIndex(x => x.ForecastDate);
+        builder.Entity<RevenueForecast>().HasIndex(x => new { x.ForecastPeriodStart, x.ForecastPeriodEnd });
+        builder.Entity<SalesPerformanceSnapshot>().HasIndex(x => x.SnapshotDate);
     }
 
     public override int SaveChanges()

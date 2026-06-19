@@ -41,7 +41,7 @@ export function OpportunitiesListPage() {
   const canAssign = hasPermission('Opportunities.AssignOwner')
   const canMarkWon = hasPermission('Opportunities.MarkWon')
   const canMarkLost = hasPermission('Opportunities.MarkLost')
-  const canViewPipeline = hasPermission('Opportunities.ViewPipeline')
+  const canViewPipeline = hasPermission('Pipeline.View')
   const [rows, setRows] = useState<Opportunity[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -175,7 +175,7 @@ export function OpportunitiesListPage() {
       <CommandBar
         actions={[
           ...(canCreate ? [{ key: 'create', label: 'New Opportunity', onClick: () => navigate('/opportunities/create') }] : []),
-          ...(canViewPipeline ? [{ key: 'pipeline', label: 'Pipeline', onClick: () => navigate('/opportunities/pipeline') }] : []),
+          ...(canViewPipeline ? [{ key: 'pipeline', label: 'Pipeline', onClick: () => navigate('/sales/pipeline') }] : []),
         ]}
       />
 

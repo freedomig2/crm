@@ -46,8 +46,11 @@ import { OpportunitiesListPage } from './opportunities/OpportunitiesListPage'
 import { OpportunityFormPage } from './opportunities/OpportunityFormPage'
 import { OpportunityDetailsPage } from './opportunities/OpportunityDetailsPage'
 import { OpportunityTimelinePage } from './opportunities/OpportunityTimelinePage'
-import { OpportunityPipelinePage } from './opportunities/OpportunityPipelinePage'
 import { OpportunityOutcomePage } from './opportunities/OpportunityOutcomePage'
+import { SalesPipelinePage } from './sales/SalesPipelinePage'
+import { ForecastDetailsPage, ForecastFormPage, ForecastsPage } from './sales/ForecastsPages'
+import { SalesTargetDetailsPage, SalesTargetFormPage, SalesTargetsListPage } from './sales/SalesTargetsPages'
+import { RevenueTrackingPage, SalesPerformancePage } from './sales/SalesAnalyticsPages'
 
 function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   const { id } = useParams()
@@ -170,7 +173,7 @@ function App() {
 
               <Route path="/opportunities" element={<OpportunitiesListPage />} />
               <Route path="/opportunities/create" element={<OpportunityFormPage mode="create" />} />
-              <Route path="/opportunities/pipeline" element={<OpportunityPipelinePage />} />
+              <Route path="/opportunities/pipeline" element={<Navigate to="/sales/pipeline" replace />} />
               <Route path="/opportunities/:id/edit" element={<OpportunityFormPage mode="edit" />} />
               <Route path="/opportunities/:id/timeline" element={<OpportunityTimelinePage />} />
               <Route path="/opportunities/:id/mark-won" element={<OpportunityOutcomePage mode="won" />} />
@@ -178,12 +181,24 @@ function App() {
               <Route path="/opportunities/:id" element={<OpportunityDetailsPage />} />
               <Route path="/sales/opportunities" element={<Navigate to="/opportunities" replace />} />
               <Route path="/sales/opportunities/create" element={<Navigate to="/opportunities/create" replace />} />
-              <Route path="/sales/opportunities/pipeline" element={<Navigate to="/opportunities/pipeline" replace />} />
+              <Route path="/sales/opportunities/pipeline" element={<Navigate to="/sales/pipeline" replace />} />
               <Route path="/sales/opportunities/:id/edit" element={<LegacyOpportunityRedirect edit />} />
               <Route path="/sales/opportunities/:id/timeline" element={<LegacyOpportunityRedirect child="timeline" />} />
               <Route path="/sales/opportunities/:id/mark-won" element={<LegacyOpportunityRedirect child="mark-won" />} />
               <Route path="/sales/opportunities/:id/mark-lost" element={<LegacyOpportunityRedirect child="mark-lost" />} />
               <Route path="/sales/opportunities/:id" element={<LegacyOpportunityRedirect />} />
+
+              <Route path="/sales/pipeline" element={<SalesPipelinePage />} />
+              <Route path="/sales/forecasts" element={<ForecastsPage />} />
+              <Route path="/sales/forecasts/create" element={<ForecastFormPage mode="create" />} />
+              <Route path="/sales/forecasts/:id/edit" element={<ForecastFormPage mode="edit" />} />
+              <Route path="/sales/forecasts/:id" element={<ForecastDetailsPage />} />
+              <Route path="/sales/targets" element={<SalesTargetsListPage />} />
+              <Route path="/sales/targets/create" element={<SalesTargetFormPage mode="create" />} />
+              <Route path="/sales/targets/:id/edit" element={<SalesTargetFormPage mode="edit" />} />
+              <Route path="/sales/targets/:id" element={<SalesTargetDetailsPage />} />
+              <Route path="/sales/revenue" element={<RevenueTrackingPage />} />
+              <Route path="/sales/performance" element={<SalesPerformancePage />} />
 
               <Route path="/crm/account-addresses" element={<EntityListPage config={accountAddressesConfig} title={accountAddressesConfig.title} subtitle={accountAddressesConfig.subtitle} endpoint={accountAddressesConfig.endpoint} columns={accountAddressesConfig.columns} listPath={accountAddressesConfig.listPath} createPath={accountAddressesConfig.createPath} detailsPath={accountAddressesConfig.detailsPath} editPath={accountAddressesConfig.editPath} permissions={accountAddressesConfig.permissions} />} />
               <Route path="/crm/account-addresses/create" element={<EntityCreatePage config={accountAddressesConfig} />} />

@@ -16,6 +16,7 @@ import type { OpportunitySummary } from '../types/models'
 import { AuditHistoryPanel } from '../contacts/ContactRelatedPanels'
 import { OpportunityActivitiesPanel, OpportunityCompetitorsPanel, OpportunityProductsPanel } from './OpportunityRelatedPanels'
 import { formatCurrency, formatDate, formatDateTime } from './opportunityUtils'
+import { OpportunityPipelineAnalyticsPanel } from '../sales/SalesAnalyticsPages'
 import styles from '../contacts/Contacts.module.css'
 
 const tabs = [
@@ -24,6 +25,7 @@ const tabs = [
   { key: 'competitors', label: 'Competitors' },
   { key: 'activities', label: 'Activities' },
   { key: 'pipeline', label: 'Pipeline' },
+  { key: 'pipeline-analytics', label: 'Pipeline Analytics' },
   { key: 'win-loss', label: 'Win/Loss' },
   { key: 'audit-history', label: 'Audit History' },
 ]
@@ -37,7 +39,7 @@ export function OpportunityDetailsPage() {
   const canMarkWon = hasPermission('Opportunities.MarkWon')
   const canMarkLost = hasPermission('Opportunities.MarkLost')
   const canViewTimeline = hasPermission('Opportunities.ViewTimeline')
-  const canViewPipeline = hasPermission('Opportunities.ViewPipeline')
+  const canViewPipeline = hasPermission('Pipeline.View')
   const [summary, setSummary] = useState<OpportunitySummary | null>(null)
   const [activeTab, setActiveTab] = useState('summary')
   const [loading, setLoading] = useState(true)
@@ -159,10 +161,11 @@ export function OpportunityDetailsPage() {
             </tbody>
           </table>
           <div className={styles.inlineActions}>
-            <Button size="small" appearance="secondary" onClick={() => navigate('/opportunities/pipeline')} disabled={!canViewPipeline}>Open Pipeline</Button>
+            <Button size="small" appearance="secondary" onClick={() => navigate('/sales/pipeline')} disabled={!canViewPipeline}>Open Pipeline</Button>
           </div>
         </FormSectionCard>
       ) : null}
+      {!loading && opportunity && activeTab === 'pipeline-analytics' ? <OpportunityPipelineAnalyticsPanel opportunityId={opportunity.id} /> : null}
       {!loading && opportunity && activeTab === 'win-loss' ? <EntityDetailsGrid rows={winLossRows} /> : null}
       {!loading && opportunity && activeTab === 'audit-history' ? <AuditHistoryPanel entityName="Opportunity" entityId={opportunity.id} /> : null}
     </EntityPageLayout>

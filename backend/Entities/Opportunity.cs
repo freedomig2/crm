@@ -45,4 +45,5 @@ public class Opportunity : OwnedEntity
     public ICollection<OpportunityProduct> Products { get; set; } = new List<OpportunityProduct>();
     public ICollection<OpportunityCompetitor> Competitors { get; set; } = new List<OpportunityCompetitor>();
     public ICollection<OpportunityActivity> Activities { get; set; } = new List<OpportunityActivity>();
+    public ICollection<OpportunityStageHistory> StageHistory { get; set; } = new List<OpportunityStageHistory>();
 }

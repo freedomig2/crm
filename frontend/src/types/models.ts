@@ -505,3 +505,170 @@ export type OpportunityDashboardSummary = {
   opportunitiesByOwner: LeadDashboardGroup[]
   recentOpportunities: Opportunity[]
 }
+
+export type TrendPoint = {
+  name: string
+  value: number
+  count: number
+}
+
+export type LeaderboardItem = {
+  name: string
+  revenue: number
+  winRate: number
+  opportunitiesClosed: number
+  targetAchievement: number
+}
+
+export type SalesPipelineSummary = {
+  totalOpportunities: number
+  pipelineRevenue: number
+  weightedPipelineRevenue: number
+  averageProbability: number
+  averageDealSize: number
+}
+
+export type SalesPipelineCard = {
+  id: string
+  opportunityNumber: string
+  topic: string
+  accountName?: string
+  estimatedRevenue?: number
+  probability: number
+  weightedRevenue?: number
+  estimatedCloseDate?: string
+  opportunityStageId: string
+  opportunityStageName?: string
+  salesProcessStageId?: string
+  ownerName?: string
+  ratingName?: string
+  ratingCode?: string
+  ageInDays: number
+}
+
+export type SalesPipelineStage = {
+  stageId: string
+  stageName: string
+  stageCode?: string
+  count: number
+  pipelineRevenue: number
+  weightedRevenue: number
+  opportunities: SalesPipelineCard[]
+}
+
+export type SalesPipelineBoard = {
+  summary: SalesPipelineSummary
+  stages: SalesPipelineStage[]
+}
+
+export type OpportunityStageHistory = {
+  id: string
+  opportunityId: string
+  previousStageId?: string
+  previousStageName?: string
+  newStageId: string
+  newStageName: string
+  changedByUserId?: string
+  changedByUserName?: string
+  changedAt: string
+  notes?: string
+}
+
+export type OpportunityPipelineAnalytics = {
+  opportunityId: string
+  currentStageName?: string
+  daysInStage: number
+  stageHistory: OpportunityStageHistory[]
+  probabilityTrend: TrendPoint[]
+  revenueTrend: TrendPoint[]
+}
+
+export type SalesTarget = {
+  id: string
+  name: string
+  description?: string
+  targetTypeId: string
+  targetTypeName?: string
+  targetPeriodId: string
+  targetPeriodName?: string
+  startDate: string
+  endDate: string
+  targetAmount: number
+  actualAmount: number
+  achievementPercentage: number
+  assignedUserId?: string
+  assignedUserName?: string
+  assignedTeamId?: string
+  assignedTeamName?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerUserName?: string
+  ownerTeamId?: string
+  ownerTeamName?: string
+  createdAt: string
+}
+
+export type RevenueForecast = {
+  id: string
+  forecastDate: string
+  forecastPeriodStart: string
+  forecastPeriodEnd: string
+  forecastTypeId: string
+  forecastTypeName?: string
+  totalPipelineRevenue: number
+  weightedPipelineRevenue: number
+  forecastRevenue: number
+  closedRevenue: number
+  openRevenue: number
+  forecastAccuracy: number
+  notes?: string
+  createdAt: string
+}
+
+export type ForecastDashboard = {
+  totalPipeline: number
+  weightedPipeline: number
+  closedRevenue: number
+  forecastRevenue: number
+  forecastAccuracy: number
+  forecastTrend: TrendPoint[]
+  revenueByMonth: TrendPoint[]
+  revenueByQuarter: TrendPoint[]
+  revenueByOwner: TrendPoint[]
+  revenueByTeam: TrendPoint[]
+}
+
+export type RevenueTracking = {
+  wonRevenue: number
+  lostRevenue: number
+  pipelineRevenue: number
+  weightedRevenue: number
+  revenueTrend: TrendPoint[]
+  revenueByAccount: TrendPoint[]
+  revenueByIndustry: TrendPoint[]
+  revenueBySalesperson: TrendPoint[]
+}
+
+export type SalesPerformanceDashboard = {
+  openOpportunities: number
+  wonOpportunities: number
+  lostOpportunities: number
+  winRate: number
+  averageDealSize: number
+  averageSalesCycleDays: number
+  revenueThisMonth: number
+  revenueThisQuarter: number
+  revenueThisYear: number
+  forecastRevenue: number
+  forecastAccuracy: number
+  topSalesperson?: string
+  topTeam?: string
+  pipelineByStage: TrendPoint[]
+  revenueTrend: TrendPoint[]
+  opportunitiesByOwner: TrendPoint[]
+  opportunitiesByIndustry: TrendPoint[]
+  winRateTrend: TrendPoint[]
+  forecastAccuracyTrend: TrendPoint[]
+  topSalespeople: LeaderboardItem[]
+  topTeams: LeaderboardItem[]
+}

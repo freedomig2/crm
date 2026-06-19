@@ -5,7 +5,7 @@ import { api } from '../api/client'
 import { DashboardCard } from '../components/common/DashboardCard'
 import { PageHeader } from '../layout/components/PageHeader'
 import { CommandBar } from '../layout/components/CommandBar'
-import type { LeadDashboardSummary, OpportunityDashboardSummary } from '../types/models'
+import type { LeadDashboardSummary, OpportunityDashboardSummary, SalesPerformanceDashboard } from '../types/models'
 import styles from './DashboardPage.module.css'
 
 const userGrowth = [
@@ -39,23 +39,24 @@ const departmentCounts = [
   { dept: 'Finance', count: 14 },
 ]
 
+const formatMoney = (value?: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value ?? 0)
+
 export function DashboardPage() {
   const [leadSummary, setLeadSummary] = useState<LeadDashboardSummary | null>(null)
   const [opportunitySummary, setOpportunitySummary] = useState<OpportunityDashboardSummary | null>(null)
+  const [salesPerformance, setSalesPerformance] = useState<SalesPerformanceDashboard | null>(null)
 
   useEffect(() => {
     void (async () => {
-      try {
-        const [{ data: leads }, { data: opportunities }] = await Promise.all([
-          api.get<LeadDashboardSummary>('api/leads/dashboard-summary'),
-          api.get<OpportunityDashboardSummary>('api/opportunities/dashboard-summary'),
-        ])
-        setLeadSummary(leads)
-        setOpportunitySummary(opportunities)
-      } catch {
-        setLeadSummary(null)
-        setOpportunitySummary(null)
-      }
+      const [leads, opportunities, performance] = await Promise.allSettled([
+        api.get<LeadDashboardSummary>('api/leads/dashboard-summary'),
+        api.get<OpportunityDashboardSummary>('api/opportunities/dashboard-summary'),
+        api.get<SalesPerformanceDashboard>('api/sales/performance'),
+      ])
+
+      setLeadSummary(leads.status === 'fulfilled' ? leads.value.data : null)
+      setOpportunitySummary(opportunities.status === 'fulfilled' ? opportunities.value.data : null)
+      setSalesPerformance(performance.status === 'fulfilled' ? performance.value.data : null)
     })()
   }, [])
 
@@ -83,9 +84,13 @@ export function DashboardPage() {
         <DashboardCard label="Average Lead Score" value={leadSummary?.averageLeadScore ?? 0} />
         <DashboardCard label="Hot Leads" value={leadSummary?.hotLeads ?? 0} />
         <DashboardCard label="Open Opportunities" value={opportunitySummary?.openOpportunities ?? 0} />
-        <DashboardCard label="Pipeline Value" value={new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(opportunitySummary?.pipelineValue ?? 0)} />
-        <DashboardCard label="Weighted Pipeline" value={new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(opportunitySummary?.weightedPipelineValue ?? 0)} />
+        <DashboardCard label="Pipeline Value" value={formatMoney(opportunitySummary?.pipelineValue)} />
+        <DashboardCard label="Weighted Pipeline" value={formatMoney(opportunitySummary?.weightedPipelineValue)} />
         <DashboardCard label="Closing This Month" value={opportunitySummary?.closingThisMonth ?? 0} />
+        <DashboardCard label="Win Rate" value={`${salesPerformance?.winRate ?? 0}%`} />
+        <DashboardCard label="Revenue This Month" value={formatMoney(salesPerformance?.revenueThisMonth)} />
+        <DashboardCard label="Forecast Revenue" value={formatMoney(salesPerformance?.forecastRevenue)} />
+        <DashboardCard label="Forecast Accuracy" value={`${salesPerformance?.forecastAccuracy ?? 0}%`} />
       </section>
 
       <section className={styles.chartGrid}>
@@ -121,6 +126,19 @@ export function DashboardPage() {
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
               <Bar dataKey="count" fill="#c2410c" />
+            </BarChart>
+          </ResponsiveContainer>
+        </article>
+
+        <article className={styles.chartCard}>
+          <p className={styles.sectionTitle}>Pipeline Revenue by Stage</p>
+          <ResponsiveContainer width="100%" height={190}>
+            <BarChart data={salesPerformance?.pipelineByStage ?? []}>
+              <CartesianGrid strokeDasharray="2 2" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip formatter={(value) => formatMoney(Number(value))} />
+              <Bar dataKey="value" fill="#0f6cbd" />
             </BarChart>
           </ResponsiveContainer>
         </article>

@@ -38,6 +38,10 @@ public static class SeedData
             "OpportunityProducts.View", "OpportunityProducts.Create", "OpportunityProducts.Update", "OpportunityProducts.Delete",
             "OpportunityCompetitors.View", "OpportunityCompetitors.Create", "OpportunityCompetitors.Update", "OpportunityCompetitors.Delete", "OpportunityCompetitors.SetPrimary",
             "OpportunityActivities.View", "OpportunityActivities.Create", "OpportunityActivities.Update", "OpportunityActivities.Delete", "OpportunityActivities.Complete",
+            "Pipeline.View", "Pipeline.Manage", "Pipeline.MoveStage",
+            "Forecasts.View", "Forecasts.Create", "Forecasts.Update", "Forecasts.Delete",
+            "SalesTargets.View", "SalesTargets.Create", "SalesTargets.Update", "SalesTargets.Delete",
+            "SalesPerformance.View",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -225,6 +229,21 @@ public static class SeedData
         await EnsureLookupCategoryAsync(db, "Currency", "CURRENCY", new[]
         {
             ("US Dollar", "USD"), ("Euro", "EUR"), ("British Pound", "GBP"), ("South African Rand", "ZAR")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Sales Target Type", "SALES_TARGET_TYPE", new[]
+        {
+            ("Revenue", "REVENUE"), ("Opportunity Count", "OPPORTUNITY_COUNT"), ("New Customers", "NEW_CUSTOMERS"), ("Activities Completed", "ACTIVITIES_COMPLETED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Sales Target Period", "SALES_TARGET_PERIOD", new[]
+        {
+            ("Monthly", "MONTHLY"), ("Quarterly", "QUARTERLY"), ("Yearly", "YEARLY")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Forecast Type", "FORECAST_TYPE", new[]
+        {
+            ("Conservative", "CONSERVATIVE"), ("Expected", "EXPECTED"), ("Aggressive", "AGGRESSIVE")
         });
 
         await EnsureLookupCategoryAsync(db, "Salutation", "SALUTATION", new[]
