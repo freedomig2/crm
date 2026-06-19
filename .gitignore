@@ -29,6 +29,7 @@ frontend/coverage/
 backend/bin/
 backend/obj/
 backend/TestResults/
+backend/App_Data/
 backend/wwwroot/assets/
 
 # Build / temp artifacts

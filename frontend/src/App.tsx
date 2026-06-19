@@ -35,6 +35,12 @@ import { EntityDetailsPage } from './components/crud/EntityDetailsPage'
 import { ContactsListPage } from './contacts/ContactsListPage'
 import { ContactFormPage } from './contacts/ContactFormPage'
 import { ContactDetailsPage } from './contacts/ContactDetailsPage'
+import { LeadsListPage } from './leads/LeadsListPage'
+import { LeadFormPage } from './leads/LeadFormPage'
+import { LeadDetailsPage } from './leads/LeadDetailsPage'
+import { LeadConversionPage } from './leads/LeadConversionPage'
+import { LeadTimelinePage } from './leads/LeadTimelinePage'
+import { LeadScoreRuleDetailsPage, LeadScoreRuleFormPage, LeadScoreRulesListPage } from './leads/LeadScoreRulesPages'
 
 function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   const { id } = useParams()
@@ -43,6 +49,16 @@ function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   }
 
   return <Navigate to={`/contacts/${id}${edit ? '/edit' : ''}`} replace />
+}
+
+function LegacyLeadRedirect({ edit, child }: { edit?: boolean; child?: 'convert' | 'timeline' }) {
+  const { id } = useParams()
+  if (!id) {
+    return <Navigate to="/leads" replace />
+  }
+
+  const suffix = child ? `/${child}` : edit ? '/edit' : ''
+  return <Navigate to={`/leads/${id}${suffix}`} replace />
 }
 
 function App() {
@@ -116,6 +132,24 @@ function App() {
               <Route path="/crm/contacts/create" element={<Navigate to="/contacts/create" replace />} />
               <Route path="/crm/contacts/:id/edit" element={<LegacyContactRedirect edit />} />
               <Route path="/crm/contacts/:id" element={<LegacyContactRedirect />} />
+
+              <Route path="/leads" element={<LeadsListPage />} />
+              <Route path="/leads/create" element={<LeadFormPage mode="create" />} />
+              <Route path="/leads/:id/edit" element={<LeadFormPage mode="edit" />} />
+              <Route path="/leads/:id/convert" element={<LeadConversionPage />} />
+              <Route path="/leads/:id/timeline" element={<LeadTimelinePage />} />
+              <Route path="/leads/:id" element={<LeadDetailsPage />} />
+              <Route path="/sales/leads" element={<Navigate to="/leads" replace />} />
+              <Route path="/sales/leads/create" element={<Navigate to="/leads/create" replace />} />
+              <Route path="/sales/leads/:id/edit" element={<LegacyLeadRedirect edit />} />
+              <Route path="/sales/leads/:id/convert" element={<LegacyLeadRedirect child="convert" />} />
+              <Route path="/sales/leads/:id/timeline" element={<LegacyLeadRedirect child="timeline" />} />
+              <Route path="/sales/leads/:id" element={<LegacyLeadRedirect />} />
+
+              <Route path="/lead-score-rules" element={<LeadScoreRulesListPage />} />
+              <Route path="/lead-score-rules/create" element={<LeadScoreRuleFormPage mode="create" />} />
+              <Route path="/lead-score-rules/:id/edit" element={<LeadScoreRuleFormPage mode="edit" />} />
+              <Route path="/lead-score-rules/:id" element={<LeadScoreRuleDetailsPage />} />
 
               <Route path="/crm/account-addresses" element={<EntityListPage config={accountAddressesConfig} title={accountAddressesConfig.title} subtitle={accountAddressesConfig.subtitle} endpoint={accountAddressesConfig.endpoint} columns={accountAddressesConfig.columns} listPath={accountAddressesConfig.listPath} createPath={accountAddressesConfig.createPath} detailsPath={accountAddressesConfig.detailsPath} editPath={accountAddressesConfig.editPath} permissions={accountAddressesConfig.permissions} />} />
               <Route path="/crm/account-addresses/create" element={<EntityCreatePage config={accountAddressesConfig} />} />

@@ -1,8 +1,11 @@
 import { Button } from '@fluentui/react-components'
+import { useEffect, useState } from 'react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { api } from '../api/client'
 import { DashboardCard } from '../components/common/DashboardCard'
 import { PageHeader } from '../layout/components/PageHeader'
 import { CommandBar } from '../layout/components/CommandBar'
+import type { LeadDashboardSummary } from '../types/models'
 import styles from './DashboardPage.module.css'
 
 const userGrowth = [
@@ -37,6 +40,19 @@ const departmentCounts = [
 ]
 
 export function DashboardPage() {
+  const [leadSummary, setLeadSummary] = useState<LeadDashboardSummary | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const { data } = await api.get<LeadDashboardSummary>('api/leads/dashboard-summary')
+        setLeadSummary(data)
+      } catch {
+        setLeadSummary(null)
+      }
+    })()
+  }, [])
+
   return (
     <div>
       <PageHeader
@@ -51,6 +67,62 @@ export function DashboardPage() {
           { key: 'export', label: 'Export Dashboard' },
         ]}
       />
+
+      <section className={styles.kpiGrid}>
+        <DashboardCard label="Total Leads" value={leadSummary?.totalLeads ?? 0} />
+        <DashboardCard label="New Leads" value={leadSummary?.newLeads ?? 0} />
+        <DashboardCard label="Qualified Leads" value={leadSummary?.qualifiedLeads ?? 0} />
+        <DashboardCard label="Converted Leads" value={leadSummary?.convertedLeads ?? 0} />
+        <DashboardCard label="Disqualified Leads" value={leadSummary?.disqualifiedLeads ?? 0} />
+        <DashboardCard label="Average Lead Score" value={leadSummary?.averageLeadScore ?? 0} />
+        <DashboardCard label="Hot Leads" value={leadSummary?.hotLeads ?? 0} />
+      </section>
+
+      <section className={styles.chartGrid}>
+        <article className={styles.chartCard}>
+          <p className={styles.sectionTitle}>Leads by Source</p>
+          <ResponsiveContainer width="100%" height={190}>
+            <BarChart data={leadSummary?.leadsBySource ?? []}>
+              <CartesianGrid strokeDasharray="2 2" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#0d9488" />
+            </BarChart>
+          </ResponsiveContainer>
+        </article>
+
+        <article className={styles.chartCard}>
+          <p className={styles.sectionTitle}>Leads by Status</p>
+          <ResponsiveContainer width="100%" height={190}>
+            <PieChart>
+              <Pie data={leadSummary?.leadsByStatus ?? []} dataKey="count" nameKey="name" outerRadius={70} fill="#7c3aed" />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </article>
+      </section>
+
+      <section className={styles.widgetGrid}>
+        <article className={styles.widgetCard}>
+          <p className={styles.sectionTitle}>Recent Leads</p>
+          <ul className={styles.widgetList}>
+            {(leadSummary?.recentLeads ?? []).length === 0 ? <li>No recent leads</li> : null}
+            {(leadSummary?.recentLeads ?? []).map((lead) => (
+              <li key={lead.id}>{lead.leadNumber} - {lead.topic}</li>
+            ))}
+          </ul>
+        </article>
+        <article className={styles.widgetCard}>
+          <p className={styles.sectionTitle}>Recently Converted Leads</p>
+          <ul className={styles.widgetList}>
+            {(leadSummary?.recentlyConvertedLeads ?? []).length === 0 ? <li>No recently converted leads</li> : null}
+            {(leadSummary?.recentlyConvertedLeads ?? []).map((lead) => (
+              <li key={lead.id}>{lead.leadNumber} - {lead.topic}</li>
+            ))}
+          </ul>
+        </article>
+      </section>
 
       <section className={styles.kpiGrid}>
         <DashboardCard label="Total Users" value={158} delta="+8.3% this month" />

@@ -201,3 +201,139 @@ export type AccountActivity = {
   followUpRequired: boolean
   followUpDate?: string
 }
+
+export type Lead = {
+  id: string
+  leadNumber: string
+  topic: string
+  firstName?: string
+  middleName?: string
+  lastName?: string
+  fullName?: string
+  companyName?: string
+  jobTitle?: string
+  email?: string
+  mobilePhone?: string
+  workPhone?: string
+  website?: string
+  leadSourceId?: string
+  leadSourceName?: string
+  leadStatusId: string
+  leadStatusName?: string
+  qualificationStatusId?: string
+  qualificationStatusName?: string
+  ratingId?: string
+  ratingName?: string
+  industryId?: string
+  industryName?: string
+  estimatedValue?: number
+  estimatedCloseDate?: string
+  score: number
+  scoreGrade?: string
+  assignedToUserId?: string
+  assignedToUserName?: string
+  assignedToTeamId?: string
+  assignedToTeamName?: string
+  convertedAccountId?: string
+  convertedAccountName?: string
+  convertedContactId?: string
+  convertedContactName?: string
+  convertedOpportunityId?: string
+  convertedAt?: string
+  convertedById?: string
+  convertedByName?: string
+  disqualifiedReasonId?: string
+  disqualifiedReasonName?: string
+  description?: string
+  notes?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerUserName?: string
+  ownerTeamId?: string
+  ownerTeamName?: string
+  createdAt: string
+}
+
+export type LeadActivity = {
+  id: string
+  leadId: string
+  leadTopic?: string
+  activityTypeId: string
+  activityTypeName?: string
+  subject: string
+  description?: string
+  activityDate: string
+  dueDate?: string
+  completedDate?: string
+  statusId: string
+  statusName?: string
+  priorityId?: string
+  priorityName?: string
+  assignedToUserId?: string
+  assignedToUserName?: string
+}
+
+export type LeadScoreRule = {
+  id: string
+  name: string
+  code: string
+  description?: string
+  ruleTypeId: string
+  ruleTypeName?: string
+  fieldName?: string
+  operator?: string
+  compareValue?: string
+  scoreValue: number
+  sortOrder: number
+  isActive: boolean
+}
+
+export type LeadTimelineItem = {
+  id: string
+  itemType: string
+  title: string
+  description?: string
+  occurredAt: string
+  status?: string
+  priority?: string
+  assignedToName?: string
+}
+
+export type LeadConversionResult = {
+  leadId: string
+  convertedAccountId: string
+  convertedAccountName?: string
+  convertedContactId: string
+  convertedContactName?: string
+  convertedOpportunityId?: string
+  opportunityMessage?: string
+}
+
+export type LeadDashboardGroup = {
+  name: string
+  count: number
+}
+
+export type LeadDashboardItem = {
+  id: string
+  leadNumber: string
+  topic: string
+  statusName?: string
+  score: number
+  createdAt: string
+  convertedAt?: string
+}
+
+export type LeadDashboardSummary = {
+  totalLeads: number
+  newLeads: number
+  qualifiedLeads: number
+  convertedLeads: number
+  disqualifiedLeads: number
+  averageLeadScore: number
+  hotLeads: number
+  leadsBySource: LeadDashboardGroup[]
+  leadsByStatus: LeadDashboardGroup[]
+  recentLeads: LeadDashboardItem[]
+  recentlyConvertedLeads: LeadDashboardItem[]
+}

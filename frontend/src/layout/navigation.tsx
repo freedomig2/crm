@@ -57,6 +57,7 @@ const parseCsv = (value: string | undefined): Set<string> | null => {
 const defaultEnabledGroups = new Set([
   'dashboard',
   'customers',
+  'sales',
   'administration',
   'security',
   'configuration',
@@ -65,8 +66,13 @@ const defaultEnabledGroups = new Set([
 
 const defaultEnabledItems = new Set([
   'dashboard',
+  'my-work',
+  'my-activities',
+  'my-open-tasks',
   'accounts',
   'contacts',
+  'leads',
+  'lead-score-rules',
   'account-activities',
   'relationships',
   'users',
@@ -129,7 +135,8 @@ export const navGroups: NavGroup[] = [
     icon: <DataPieRegular />,
     enabled: isGroupEnabled('sales'),
     items: [
-      { key: 'leads', label: 'Leads', to: '/sales/leads', icon: <PeopleRegular />, permission: 'Leads.View', enabled: isItemEnabled('leads') },
+      { key: 'leads', label: 'Leads', to: '/leads', icon: <PeopleRegular />, permission: 'Leads.View', enabled: isItemEnabled('leads') },
+      { key: 'lead-score-rules', label: 'Lead Score Rules', to: '/lead-score-rules', icon: <ChartMultipleRegular />, permission: 'LeadScoreRules.View', enabled: isItemEnabled('lead-score-rules') },
       { key: 'opportunities', label: 'Opportunities', to: '/sales/opportunities', icon: <DataPieRegular />, permission: 'Opportunities.View', enabled: isItemEnabled('opportunities') },
       { key: 'quotes', label: 'Quotes', to: '/sales/quotes', icon: <DocumentSearchRegular />, permission: 'Quotes.View', enabled: isItemEnabled('quotes') },
       { key: 'orders', label: 'Orders', to: '/sales/orders', icon: <ClipboardTaskRegular />, permission: 'Orders.View', enabled: isItemEnabled('orders') },

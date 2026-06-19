@@ -38,6 +38,9 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<AccountActivity> AccountActivities => Set<AccountActivity>();
     public DbSet<ContactCommunication> ContactCommunications => Set<ContactCommunication>();
     public DbSet<ContactInteraction> ContactInteractions => Set<ContactInteraction>();
+    public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<LeadActivity> LeadActivities => Set<LeadActivity>();
+    public DbSet<LeadScoreRule> LeadScoreRules => Set<LeadScoreRule>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -149,6 +152,120 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.ContactId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<Lead>()
+            .HasOne(x => x.LeadSource)
+            .WithMany()
+            .HasForeignKey(x => x.LeadSourceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.LeadStatus)
+            .WithMany()
+            .HasForeignKey(x => x.LeadStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.QualificationStatus)
+            .WithMany()
+            .HasForeignKey(x => x.QualificationStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.Rating)
+            .WithMany()
+            .HasForeignKey(x => x.RatingId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.Industry)
+            .WithMany()
+            .HasForeignKey(x => x.IndustryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.DisqualifiedReason)
+            .WithMany()
+            .HasForeignKey(x => x.DisqualifiedReasonId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.AssignedToTeam)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.ConvertedAccount)
+            .WithMany()
+            .HasForeignKey(x => x.ConvertedAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.ConvertedContact)
+            .WithMany()
+            .HasForeignKey(x => x.ConvertedContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Lead>()
+            .HasOne(x => x.ConvertedBy)
+            .WithMany()
+            .HasForeignKey(x => x.ConvertedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<LeadActivity>()
+            .HasOne(x => x.Lead)
+            .WithMany(x => x.Activities)
+            .HasForeignKey(x => x.LeadId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<LeadActivity>()
+            .HasOne(x => x.ActivityType)
+            .WithMany()
+            .HasForeignKey(x => x.ActivityTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<LeadActivity>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<LeadActivity>()
+            .HasOne(x => x.Priority)
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<LeadActivity>()
+            .HasOne(x => x.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<LeadScoreRule>()
+            .HasOne(x => x.RuleType)
+            .WithMany()
+            .HasForeignKey(x => x.RuleTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Entity<AppRole>().HasQueryFilter(x => !x.IsDeleted);
         builder.Entity<AppUser>().HasQueryFilter(x => !x.IsDeleted);
 
@@ -159,6 +276,8 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<LookupCategory>().HasIndex(x => x.Code).IsUnique();
         builder.Entity<LookupValue>().HasIndex(x => new { x.LookupCategoryId, x.Code }).IsUnique();
         builder.Entity<Contact>().HasIndex(x => x.ContactNumber).IsUnique();
+        builder.Entity<Lead>().HasIndex(x => x.LeadNumber).IsUnique();
+        builder.Entity<LeadScoreRule>().HasIndex(x => x.Code).IsUnique();
     }
 
     public override int SaveChanges()

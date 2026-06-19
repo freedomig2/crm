@@ -21,6 +21,7 @@ public static class SeedData
             "Roles.View", "Roles.Create", "Roles.Update", "Roles.Delete",
             "Teams.View", "Teams.Create", "Teams.Update", "Teams.Delete",
             "Departments.View", "Departments.Create", "Departments.Update", "Departments.Delete",
+            "Dashboard.View", "Activities.View", "Security.View", "Configuration.View",
             "Settings.View", "Settings.Update",
             "AuditLogs.View",
             "ReferenceData.View", "ReferenceData.Create", "ReferenceData.Update", "ReferenceData.Delete",
@@ -28,6 +29,9 @@ public static class SeedData
             "Contacts.View", "Contacts.Create", "Contacts.Update", "Contacts.Delete", "Contacts.SetPrimary",
             "ContactCommunications.View", "ContactCommunications.Create", "ContactCommunications.Update", "ContactCommunications.Delete",
             "ContactInteractions.View", "ContactInteractions.Create", "ContactInteractions.Update", "ContactInteractions.Delete",
+            "Leads.View", "Leads.Create", "Leads.Update", "Leads.Delete", "Leads.Assign", "Leads.Qualify", "Leads.Disqualify", "Leads.Convert", "Leads.Score", "Leads.ViewTimeline",
+            "LeadActivities.View", "LeadActivities.Create", "LeadActivities.Update", "LeadActivities.Delete", "LeadActivities.Complete",
+            "LeadScoreRules.View", "LeadScoreRules.Create", "LeadScoreRules.Update", "LeadScoreRules.Delete", "LeadScoreRules.Run",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -114,9 +118,59 @@ public static class SeedData
             await userManager.AddToRoleAsync(adminUser, adminRole.Name!);
         }
 
-        await EnsureLookupCategoryAsync(db, "Lead Source", "LEAD_SOURCE");
-        await EnsureLookupCategoryAsync(db, "Industry", "INDUSTRY");
-        await EnsureLookupCategoryAsync(db, "Priority", "PRIORITY");
+        await EnsureLookupCategoryAsync(db, "Lead Source", "LEAD_SOURCE", new[]
+        {
+            ("Website", "WEBSITE"), ("Referral", "REFERRAL"), ("Email Campaign", "EMAIL_CAMPAIGN"), ("Social Media", "SOCIAL_MEDIA"),
+            ("Event", "EVENT"), ("Phone Inquiry", "PHONE_INQUIRY"), ("Partner", "PARTNER"), ("Imported List", "IMPORTED_LIST"), ("Other", "OTHER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Lead Status", "LEAD_STATUS", new[]
+        {
+            ("New", "NEW"), ("Open", "OPEN"), ("Contacted", "CONTACTED"), ("Qualified", "QUALIFIED"), ("Disqualified", "DISQUALIFIED"), ("Converted", "CONVERTED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Lead Qualification Status", "LEAD_QUALIFICATION_STATUS", new[]
+        {
+            ("Unqualified", "UNQUALIFIED"), ("In Review", "IN_REVIEW"), ("Qualified", "QUALIFIED"), ("Disqualified", "DISQUALIFIED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Lead Rating", "LEAD_RATING", new[]
+        {
+            ("Hot", "HOT"), ("Warm", "WARM"), ("Cold", "COLD")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Lead Disqualification Reason", "LEAD_DISQUALIFICATION_REASON", new[]
+        {
+            ("No Budget", "NO_BUDGET"), ("Not Interested", "NOT_INTERESTED"), ("No Authority", "NO_AUTHORITY"), ("Duplicate", "DUPLICATE"),
+            ("Unable To Contact", "UNABLE_TO_CONTACT"), ("Invalid Data", "INVALID_DATA"), ("Competitor Selected", "COMPETITOR_SELECTED"), ("Other", "OTHER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Lead Score Rule Type", "LEAD_SCORE_RULE_TYPE", new[]
+        {
+            ("Field Completeness", "FIELD_COMPLETENESS"), ("Field Value", "FIELD_VALUE"), ("Activity", "ACTIVITY"), ("Source", "SOURCE"), ("Engagement", "ENGAGEMENT")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Industry", "INDUSTRY", new[]
+        {
+            ("Technology", "TECHNOLOGY"), ("Financial Services", "FINANCIAL_SERVICES"), ("Healthcare", "HEALTHCARE"), ("Manufacturing", "MANUFACTURING"),
+            ("Retail", "RETAIL"), ("Education", "EDUCATION"), ("Government", "GOVERNMENT"), ("Professional Services", "PROFESSIONAL_SERVICES"), ("Other", "OTHER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Priority", "PRIORITY", new[]
+        {
+            ("Low", "LOW"), ("Normal", "NORMAL"), ("High", "HIGH"), ("Urgent", "URGENT")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Activity Type", "ACTIVITY_TYPE", new[]
+        {
+            ("Phone Call", "PHONE_CALL"), ("Email", "EMAIL"), ("Meeting", "MEETING"), ("Task", "TASK"), ("Demo", "DEMO"), ("Follow-up", "FOLLOW_UP")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Activity Status", "ACTIVITY_STATUS", new[]
+        {
+            ("Open", "OPEN"), ("In Progress", "IN_PROGRESS"), ("Completed", "COMPLETED"), ("Cancelled", "CANCELLED"), ("Deferred", "DEFERRED")
+        });
+
         await EnsureLookupCategoryAsync(db, "Case Status", "CASE_STATUS");
         await EnsureLookupCategoryAsync(db, "Opportunity Stage", "OPPORTUNITY_STAGE");
 
@@ -174,6 +228,14 @@ public static class SeedData
         });
 
         await db.SaveChangesAsync();
+
+        await EnsureLeadScoreRuleAsync(db, "Email exists", "EMAIL_EXISTS", "FIELD_COMPLETENESS", "Email", "exists", null, 10, 10);
+        await EnsureLeadScoreRuleAsync(db, "Company name exists", "COMPANY_NAME_EXISTS", "FIELD_COMPLETENESS", "CompanyName", "exists", null, 10, 20);
+        await EnsureLeadScoreRuleAsync(db, "Estimated value over 10000", "ESTIMATED_VALUE_OVER_10000", "FIELD_VALUE", "EstimatedValue", "greater than", "10000", 20, 30);
+        await EnsureLeadScoreRuleAsync(db, "Referral source", "REFERRAL_SOURCE", "SOURCE", "LeadSource", "equals", "REFERRAL", 15, 40);
+        await EnsureLeadScoreRuleAsync(db, "Has completed activity", "HAS_COMPLETED_ACTIVITY", "ACTIVITY", "CompletedActivityCount", "greater than", "0", 10, 50);
+
+        await db.SaveChangesAsync();
     }
 
     private static async Task EnsureLookupCategoryAsync(AppDbContext db, string name, string code, IEnumerable<(string Name, string Code)>? values = null)
@@ -215,5 +277,45 @@ public static class SeedData
             });
             sortOrder += 10;
         }
+    }
+
+    private static async Task EnsureLeadScoreRuleAsync(
+        AppDbContext db,
+        string name,
+        string code,
+        string ruleTypeCode,
+        string? fieldName,
+        string? ruleOperator,
+        string? compareValue,
+        int scoreValue,
+        int sortOrder)
+    {
+        if (await db.LeadScoreRules.AnyAsync(x => x.Code == code))
+        {
+            return;
+        }
+
+        var ruleTypeId = await db.LookupValues
+            .Where(x => x.LookupCategory.Code == "LEAD_SCORE_RULE_TYPE" && x.Code == ruleTypeCode)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync();
+
+        if (!ruleTypeId.HasValue)
+        {
+            return;
+        }
+
+        db.LeadScoreRules.Add(new LeadScoreRule
+        {
+            Name = name,
+            Code = code,
+            RuleTypeId = ruleTypeId.Value,
+            FieldName = fieldName,
+            Operator = ruleOperator,
+            CompareValue = compareValue,
+            ScoreValue = scoreValue,
+            SortOrder = sortOrder,
+            IsActive = true
+        });
     }
 }

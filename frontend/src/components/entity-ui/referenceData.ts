@@ -24,6 +24,16 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     preferredtimezoneid: 'TIME_ZONE',
     communicationtypeid: 'COMMUNICATION_TYPE',
     interactiontypeid: 'INTERACTION_TYPE',
+    leadsourceid: 'LEAD_SOURCE',
+    leadstatusid: 'LEAD_STATUS',
+    qualificationstatusid: 'LEAD_QUALIFICATION_STATUS',
+    ratingid: 'LEAD_RATING',
+    industryid: 'INDUSTRY',
+    disqualifiedreasonid: 'LEAD_DISQUALIFICATION_REASON',
+    activitytypeid: 'ACTIVITY_TYPE',
+    statusid: 'ACTIVITY_STATUS',
+    priorityid: 'PRIORITY',
+    ruletypeid: 'LEAD_SCORE_RULE_TYPE',
   }
 
   return map[fieldKey.toLowerCase()] ?? null
