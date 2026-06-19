@@ -13,10 +13,12 @@ namespace backend.Controllers;
 public class AccountsController : ControllerBase
 {
     private readonly AppDbContext _dbContext;
+    private readonly INumberSequenceService _numberSequenceService;
 
-    public AccountsController(AppDbContext dbContext)
+    public AccountsController(AppDbContext dbContext, INumberSequenceService numberSequenceService)
     {
         _dbContext = dbContext;
+        _numberSequenceService = numberSequenceService;
     }
 
     [HttpGet]
@@ -114,7 +116,7 @@ public class AccountsController : ControllerBase
     {
         var item = new Account
         {
-            AccountNumber = dto.AccountNumber,
+            AccountNumber = await _numberSequenceService.GenerateNextAsync("ACCOUNT"),
             Name = dto.Name,
             LegalName = dto.LegalName,
             TradingName = dto.TradingName,
@@ -183,7 +185,11 @@ public class AccountsController : ControllerBase
             return NotFound();
         }
 
-        item.AccountNumber = dto.AccountNumber;
+        if (string.IsNullOrWhiteSpace(item.AccountNumber))
+        {
+            item.AccountNumber = await _numberSequenceService.GenerateNextAsync("ACCOUNT");
+        }
+
         item.Name = dto.Name;
         item.LegalName = dto.LegalName;
         item.TradingName = dto.TradingName;

@@ -1,4 +1,5 @@
 using backend.Entities;
+using backend.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,7 @@ public static class SeedData
             "Leads.View", "Leads.Create", "Leads.Update", "Leads.Delete", "Leads.Assign", "Leads.Qualify", "Leads.Disqualify", "Leads.Convert", "Leads.Score", "Leads.ViewTimeline",
             "LeadActivities.View", "LeadActivities.Create", "LeadActivities.Update", "LeadActivities.Delete", "LeadActivities.Complete",
             "LeadScoreRules.View", "LeadScoreRules.Create", "LeadScoreRules.Update", "LeadScoreRules.Delete", "LeadScoreRules.Run",
+            "NumberSequences.View", "NumberSequences.Create", "NumberSequences.Update", "NumberSequences.Delete", "NumberSequences.Preview", "NumberSequences.Reset",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -227,7 +229,22 @@ public static class SeedData
             ("Australian Eastern Time", "AUSTRALIAN_EASTERN_TIME")
         });
 
+        await EnsureLookupCategoryAsync(db, "Number Sequence Reset Frequency", "NUMBER_SEQUENCE_RESET_FREQUENCY", new[]
+        {
+            ("Never", "NEVER"), ("Daily", "DAILY"), ("Monthly", "MONTHLY"), ("Yearly", "YEARLY")
+        });
+
         await db.SaveChangesAsync();
+
+        await EnsureNumberSequenceAsync(db, "Account", "ACCOUNT", "ACC", false, "NEVER");
+        await EnsureNumberSequenceAsync(db, "Contact", "CONTACT", "CON", false, "NEVER");
+        await EnsureNumberSequenceAsync(db, "Lead", "LEAD", "LEAD", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Opportunity", "OPPORTUNITY", "OPP", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Quote", "QUOTE", "QTE", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Order", "ORDER", "ORD", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Invoice", "INVOICE", "INV", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Case", "CASE", "CAS", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Document", "DOCUMENT", "DOC", true, "YEARLY");
 
         await EnsureLeadScoreRuleAsync(db, "Email exists", "EMAIL_EXISTS", "FIELD_COMPLETENESS", "Email", "exists", null, 10, 10);
         await EnsureLeadScoreRuleAsync(db, "Company name exists", "COMPANY_NAME_EXISTS", "FIELD_COMPLETENESS", "CompanyName", "exists", null, 10, 20);
@@ -317,5 +334,41 @@ public static class SeedData
             SortOrder = sortOrder,
             IsActive = true
         });
+    }
+
+    private static async Task EnsureNumberSequenceAsync(
+        AppDbContext db,
+        string entityName,
+        string sequenceCode,
+        string prefix,
+        bool includeYear,
+        string resetFrequencyCode)
+    {
+        if (await db.NumberSequences.IgnoreQueryFilters().AnyAsync(x => x.SequenceCode == sequenceCode))
+        {
+            return;
+        }
+
+        var resetFrequencyId = await db.LookupValues
+            .Where(x => x.LookupCategory.Code == "NUMBER_SEQUENCE_RESET_FREQUENCY" && x.Code == resetFrequencyCode)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync();
+
+        var sequence = new NumberSequence
+        {
+            EntityName = entityName,
+            SequenceCode = sequenceCode,
+            Prefix = prefix,
+            Separator = "-",
+            CurrentNumber = 0,
+            NextNumber = 1,
+            MinimumDigits = 6,
+            ResetFrequencyId = resetFrequencyId,
+            IncludeYear = includeYear,
+            IsActive = true
+        };
+
+        NumberSequenceFormatter.RefreshFormatPreview(sequence, DateTime.UtcNow);
+        db.NumberSequences.Add(sequence);
     }
 }

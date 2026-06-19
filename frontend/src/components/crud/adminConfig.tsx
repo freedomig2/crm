@@ -25,6 +25,7 @@ export type EntityField = {
   kind: FieldKind
   required?: boolean
   options?: Array<{ value: string; label: string }>
+  readOnlyOnCreate?: boolean
   readOnlyOnEdit?: boolean
 }
 
@@ -48,6 +49,7 @@ export type EntityConfig<TItem extends { id: string }> = {
   mapUpdatePayload: (form: FormState, item: TItem) => unknown
   details: (item: TItem) => Array<{ label: string; value: string }>
   readOnly?: boolean
+  generatedNumber?: { fieldKey: string; sequenceCode: string }
 }
 
 export const settingDataTypeOptions = [
@@ -430,6 +432,7 @@ export const accountsConfig: EntityConfig<Account> = {
   createPath: '/crm/accounts/create',
   detailsPath: (id) => `/crm/accounts/${id}`,
   editPath: (id) => `/crm/accounts/${id}/edit`,
+  generatedNumber: { fieldKey: 'accountNumber', sequenceCode: 'ACCOUNT' },
   columns: [
     { key: 'accountNumber', label: 'Account #', sortable: true },
     { key: 'name', label: 'Name', sortable: true },
@@ -438,7 +441,7 @@ export const accountsConfig: EntityConfig<Account> = {
     { key: 'isActive', label: 'Status', sortable: true, render: (row) => statusCell(row.isActive ? 'Active' : 'Disabled') },
   ],
   fields: [
-    { key: 'accountNumber', label: 'Account Number', kind: 'text', required: true },
+    { key: 'accountNumber', label: 'Account Number', kind: 'text', required: true, readOnlyOnCreate: true, readOnlyOnEdit: true },
     { key: 'name', label: 'Name', kind: 'text', required: true },
     { key: 'legalName', label: 'Legal Name', kind: 'text' },
     { key: 'tradingName', label: 'Trading Name', kind: 'text' },

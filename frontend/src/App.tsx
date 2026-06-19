@@ -41,6 +41,7 @@ import { LeadDetailsPage } from './leads/LeadDetailsPage'
 import { LeadConversionPage } from './leads/LeadConversionPage'
 import { LeadTimelinePage } from './leads/LeadTimelinePage'
 import { LeadScoreRuleDetailsPage, LeadScoreRuleFormPage, LeadScoreRulesListPage } from './leads/LeadScoreRulesPages'
+import { NumberSequenceDetailsPage, NumberSequenceFormPage, NumberSequencesListPage } from './configuration/NumberSequencesPages'
 
 function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   const { id } = useParams()
@@ -189,7 +190,10 @@ function App() {
               <Route path="/security/password-policies" element={<SimpleStatePage title="Password Policies" subtitle="Configure enterprise-grade password complexity and expiry rules." />} />
               <Route path="/security/mfa-settings" element={<SimpleStatePage title="MFA Settings" subtitle="Enforce multi-factor authentication and authentication methods." />} />
 
-              <Route path="/configuration/number-sequences" element={<SimpleStatePage title="Number Sequences" subtitle="Configure numbering patterns for CRM documents and records." />} />
+              <Route path="/configuration/number-sequences" element={<NumberSequencesListPage />} />
+              <Route path="/configuration/number-sequences/create" element={<NumberSequenceFormPage mode="create" />} />
+              <Route path="/configuration/number-sequences/:id/edit" element={<NumberSequenceFormPage mode="edit" />} />
+              <Route path="/configuration/number-sequences/:id" element={<NumberSequenceDetailsPage />} />
 
               <Route path="/audit/data-changes" element={<SimpleStatePage title="Data Changes" subtitle="Track field-level data modifications across entities." />} />
               <Route path="/audit/security-events" element={<SimpleStatePage title="Security Events" subtitle="Review high-risk events and policy violations." />} />

@@ -289,7 +289,7 @@ export const navGroups: NavGroup[] = [
       { key: 'system-settings', label: 'System Settings', to: '/admin/system-settings', icon: <SettingsRegular />, permission: 'Configuration.View', enabled: isItemEnabled('system-settings') },
       { key: 'lookup-categories', label: 'Lookup Categories', to: '/admin/lookup-categories', icon: <BookDatabaseRegular />, permission: 'Configuration.View', enabled: isItemEnabled('lookup-categories') },
       { key: 'lookup-values', label: 'Lookup Values', to: '/admin/lookup-values', icon: <BookDatabaseRegular />, permission: 'Configuration.View', enabled: isItemEnabled('lookup-values') },
-      { key: 'number-sequences', label: 'Number Sequences', to: '/configuration/number-sequences', icon: <ClipboardTaskRegular />, permission: 'Configuration.View', enabled: isItemEnabled('number-sequences') },
+      { key: 'number-sequences', label: 'Number Sequences', to: '/configuration/number-sequences', icon: <ClipboardTaskRegular />, permission: 'NumberSequences.View', enabled: isItemEnabled('number-sequences') },
       { key: 'business-rules', label: 'Business Rules', to: '/configuration/business-rules', icon: <BranchRequestRegular />, permission: 'Configuration.View', enabled: isItemEnabled('business-rules') },
       { key: 'workflows', label: 'Workflows', to: '/configuration/workflows', icon: <BranchRequestRegular />, permission: 'Configuration.View', enabled: isItemEnabled('workflows') },
       { key: 'email-templates', label: 'Email Templates', to: '/configuration/email-templates', icon: <DocumentSearchRegular />, permission: 'Configuration.View', enabled: isItemEnabled('email-templates') },

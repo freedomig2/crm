@@ -33,7 +33,6 @@ public class AccountDto
 
 public class UpsertAccountRequestDto
 {
-    [Required]
     public string AccountNumber { get; set; } = string.Empty;
 
     [Required]
@@ -108,7 +107,6 @@ public class ContactDto
 
 public class UpsertContactRequestDto
 {
-    [Required]
     public string ContactNumber { get; set; } = string.Empty;
 
     [Required]

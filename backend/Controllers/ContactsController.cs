@@ -14,10 +14,12 @@ public class ContactsController : ControllerBase
 {
     private const string SetPrimaryPermission = "Contacts.SetPrimary";
     private readonly AppDbContext _dbContext;
+    private readonly INumberSequenceService _numberSequenceService;
 
-    public ContactsController(AppDbContext dbContext)
+    public ContactsController(AppDbContext dbContext, INumberSequenceService numberSequenceService)
     {
         _dbContext = dbContext;
+        _numberSequenceService = numberSequenceService;
     }
 
     [HttpGet]
@@ -91,12 +93,11 @@ public class ContactsController : ControllerBase
             return BadRequest("Account is required.");
         }
 
-        if (await _dbContext.Contacts.AnyAsync(x => x.ContactNumber == dto.ContactNumber.Trim()))
+        var contact = new Contact
         {
-            return BadRequest("Contact number already exists.");
-        }
-
-        var contact = new Contact { Id = Guid.NewGuid() };
+            Id = Guid.NewGuid(),
+            ContactNumber = await _numberSequenceService.GenerateNextAsync("CONTACT")
+        };
         await ApplyContactValuesAsync(contact, dto);
         contact.IsPrimaryContact = false;
 
@@ -133,12 +134,11 @@ public class ContactsController : ControllerBase
             return BadRequest("Account is required.");
         }
 
-        if (await _dbContext.Contacts.AnyAsync(x => x.Id != id && x.ContactNumber == dto.ContactNumber.Trim()))
-        {
-            return BadRequest("Contact number already exists.");
-        }
-
         await ApplyContactValuesAsync(contact, dto);
+        if (string.IsNullOrWhiteSpace(contact.ContactNumber))
+        {
+            contact.ContactNumber = await _numberSequenceService.GenerateNextAsync("CONTACT");
+        }
 
         if (dto.IsPrimaryContact)
         {
@@ -193,7 +193,6 @@ public class ContactsController : ControllerBase
 
     private async Task ApplyContactValuesAsync(Contact contact, UpsertContactRequestDto dto)
     {
-        contact.ContactNumber = dto.ContactNumber.Trim();
         contact.AccountId = dto.AccountId;
         contact.ContactRoleId = dto.ContactRoleId;
         contact.SalutationLookupId = dto.SalutationLookupId;

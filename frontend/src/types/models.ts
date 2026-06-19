@@ -32,6 +32,33 @@ export type AuditLog = { id: string; entityName: string; entityId: string; actio
 export type LookupCategory = { id: string; name: string; code: string; description?: string; isActive: boolean }
 export type LookupValue = { id: string; lookupCategoryId: string; name: string; code: string; sortOrder: number; isDefault: boolean; isActive: boolean }
 
+export type NumberSequence = {
+  id: string
+  entityName: string
+  sequenceCode: string
+  prefix: string
+  suffix?: string
+  separator: string
+  currentNumber: number
+  nextNumber: number
+  minimumDigits: number
+  resetFrequencyId?: string
+  resetFrequencyName?: string
+  lastResetDate?: string
+  includeYear: boolean
+  includeMonth: boolean
+  includeDay: boolean
+  formatPreview?: string
+  description?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type NumberSequencePreview = {
+  preview: string
+}
+
 export type Account = {
   id: string
   accountNumber: string

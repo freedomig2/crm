@@ -30,6 +30,7 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<ILeadScoringService, LeadScoringService>();
 builder.Services.AddScoped<ILeadConversionService, LeadConversionService>();
 builder.Services.AddScoped<IOpportunityConversionAdapter, NoOpOpportunityConversionAdapter>();
+builder.Services.AddScoped<INumberSequenceService, NumberSequenceService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

@@ -50,6 +50,7 @@ export function DenseDataGrid<T extends { id: string }>({
   onEdit,
   onView,
   onDelete,
+  customActions,
   emptyMessage,
 }: {
   rows: T[]
@@ -67,6 +68,7 @@ export function DenseDataGrid<T extends { id: string }>({
   onEdit?: (row: T) => void
   onView?: (row: T) => void
   onDelete?: (row: T) => void
+  customActions?: Array<{ key: string; label: string; onClick: (row: T) => void; disabled?: (row: T) => boolean }>
   emptyMessage?: string
 }) {
   const [search, setSearch] = useState('')
@@ -309,13 +311,18 @@ export function DenseDataGrid<T extends { id: string }>({
                             size="small"
                             appearance="subtle"
                             icon={<MoreHorizontalRegular />}
-                            disabled={!onEdit && !onView && !onDelete}
+                            disabled={!onEdit && !onView && !onDelete && !customActions?.length}
                           />
                         </MenuTrigger>
                         <MenuPopover>
                           <MenuList>
                             {onEdit ? <MenuItem onClick={() => onEdit(row)}>Edit</MenuItem> : null}
                             {onView ? <MenuItem onClick={() => onView(row)}>View Details</MenuItem> : null}
+                            {customActions?.map((action) => (
+                              <MenuItem key={action.key} onClick={() => action.onClick(row)} disabled={action.disabled?.(row)}>
+                                {action.label}
+                              </MenuItem>
+                            ))}
                             {onDelete ? <MenuItem onClick={() => onDelete(row)}>Delete</MenuItem> : null}
                           </MenuList>
                         </MenuPopover>

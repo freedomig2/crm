@@ -57,7 +57,6 @@ public class LeadDto
 
 public class UpsertLeadRequestDto
 {
-    [Required]
     public string LeadNumber { get; set; } = string.Empty;
 
     [Required]

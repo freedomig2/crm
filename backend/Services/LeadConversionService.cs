@@ -12,15 +12,18 @@ public class LeadConversionService : ILeadConversionService
     private readonly AppDbContext _dbContext;
     private readonly ICurrentUserContext _currentUserContext;
     private readonly IOpportunityConversionAdapter _opportunityConversionAdapter;
+    private readonly INumberSequenceService _numberSequenceService;
 
     public LeadConversionService(
         AppDbContext dbContext,
         ICurrentUserContext currentUserContext,
-        IOpportunityConversionAdapter opportunityConversionAdapter)
+        IOpportunityConversionAdapter opportunityConversionAdapter,
+        INumberSequenceService numberSequenceService)
     {
         _dbContext = dbContext;
         _currentUserContext = currentUserContext;
         _opportunityConversionAdapter = opportunityConversionAdapter;
+        _numberSequenceService = numberSequenceService;
     }
 
     public async Task<LeadConversionResultDto?> ConvertAsync(Guid leadId, LeadConversionRequestDto request, CancellationToken cancellationToken = default)
@@ -40,7 +43,7 @@ public class LeadConversionService : ILeadConversionService
         EnsureExactlyOneContactOption(request);
 
         var account = request.CreateAccount
-            ? CreateAccountFromLead(lead)
+            ? await CreateAccountFromLeadAsync(lead)
             : await _dbContext.Accounts.FirstOrDefaultAsync(x => x.Id == request.ExistingAccountId!.Value, cancellationToken)
                 ?? throw new InvalidOperationException("Existing account could not be found.");
 
@@ -50,7 +53,7 @@ public class LeadConversionService : ILeadConversionService
         }
 
         var contact = request.CreateContact
-            ? CreateContactFromLead(lead, account.Id)
+            ? await CreateContactFromLeadAsync(lead, account.Id)
             : await _dbContext.Contacts.FirstOrDefaultAsync(x => x.Id == request.ExistingContactId!.Value, cancellationToken)
                 ?? throw new InvalidOperationException("Existing contact could not be found.");
 
@@ -149,12 +152,12 @@ public class LeadConversionService : ILeadConversionService
         }
     }
 
-    private static Account CreateAccountFromLead(Lead lead)
+    private async Task<Account> CreateAccountFromLeadAsync(Lead lead)
     {
         return new Account
         {
             Id = Guid.NewGuid(),
-            AccountNumber = GenerateNumber("ACC"),
+            AccountNumber = await _numberSequenceService.GenerateNextAsync("ACCOUNT"),
             Name = FirstNonBlank(lead.CompanyName, lead.FullName, lead.Topic) ?? "Converted Lead",
             Website = TrimToNull(lead.Website),
             MainPhone = TrimToNull(lead.WorkPhone) ?? TrimToNull(lead.MobilePhone),
@@ -167,7 +170,7 @@ public class LeadConversionService : ILeadConversionService
         };
     }
 
-    private static Contact CreateContactFromLead(Lead lead, Guid accountId)
+    private async Task<Contact> CreateContactFromLeadAsync(Lead lead, Guid accountId)
     {
         var firstName = TrimToNull(lead.FirstName) ?? "Converted";
         var lastName = TrimToNull(lead.LastName) ?? "Lead";
@@ -176,7 +179,7 @@ public class LeadConversionService : ILeadConversionService
         return new Contact
         {
             Id = Guid.NewGuid(),
-            ContactNumber = GenerateNumber("CON"),
+            ContactNumber = await _numberSequenceService.GenerateNextAsync("CONTACT"),
             AccountId = accountId,
             FirstName = firstName,
             MiddleName = TrimToNull(lead.MiddleName),
@@ -198,11 +201,6 @@ public class LeadConversionService : ILeadConversionService
             .Where(x => x.LookupCategory.Code == categoryCode && x.Code == valueCode)
             .Select(x => (Guid?)x.Id)
             .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    private static string GenerateNumber(string prefix)
-    {
-        return $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Random.Shared.Next(100, 999)}";
     }
 
     private static string? FirstNonBlank(params string?[] values)

@@ -34,6 +34,7 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     statusid: 'ACTIVITY_STATUS',
     priorityid: 'PRIORITY',
     ruletypeid: 'LEAD_SCORE_RULE_TYPE',
+    resetfrequencyid: 'NUMBER_SEQUENCE_RESET_FREQUENCY',
   }
 
   return map[fieldKey.toLowerCase()] ?? null

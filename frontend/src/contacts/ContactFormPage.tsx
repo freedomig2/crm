@@ -4,6 +4,7 @@ import { PersonCallRegular } from '@fluentui/react-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { loadNumberSequencePreview } from '../configuration/numberSequenceUtils'
 import {
   EntityHeader,
   EntityPageLayout,
@@ -44,6 +45,29 @@ export function ContactFormPage({ mode }: { mode: 'create' | 'edit' }) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
+    if (isEdit) {
+      return
+    }
+
+    let active = true
+    void loadNumberSequencePreview('CONTACT')
+      .then((preview) => {
+        if (active) {
+          setForm((current) => ({ ...current, contactNumber: preview || 'Generated on save' }))
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setForm((current) => ({ ...current, contactNumber: 'Generated on save' }))
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [isEdit])
+
+  useEffect(() => {
     if (!isEdit || !id) {
       return
     }
@@ -72,7 +96,6 @@ export function ContactFormPage({ mode }: { mode: 'create' | 'edit' }) {
 
   const validate = () => {
     const next: Record<string, string> = {}
-    if (!form.contactNumber.trim()) next.contactNumber = 'Contact number is required.'
     if (!form.accountId.trim()) next.accountId = 'Account is required.'
     if (!form.firstName.trim()) next.firstName = 'First name is required.'
     if (!form.lastName.trim()) next.lastName = 'Last name is required.'
@@ -109,14 +132,14 @@ export function ContactFormPage({ mode }: { mode: 'create' | 'edit' }) {
     }
   }
 
-  const renderText = (key: keyof ContactFormState, label: string, required?: boolean, type: 'text' | 'date' | 'email' = 'text') => (
+  const renderText = (key: keyof ContactFormState, label: string, required?: boolean, type: 'text' | 'date' | 'email' = 'text', readOnly?: boolean) => (
     <Field label={label} required={required} validationMessage={fieldErrors[String(key)]}>
       <Input
         size="small"
         type={type}
         value={String(form[key] ?? '')}
         onChange={(_, data) => setValue(key, data.value as ContactFormState[typeof key])}
-        readOnly={!canSave}
+        readOnly={readOnly || !canSave}
       />
     </Field>
   )
@@ -177,7 +200,7 @@ export function ContactFormPage({ mode }: { mode: 'create' | 'edit' }) {
       {!loading && activeTab === 'general' ? (
         <>
           <FormSectionCard title="General">
-            {renderText('contactNumber', 'Contact Number', true)}
+            {renderText('contactNumber', 'Contact Number', false, 'text', true)}
             {renderLookup('salutationLookupId', 'Salutation')}
             {renderText('firstName', 'First Name', true)}
             {renderText('middleName', 'Middle Name')}

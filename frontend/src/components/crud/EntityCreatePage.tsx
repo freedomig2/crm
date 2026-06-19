@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Dropdown, Field, Input, Option, Switch, Textarea } from '@fluentui/react-components'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../api/client'
@@ -25,6 +25,7 @@ import {
   wideField,
 } from '../entity-ui/entityMeta'
 import designStyles from '../entity-ui/EntityDesign.module.css'
+import { loadNumberSequencePreview } from '../../configuration/numberSequenceUtils'
 
 export function EntityCreatePage<TItem extends { id: string }>({
   config,
@@ -47,10 +48,35 @@ export function EntityCreatePage<TItem extends { id: string }>({
   const pageTitle = useMemo(() => getPageTitle(config.title, 'create'), [config.title])
   const entityIcon = useMemo(() => getEntityIcon(config.key), [config.key])
 
+  useEffect(() => {
+    const generatedNumber = config.generatedNumber
+    if (!generatedNumber) {
+      return
+    }
+
+    let active = true
+    void loadNumberSequencePreview(generatedNumber.sequenceCode)
+      .then((preview) => {
+        if (active) {
+          setForm((current) => ({ ...current, [generatedNumber.fieldKey]: preview || 'Generated on save' }))
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setForm((current) => ({ ...current, [generatedNumber.fieldKey]: 'Generated on save' }))
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [config.generatedNumber])
+
   const renderField = (field: EntityField) => {
     const value = form[field.key]
     const isWide = wideField(field.key)
     const label = friendlyLabel(field)
+    const isReadOnly = Boolean(field.readOnlyOnCreate)
 
     return (
       <Field
@@ -64,6 +90,7 @@ export function EntityCreatePage<TItem extends { id: string }>({
           <Switch
             checked={Boolean(value)}
             onChange={(_, data) => setForm((current) => ({ ...current, [field.key]: Boolean(data.checked) }))}
+            disabled={isReadOnly}
           />
         ) : null}
 
@@ -73,6 +100,7 @@ export function EntityCreatePage<TItem extends { id: string }>({
             selectedOptions={[String(value ?? '')]}
             value={field.options?.find((option) => option.value === String(value ?? ''))?.label ?? ''}
             onOptionSelect={(_, data) => setForm((current) => ({ ...current, [field.key]: data.optionValue ?? '' }))}
+            disabled={isReadOnly}
           >
             {(field.options ?? []).map((option) => (
               <Option key={option.value} value={option.value} text={option.label}>
@@ -86,6 +114,7 @@ export function EntityCreatePage<TItem extends { id: string }>({
           <LookupCombobox
             fieldKey={field.key}
             value={String(value ?? '')}
+            disabled={isReadOnly}
             onChange={(nextValue) => setForm((current) => ({ ...current, [field.key]: nextValue }))}
           />
         ) : null}
@@ -93,6 +122,7 @@ export function EntityCreatePage<TItem extends { id: string }>({
         {field.kind !== 'select' && field.kind !== 'checkbox' && !isLookupLikeField(field.key) && (field.kind === 'textarea' || isMultilineField(field.key)) ? (
           <Textarea
             value={String(value ?? '')}
+            readOnly={isReadOnly}
             onChange={(_, data) => setForm((current) => ({ ...current, [field.key]: data.value }))}
           />
         ) : null}
@@ -118,6 +148,7 @@ export function EntityCreatePage<TItem extends { id: string }>({
                 [field.key]: field.kind === 'number' ? Number(data.value || 0) : data.value,
               }))
             }
+            readOnly={isReadOnly}
           />
         ) : null}
       </Field>

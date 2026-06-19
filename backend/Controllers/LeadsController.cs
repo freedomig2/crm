@@ -17,17 +17,20 @@ public class LeadsController : ControllerBase
     private readonly AppDbContext _dbContext;
     private readonly ILeadScoringService _leadScoringService;
     private readonly ILeadConversionService _leadConversionService;
+    private readonly INumberSequenceService _numberSequenceService;
     private readonly ICurrentUserContext _currentUserContext;
 
     public LeadsController(
         AppDbContext dbContext,
         ILeadScoringService leadScoringService,
         ILeadConversionService leadConversionService,
+        INumberSequenceService numberSequenceService,
         ICurrentUserContext currentUserContext)
     {
         _dbContext = dbContext;
         _leadScoringService = leadScoringService;
         _leadConversionService = leadConversionService;
+        _numberSequenceService = numberSequenceService;
         _currentUserContext = currentUserContext;
     }
 
@@ -201,11 +204,6 @@ public class LeadsController : ControllerBase
     [HasPermission("Leads.Create")]
     public async Task<ActionResult<LeadDto>> CreateLead(UpsertLeadRequestDto dto)
     {
-        if (await _dbContext.Leads.AnyAsync(x => x.LeadNumber == dto.LeadNumber.Trim()))
-        {
-            return BadRequest("Lead number already exists.");
-        }
-
         var statusId = await ResolveLeadStatusIdAsync(dto.LeadStatusId, "NEW");
         if (!statusId.HasValue)
         {
@@ -221,6 +219,7 @@ public class LeadsController : ControllerBase
         var lead = new Lead
         {
             Id = Guid.NewGuid(),
+            LeadNumber = await _numberSequenceService.GenerateNextAsync("LEAD"),
             LeadStatusId = statusId.Value
         };
 
@@ -243,11 +242,6 @@ public class LeadsController : ControllerBase
             return NotFound();
         }
 
-        if (await _dbContext.Leads.AnyAsync(x => x.Id != id && x.LeadNumber == dto.LeadNumber.Trim()))
-        {
-            return BadRequest("Lead number already exists.");
-        }
-
         var statusId = await ResolveLeadStatusIdAsync(dto.LeadStatusId, "NEW");
         if (!statusId.HasValue)
         {
@@ -261,6 +255,11 @@ public class LeadsController : ControllerBase
         }
 
         ApplyLeadValues(lead, dto, statusId.Value);
+        if (string.IsNullOrWhiteSpace(lead.LeadNumber))
+        {
+            lead.LeadNumber = await _numberSequenceService.GenerateNextAsync("LEAD");
+        }
+
         await _leadScoringService.ApplyScoreAsync(lead);
         await _dbContext.SaveChangesAsync();
         return NoContent();
@@ -543,7 +542,6 @@ public class LeadsController : ControllerBase
 
     private static void ApplyLeadValues(Lead lead, UpsertLeadRequestDto dto, Guid leadStatusId)
     {
-        lead.LeadNumber = dto.LeadNumber.Trim();
         lead.Topic = dto.Topic.Trim();
         lead.FirstName = TrimToNull(dto.FirstName);
         lead.MiddleName = TrimToNull(dto.MiddleName);

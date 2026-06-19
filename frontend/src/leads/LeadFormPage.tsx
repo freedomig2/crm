@@ -4,6 +4,7 @@ import { PeopleRegular } from '@fluentui/react-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { loadNumberSequencePreview } from '../configuration/numberSequenceUtils'
 import { loadLookupOptionsByCategoryCode } from '../components/entity-ui/referenceData'
 import {
   EntityHeader,
@@ -43,6 +44,29 @@ export function LeadFormPage({ mode }: { mode: 'create' | 'edit' }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (isEdit) {
+      return
+    }
+
+    let active = true
+    void loadNumberSequencePreview('LEAD')
+      .then((preview) => {
+        if (active) {
+          setForm((current) => ({ ...current, leadNumber: preview || 'Generated on save' }))
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setForm((current) => ({ ...current, leadNumber: 'Generated on save' }))
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [isEdit])
 
   useEffect(() => {
     if (isEdit || form.leadStatusId) {
@@ -87,7 +111,6 @@ export function LeadFormPage({ mode }: { mode: 'create' | 'edit' }) {
 
   const validate = () => {
     const next: Record<string, string> = {}
-    if (!form.leadNumber.trim()) next.leadNumber = 'Lead number is required.'
     if (!form.topic.trim()) next.topic = 'Topic is required.'
     if (!form.leadStatusId.trim()) next.leadStatusId = 'Status is required.'
     setFieldErrors(next)
@@ -122,14 +145,14 @@ export function LeadFormPage({ mode }: { mode: 'create' | 'edit' }) {
     }
   }
 
-  const renderText = (key: keyof LeadFormState, label: string, required?: boolean, type: 'text' | 'date' | 'email' | 'number' | 'url' = 'text') => (
+  const renderText = (key: keyof LeadFormState, label: string, required?: boolean, type: 'text' | 'date' | 'email' | 'number' | 'url' = 'text', readOnly?: boolean) => (
     <Field label={label} required={required} validationMessage={fieldErrors[String(key)]}>
       <Input
         size="small"
         type={type}
         value={String(form[key] ?? '')}
         onChange={(_, data) => setValue(key, data.value as LeadFormState[typeof key])}
-        readOnly={!canSave}
+        readOnly={readOnly || !canSave}
       />
     </Field>
   )
@@ -190,7 +213,7 @@ export function LeadFormPage({ mode }: { mode: 'create' | 'edit' }) {
       {!loading && activeTab === 'general' ? (
         <>
           <FormSectionCard title="General Information">
-            {renderText('leadNumber', 'Lead Number', true)}
+            {renderText('leadNumber', 'Lead Number', false, 'text', true)}
             {renderText('topic', 'Topic', true)}
             {renderLookup('leadSourceId', 'Lead Source')}
             {renderLookup('leadStatusId', 'Status', true)}

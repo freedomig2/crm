@@ -41,6 +41,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<LeadActivity> LeadActivities => Set<LeadActivity>();
     public DbSet<LeadScoreRule> LeadScoreRules => Set<LeadScoreRule>();
+    public DbSet<NumberSequence> NumberSequences => Set<NumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -266,6 +267,24 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.RuleTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<NumberSequence>()
+            .HasOne(x => x.ResetFrequency)
+            .WithMany()
+            .HasForeignKey(x => x.ResetFrequencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<NumberSequence>(entity =>
+        {
+            entity.Property(x => x.Separator).HasDefaultValue("-");
+            entity.Property(x => x.CurrentNumber).HasDefaultValue(0L);
+            entity.Property(x => x.NextNumber).HasDefaultValue(1L);
+            entity.Property(x => x.MinimumDigits).HasDefaultValue(6);
+            entity.Property(x => x.IncludeYear).HasDefaultValue(false);
+            entity.Property(x => x.IncludeMonth).HasDefaultValue(false);
+            entity.Property(x => x.IncludeDay).HasDefaultValue(false);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
         builder.Entity<AppRole>().HasQueryFilter(x => !x.IsDeleted);
         builder.Entity<AppUser>().HasQueryFilter(x => !x.IsDeleted);
 
@@ -278,6 +297,7 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Contact>().HasIndex(x => x.ContactNumber).IsUnique();
         builder.Entity<Lead>().HasIndex(x => x.LeadNumber).IsUnique();
         builder.Entity<LeadScoreRule>().HasIndex(x => x.Code).IsUnique();
+        builder.Entity<NumberSequence>().HasIndex(x => x.SequenceCode).IsUnique();
     }
 
     public override int SaveChanges()
