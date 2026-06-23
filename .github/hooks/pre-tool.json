@@ -1,0 +1,17 @@
+{
+  "description": "Balanced safety gate before tool execution",
+  "rules": [
+    {
+      "id": "block-destructive-git",
+      "match": "git\\s+reset\\s+--hard|git\\s+checkout\\s+--",
+      "action": "block",
+      "message": "Blocked destructive git command. Use a non-destructive alternative unless the user explicitly requested this command."
+    },
+    {
+      "id": "block-recursive-delete",
+      "match": "rm\\s+-rf|Remove-Item\\s+.*-Recurse\\s+.*-Force",
+      "action": "block",
+      "message": "Blocked recursive force delete. Only run destructive deletion when explicitly requested by the user."
+    }
+  ]
+}

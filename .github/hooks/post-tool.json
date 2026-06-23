@@ -1,0 +1,30 @@
+{
+  "description": "Hard completion gate reminders after code edits",
+  "rules": [
+    {
+      "id": "frontend-quality-gate",
+      "whenPathsMatch": [
+        "frontend/**"
+      ],
+      "action": "require",
+      "message": "Frontend files changed. Run: npm --prefix frontend run lint && npm --prefix frontend run build before declaring completion."
+    },
+    {
+      "id": "backend-quality-gate",
+      "whenPathsMatch": [
+        "backend/**"
+      ],
+      "action": "require",
+      "message": "Backend files changed. Run: dotnet build backend/backend.csproj before declaring completion."
+    },
+    {
+      "id": "tests-gate",
+      "whenPathsMatch": [
+        "backend/**",
+        "frontend/**"
+      ],
+      "action": "require",
+      "message": "Run relevant tests when configured; if none are configured, explicitly state that in the completion summary."
+    }
+  ]
+}
