@@ -13,10 +13,12 @@ import { useState } from 'react'
 import { FluentProvider, webDarkTheme, webLightTheme } from '@fluentui/react-components'
 import './index.css'
 import {
+  activitiesConfig,
   accountActivitiesConfig,
   accountAddressesConfig,
   accountRelationshipsConfig,
   accountsConfig,
+  documentsConfig,
   auditLogsConfig,
   casesConfig,
   customerProfilesConfig,
@@ -66,6 +68,8 @@ import { OrderLinesPage } from './sales/OrderLinesPage'
 import { QuoteLinesPage } from './sales/QuoteLinesPage'
 import { InvoiceLinesPage } from './sales/InvoiceLinesPage'
 import { CaseCommentsPage } from './service/CaseCommentsPage'
+import { ActivityCommentsPage } from './activities/ActivityCommentsPage'
+import { DocumentVersionsPage } from './documents/DocumentVersionsPage'
 
 function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   const { id } = useParams()
@@ -270,6 +274,18 @@ function App() {
               <Route path="/service/cases/:id/edit" element={<EntityEditPage config={casesConfig} />} />
               <Route path="/service/cases/:id" element={<EntityDetailsPage config={casesConfig} />} />
               <Route path="/service/cases/:id/comments" element={<CaseCommentsPage />} />
+
+              <Route path="/activities/tasks" element={<EntityListPage config={activitiesConfig} title={activitiesConfig.title} subtitle={activitiesConfig.subtitle} endpoint={activitiesConfig.endpoint} columns={activitiesConfig.columns} listPath={activitiesConfig.listPath} createPath={activitiesConfig.createPath} detailsPath={activitiesConfig.detailsPath} editPath={activitiesConfig.editPath} permissions={activitiesConfig.permissions} />} />
+              <Route path="/activities/tasks/create" element={<EntityCreatePage config={activitiesConfig} />} />
+              <Route path="/activities/tasks/:id/edit" element={<EntityEditPage config={activitiesConfig} />} />
+              <Route path="/activities/tasks/:id" element={<EntityDetailsPage config={activitiesConfig} />} />
+              <Route path="/activities/tasks/:id/comments" element={<ActivityCommentsPage />} />
+
+              <Route path="/documents" element={<EntityListPage config={documentsConfig} title={documentsConfig.title} subtitle={documentsConfig.subtitle} endpoint={documentsConfig.endpoint} columns={documentsConfig.columns} listPath={documentsConfig.listPath} createPath={documentsConfig.createPath} detailsPath={documentsConfig.detailsPath} editPath={documentsConfig.editPath} permissions={documentsConfig.permissions} />} />
+              <Route path="/documents/create" element={<EntityCreatePage config={documentsConfig} />} />
+              <Route path="/documents/:id/edit" element={<EntityEditPage config={documentsConfig} />} />
+              <Route path="/documents/:id" element={<EntityDetailsPage config={documentsConfig} />} />
+              <Route path="/documents/:id/versions" element={<DocumentVersionsPage />} />
 
               <Route path="/crm/account-addresses" element={<EntityListPage config={accountAddressesConfig} title={accountAddressesConfig.title} subtitle={accountAddressesConfig.subtitle} endpoint={accountAddressesConfig.endpoint} columns={accountAddressesConfig.columns} listPath={accountAddressesConfig.listPath} createPath={accountAddressesConfig.createPath} detailsPath={accountAddressesConfig.detailsPath} editPath={accountAddressesConfig.editPath} permissions={accountAddressesConfig.permissions} />} />
               <Route path="/crm/account-addresses/create" element={<EntityCreatePage config={accountAddressesConfig} />} />

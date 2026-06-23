@@ -54,6 +54,7 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     disqualifiedreasonid: 'LEAD_DISQUALIFICATION_REASON',
     activitytypeid: 'ACTIVITY_TYPE',
     statusid: 'ACTIVITY_STATUS',
+    outcomeid: 'ACTIVITY_OUTCOME',
     priorityid: 'PRIORITY',
     ruletypeid: 'LEAD_SCORE_RULE_TYPE',
     resetfrequencyid: 'NUMBER_SEQUENCE_RESET_FREQUENCY',
@@ -63,6 +64,8 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     producttypeid: 'PRODUCT_TYPE',
     productstatusid: 'PRODUCT_STATUS',
     discounttypeid: 'DISCOUNT_TYPE',
+    documentcategoryid: 'DOCUMENT_CATEGORY',
+    documentstatusid: 'DOCUMENT_STATUS',
   }
 
   return map[fieldKey.toLowerCase()] ?? null
@@ -91,6 +94,14 @@ const endpointForFieldKey = (fieldKey: string): string => {
 
   if (fieldKey.includes('lead')) {
     return 'api/leads'
+  }
+
+  if (fieldKey.includes('opportunity')) {
+    return 'api/opportunities'
+  }
+
+  if (fieldKey.includes('case')) {
+    return 'api/cases'
   }
 
   if (fieldKey.includes('competitor')) {

@@ -67,6 +67,10 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<ServiceCase> ServiceCases => Set<ServiceCase>();
     public DbSet<CaseComment> CaseComments => Set<CaseComment>();
     public DbSet<CaseActivity> CaseActivities => Set<CaseActivity>();
+    public DbSet<Activity> Activities => Set<Activity>();
+    public DbSet<ActivityComment> ActivityComments => Set<ActivityComment>();
+    public DbSet<Document> Documents => Set<Document>();
+    public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -1077,6 +1081,163 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.AssignedToUserId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Entity<Activity>()
+            .HasOne(x => x.ActivityType)
+            .WithMany()
+            .HasForeignKey(x => x.ActivityTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Priority)
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Lead)
+            .WithMany()
+            .HasForeignKey(x => x.LeadId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Opportunity)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Case)
+            .WithMany()
+            .HasForeignKey(x => x.CaseId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.Outcome)
+            .WithMany()
+            .HasForeignKey(x => x.OutcomeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Activity>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Activity>(entity =>
+        {
+            entity.Property(x => x.IsPrivate).HasDefaultValue(false);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+            entity.Property(x => x.ActivityDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        builder.Entity<ActivityComment>()
+            .HasOne(x => x.Activity)
+            .WithMany(x => x.Comments)
+            .HasForeignKey(x => x.ActivityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ActivityComment>(entity =>
+        {
+            entity.Property(x => x.IsInternal).HasDefaultValue(false);
+        });
+
+        builder.Entity<Document>()
+            .HasOne(x => x.DocumentCategory)
+            .WithMany()
+            .HasForeignKey(x => x.DocumentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.DocumentStatus)
+            .WithMany()
+            .HasForeignKey(x => x.DocumentStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.Lead)
+            .WithMany()
+            .HasForeignKey(x => x.LeadId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.Opportunity)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.Case)
+            .WithMany()
+            .HasForeignKey(x => x.CaseId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Document>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Document>(entity =>
+        {
+            entity.Property(x => x.IsConfidential).HasDefaultValue(false);
+            entity.Property(x => x.CurrentVersion).HasDefaultValue(1);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<DocumentVersion>()
+            .HasOne(x => x.Document)
+            .WithMany(x => x.Versions)
+            .HasForeignKey(x => x.DocumentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Entity<NumberSequence>()
             .HasOne(x => x.ResetFrequency)
             .WithMany()
@@ -1158,6 +1319,29 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<ServiceCase>().HasIndex(x => x.DueAt);
         builder.Entity<CaseComment>().HasIndex(x => new { x.CaseId, x.CreatedAt });
         builder.Entity<CaseActivity>().HasIndex(x => new { x.CaseId, x.ActivityDate });
+        builder.Entity<Activity>().HasIndex(x => x.ActivityNumber).IsUnique();
+        builder.Entity<Activity>().HasIndex(x => x.ActivityTypeId);
+        builder.Entity<Activity>().HasIndex(x => x.StatusId);
+        builder.Entity<Activity>().HasIndex(x => x.ActivityDate);
+        builder.Entity<Activity>().HasIndex(x => x.AssignedToUserId);
+        builder.Entity<Activity>().HasIndex(x => x.DueDate);
+        builder.Entity<Activity>().HasIndex(x => x.AccountId);
+        builder.Entity<Activity>().HasIndex(x => x.ContactId);
+        builder.Entity<Activity>().HasIndex(x => x.LeadId);
+        builder.Entity<Activity>().HasIndex(x => x.OpportunityId);
+        builder.Entity<Activity>().HasIndex(x => x.CaseId);
+        builder.Entity<ActivityComment>().HasIndex(x => new { x.ActivityId, x.CreatedAt });
+        builder.Entity<Document>().HasIndex(x => x.DocumentNumber).IsUnique();
+        builder.Entity<Document>().HasIndex(x => x.DocumentCategoryId);
+        builder.Entity<Document>().HasIndex(x => x.DocumentStatusId);
+        builder.Entity<Document>().HasIndex(x => x.EffectiveDate);
+        builder.Entity<Document>().HasIndex(x => x.ExpiryDate);
+        builder.Entity<Document>().HasIndex(x => x.AccountId);
+        builder.Entity<Document>().HasIndex(x => x.ContactId);
+        builder.Entity<Document>().HasIndex(x => x.LeadId);
+        builder.Entity<Document>().HasIndex(x => x.OpportunityId);
+        builder.Entity<Document>().HasIndex(x => x.CaseId);
+        builder.Entity<DocumentVersion>().HasIndex(x => new { x.DocumentId, x.VersionNumber }).IsUnique();
         builder.Entity<OpportunityProduct>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityCompetitor>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityActivity>().HasIndex(x => x.OpportunityId);

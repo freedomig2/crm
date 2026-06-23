@@ -56,6 +56,10 @@ public static class SeedData
             "InvoiceLines.View", "InvoiceLines.Create", "InvoiceLines.Update", "InvoiceLines.Delete",
             "Cases.View", "Cases.Create", "Cases.Update", "Cases.Delete", "Cases.Resolve", "Cases.Close", "Cases.Reopen",
             "CaseComments.View", "CaseComments.Create", "CaseComments.Delete",
+            "Activities.Create", "Activities.Update", "Activities.Delete", "Activities.Complete",
+            "ActivityComments.View", "ActivityComments.Create", "ActivityComments.Delete",
+            "Documents.View", "Documents.Create", "Documents.Update", "Documents.Delete", "Documents.Download",
+            "DocumentVersions.View", "DocumentVersions.Create",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -193,6 +197,23 @@ public static class SeedData
         await EnsureLookupCategoryAsync(db, "Activity Status", "ACTIVITY_STATUS", new[]
         {
             ("Open", "OPEN"), ("In Progress", "IN_PROGRESS"), ("Completed", "COMPLETED"), ("Cancelled", "CANCELLED"), ("Deferred", "DEFERRED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Activity Outcome", "ACTIVITY_OUTCOME", new[]
+        {
+            ("Completed Successfully", "COMPLETED_SUCCESS"), ("Completed Partially", "COMPLETED_PARTIAL"), ("No Response", "NO_RESPONSE"),
+            ("Rescheduled", "RESCHEDULED"), ("Cancelled", "CANCELLED"), ("Blocked", "BLOCKED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Document Category", "DOCUMENT_CATEGORY", new[]
+        {
+            ("Contract", "CONTRACT"), ("Proposal", "PROPOSAL"), ("Statement Of Work", "SOW"), ("Invoice Attachment", "INVOICE_ATTACHMENT"),
+            ("Case Attachment", "CASE_ATTACHMENT"), ("General", "GENERAL")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Document Status", "DOCUMENT_STATUS", new[]
+        {
+            ("Draft", "DRAFT"), ("Active", "ACTIVE"), ("Archived", "ARCHIVED"), ("Expired", "EXPIRED"), ("Superseded", "SUPERSEDED")
         });
 
         await EnsureLookupCategoryAsync(db, "Case Status", "CASE_STATUS", new[]
@@ -418,6 +439,7 @@ public static class SeedData
         await EnsureNumberSequenceAsync(db, "Order", "ORDER", "ORD", true, "YEARLY");
         await EnsureNumberSequenceAsync(db, "Invoice", "INVOICE", "INV", true, "YEARLY");
         await EnsureNumberSequenceAsync(db, "Case", "CASE", "CAS", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Activity", "ACTIVITY", "ACT", true, "YEARLY");
         await EnsureNumberSequenceAsync(db, "Document", "DOCUMENT", "DOC", true, "YEARLY");
         await EnsureNumberSequenceAsync(db, "Product", "PRODUCT", "PRD", true, "YEARLY");
         await EnsureNumberSequenceAsync(db, "Price List", "PRICE_LIST", "PL", true, "YEARLY");

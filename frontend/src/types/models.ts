@@ -785,6 +785,104 @@ export type CaseComment = {
   createdByName?: string
 }
 
+export type Activity = {
+  id: string
+  activityNumber: string
+  activityTypeId: string
+  activityTypeName?: string
+  activityTypeCode?: string
+  statusId: string
+  statusName?: string
+  statusCode?: string
+  priorityId?: string
+  priorityName?: string
+  subject: string
+  description?: string
+  activityDate: string
+  dueDate?: string
+  completedDate?: string
+  assignedToUserId?: string
+  assignedToUserName?: string
+  accountId?: string
+  accountName?: string
+  contactId?: string
+  contactName?: string
+  leadId?: string
+  leadTopic?: string
+  opportunityId?: string
+  opportunityTopic?: string
+  caseId?: string
+  caseNumber?: string
+  isPrivate: boolean
+  outcomeId?: string
+  outcomeName?: string
+  reminderAt?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type ActivityComment = {
+  id: string
+  activityId: string
+  commentText: string
+  isInternal: boolean
+  createdAt: string
+  createdById?: string
+  createdByName?: string
+}
+
+export type Document = {
+  id: string
+  documentNumber: string
+  title: string
+  description?: string
+  fileName: string
+  contentType: string
+  fileSizeBytes: number
+  storagePath: string
+  documentCategoryId: string
+  documentCategoryName?: string
+  documentCategoryCode?: string
+  documentStatusId: string
+  documentStatusName?: string
+  documentStatusCode?: string
+  accountId?: string
+  accountName?: string
+  contactId?: string
+  contactName?: string
+  leadId?: string
+  leadTopic?: string
+  opportunityId?: string
+  opportunityTopic?: string
+  caseId?: string
+  caseNumber?: string
+  effectiveDate?: string
+  expiryDate?: string
+  isConfidential: boolean
+  currentVersion: number
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type DocumentVersion = {
+  id: string
+  documentId: string
+  versionNumber: number
+  fileName: string
+  contentType: string
+  fileSizeBytes: number
+  storagePath: string
+  changeSummary?: string
+  createdAt: string
+  updatedAt?: string
+}
+
 export type OpportunityCompetitor = {
   id: string
   opportunityId: string

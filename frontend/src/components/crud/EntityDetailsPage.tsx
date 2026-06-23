@@ -154,6 +154,22 @@ export function EntityDetailsPage<TItem extends { id: string }>({
       appearance: 'secondary',
     })
   }
+  if (id && config.key === 'activities') {
+    actions.push({
+      key: 'manage-comments',
+      label: 'Manage Comments',
+      onClick: () => navigate(`/activities/tasks/${id}/comments`),
+      appearance: 'secondary',
+    })
+  }
+  if (id && config.key === 'documents') {
+    actions.push({
+      key: 'manage-versions',
+      label: 'Manage Versions',
+      onClick: () => navigate(`/documents/${id}/versions`),
+      appearance: 'secondary',
+    })
+  }
   actions.push({ key: 'back', label: 'Back to List', onClick: () => navigate(config.listPath), appearance: 'subtle' })
 
   const summaryRows = [

@@ -51,6 +51,8 @@ const friendlyOverrides: Record<string, string> = {
   preferredContactMethodId: 'Preferred Contact Method',
   preferredTimeZoneId: 'Preferred Time Zone',
   caseStatusId: 'Case Status',
+  documentCategoryId: 'Document Category',
+  documentStatusId: 'Document Status',
   communicationTypeId: 'Communication Type',
   interactionTypeId: 'Interaction Type',
   addressTypeId: 'Address Type',
@@ -279,6 +281,28 @@ export const sectionMap = (configKey: string, fields: EntityField[]): SectionDef
       .filter((section) => section.fields.length > 0)
   }
 
+  if (configKey === 'activities') {
+    return [
+      { key: 'general', title: 'General Information', icon: <CalendarAgendaRegular />, fields: ['activityNumber', 'subject', 'description', 'activityTypeId', 'statusId', 'priorityId', 'outcomeId'] },
+      { key: 'timeline', title: 'Timeline', icon: <CalendarAgendaRegular />, fields: ['activityDate', 'dueDate', 'completedDate', 'reminderAt'] },
+      { key: 'relationships', title: 'Relationships', icon: <BuildingBankRegular />, fields: ['accountId', 'contactId', 'leadId', 'opportunityId', 'caseId'] },
+      { key: 'assignment', title: 'Assignment', icon: <PersonRegular />, fields: ['assignedToUserId', 'ownerUserId', 'ownerTeamId', 'isPrivate'] },
+      { key: 'status', title: 'Status', icon: <ShieldRegular />, fields: ['isActive'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'documents') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['documentNumber', 'title', 'description', 'documentCategoryId', 'documentStatusId'] },
+      { key: 'file', title: 'File Information', icon: <ClipboardTaskRegular />, fields: ['fileName', 'contentType', 'fileSizeBytes', 'storagePath', 'currentVersion'] },
+      { key: 'relationships', title: 'Relationships', icon: <BuildingBankRegular />, fields: ['accountId', 'contactId', 'leadId', 'opportunityId', 'caseId'] },
+      { key: 'timeline', title: 'Timeline', icon: <CalendarAgendaRegular />, fields: ['effectiveDate', 'expiryDate'] },
+      { key: 'security', title: 'Security', icon: <ShieldRegular />, fields: ['isConfidential', 'isActive', 'ownerUserId', 'ownerTeamId'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
   return fallbackSections(fields)
 }
 
@@ -303,6 +327,14 @@ export const tabsForEntity = (configKey: string): Array<{ key: string; label: st
       { key: 'preferences', label: 'Preferences' },
       { key: 'relationships', label: 'Relationships' },
       { key: 'interaction-history', label: 'Interaction History' },
+      { key: 'audit-history', label: 'Audit History' },
+    ]
+  }
+
+  if (configKey === 'documents') {
+    return [
+      { key: 'general', label: 'General' },
+      { key: 'versions', label: 'Versions' },
       { key: 'audit-history', label: 'Audit History' },
     ]
   }
@@ -345,6 +377,8 @@ export const getEntityIcon = (configKey: string) => {
   if (configKey === 'system-settings') return <SettingsRegular />
   if (configKey === 'products' || configKey === 'product-categories' || configKey === 'price-lists' || configKey === 'product-bundles' || configKey === 'unit-of-measures' || configKey === 'discounts' || configKey === 'quotes' || configKey === 'orders' || configKey === 'invoices') return <BookDatabaseRegular />
   if (configKey === 'cases') return <ClipboardTaskRegular />
+  if (configKey === 'activities') return <CalendarAgendaRegular />
+  if (configKey === 'documents') return <BookDatabaseRegular />
   return <BookDatabaseRegular />
 }
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -10,9 +11,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623103132_AddActivityManagementModule12")]
+    partial class AddActivityManagementModule12
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -1349,190 +1352,6 @@ namespace backend.Migrations
                     b.HasIndex("Name");
 
                     b.ToTable("Discounts");
-                });
-
-            modelBuilder.Entity("backend.Entities.Document", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CaseId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ContactId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CurrentVersion")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(1);
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("DocumentCategoryId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DocumentNumber")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("DocumentStatusId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("EffectiveDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("FileSizeBytes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsConfidential")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("LeadId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("OpportunityId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("OwnerTeamId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("OwnerUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("StoragePath")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("CaseId");
-
-                    b.HasIndex("ContactId");
-
-                    b.HasIndex("DocumentCategoryId");
-
-                    b.HasIndex("DocumentNumber")
-                        .IsUnique();
-
-                    b.HasIndex("DocumentStatusId");
-
-                    b.HasIndex("EffectiveDate");
-
-                    b.HasIndex("ExpiryDate");
-
-                    b.HasIndex("LeadId");
-
-                    b.HasIndex("OpportunityId");
-
-                    b.HasIndex("OwnerTeamId");
-
-                    b.HasIndex("OwnerUserId");
-
-                    b.ToTable("Documents");
-                });
-
-            modelBuilder.Entity("backend.Entities.DocumentVersion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ChangeSummary")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("DocumentId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("FileSizeBytes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("StoragePath")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("VersionNumber")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DocumentId", "VersionNumber")
-                        .IsUnique();
-
-                    b.ToTable("DocumentVersions");
                 });
 
             modelBuilder.Entity("backend.Entities.Invoice", b =>
@@ -4598,85 +4417,6 @@ namespace backend.Migrations
                     b.Navigation("DiscountType");
                 });
 
-            modelBuilder.Entity("backend.Entities.Document", b =>
-                {
-                    b.HasOne("backend.Entities.Account", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.ServiceCase", "Case")
-                        .WithMany()
-                        .HasForeignKey("CaseId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.Contact", "Contact")
-                        .WithMany()
-                        .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.LookupValue", "DocumentCategory")
-                        .WithMany()
-                        .HasForeignKey("DocumentCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "DocumentStatus")
-                        .WithMany()
-                        .HasForeignKey("DocumentStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.Lead", "Lead")
-                        .WithMany()
-                        .HasForeignKey("LeadId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.Opportunity", "Opportunity")
-                        .WithMany()
-                        .HasForeignKey("OpportunityId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.Team", "OwnerTeam")
-                        .WithMany()
-                        .HasForeignKey("OwnerTeamId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("backend.Entities.AppUser", "OwnerUser")
-                        .WithMany()
-                        .HasForeignKey("OwnerUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Account");
-
-                    b.Navigation("Case");
-
-                    b.Navigation("Contact");
-
-                    b.Navigation("DocumentCategory");
-
-                    b.Navigation("DocumentStatus");
-
-                    b.Navigation("Lead");
-
-                    b.Navigation("Opportunity");
-
-                    b.Navigation("OwnerTeam");
-
-                    b.Navigation("OwnerUser");
-                });
-
-            modelBuilder.Entity("backend.Entities.DocumentVersion", b =>
-                {
-                    b.HasOne("backend.Entities.Document", "Document")
-                        .WithMany("Versions")
-                        .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Document");
-                });
-
             modelBuilder.Entity("backend.Entities.Invoice", b =>
                 {
                     b.HasOne("backend.Entities.Account", "Account")
@@ -5824,11 +5564,6 @@ namespace backend.Migrations
                     b.Navigation("Children");
 
                     b.Navigation("UserDepartments");
-                });
-
-            modelBuilder.Entity("backend.Entities.Document", b =>
-                {
-                    b.Navigation("Versions");
                 });
 
             modelBuilder.Entity("backend.Entities.Invoice", b =>
