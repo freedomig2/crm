@@ -71,6 +71,15 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<ActivityComment> ActivityComments => Set<ActivityComment>();
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
+    public DbSet<Workflow> Workflows => Set<Workflow>();
+    public DbSet<SecurityPolicy> SecurityPolicies => Set<SecurityPolicy>();
+    public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<IntegrationConnection> IntegrationConnections => Set<IntegrationConnection>();
+    public DbSet<IntegrationSyncRun> IntegrationSyncRuns => Set<IntegrationSyncRun>();
+    public DbSet<CustomFieldDefinition> CustomFieldDefinitions => Set<CustomFieldDefinition>();
+    public DbSet<RecordStatusDefinition> RecordStatusDefinitions => Set<RecordStatusDefinition>();
+    public DbSet<AiPromptTemplate> AiPromptTemplates => Set<AiPromptTemplate>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -1238,6 +1247,163 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.DocumentId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.Entity<Workflow>()
+            .HasOne(x => x.WorkflowType)
+            .WithMany()
+            .HasForeignKey(x => x.WorkflowTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Workflow>()
+            .HasOne(x => x.WorkflowStatus)
+            .WithMany()
+            .HasForeignKey(x => x.WorkflowStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Workflow>(entity =>
+        {
+            entity.Property(x => x.IsDefault).HasDefaultValue(false);
+            entity.Property(x => x.IsSystem).HasDefaultValue(false);
+            entity.Property(x => x.Version).HasDefaultValue(1);
+            entity.Property(x => x.SortOrder).HasDefaultValue(0);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<SecurityPolicy>()
+            .HasOne(x => x.ScopeType)
+            .WithMany()
+            .HasForeignKey(x => x.ScopeTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<SecurityPolicy>(entity =>
+        {
+            entity.Property(x => x.MaskSensitiveFields).HasDefaultValue(false);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<NotificationTemplate>()
+            .HasOne(x => x.Channel)
+            .WithMany()
+            .HasForeignKey(x => x.ChannelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<NotificationTemplate>(entity =>
+        {
+            entity.Property(x => x.IsSystem).HasDefaultValue(false);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<Notification>()
+            .HasOne(x => x.RecipientUser)
+            .WithMany()
+            .HasForeignKey(x => x.RecipientUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Notification>()
+            .HasOne(x => x.NotificationTemplate)
+            .WithMany()
+            .HasForeignKey(x => x.NotificationTemplateId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Notification>()
+            .HasOne(x => x.Channel)
+            .WithMany()
+            .HasForeignKey(x => x.ChannelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Notification>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Notification>()
+            .HasOne(x => x.Priority)
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Notification>(entity =>
+        {
+            entity.Property(x => x.IsDismissed).HasDefaultValue(false);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<IntegrationConnection>()
+            .HasOne(x => x.Provider)
+            .WithMany()
+            .HasForeignKey(x => x.ProviderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<IntegrationConnection>()
+            .HasOne(x => x.Direction)
+            .WithMany()
+            .HasForeignKey(x => x.DirectionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<IntegrationConnection>()
+            .HasOne(x => x.AuthType)
+            .WithMany()
+            .HasForeignKey(x => x.AuthTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<IntegrationConnection>()
+            .HasOne(x => x.LastSyncStatus)
+            .WithMany()
+            .HasForeignKey(x => x.LastSyncStatusId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<IntegrationConnection>(entity =>
+        {
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<IntegrationSyncRun>()
+            .HasOne(x => x.IntegrationConnection)
+            .WithMany(x => x.SyncRuns)
+            .HasForeignKey(x => x.IntegrationConnectionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<IntegrationSyncRun>()
+            .HasOne(x => x.TriggerType)
+            .WithMany()
+            .HasForeignKey(x => x.TriggerTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<IntegrationSyncRun>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<CustomFieldDefinition>()
+            .HasOne(x => x.DataType)
+            .WithMany()
+            .HasForeignKey(x => x.DataTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<CustomFieldDefinition>(entity =>
+        {
+            entity.Property(x => x.IsRequired).HasDefaultValue(false);
+            entity.Property(x => x.IsIndexed).HasDefaultValue(false);
+            entity.Property(x => x.SortOrder).HasDefaultValue(0);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<RecordStatusDefinition>(entity =>
+        {
+            entity.Property(x => x.IsDefault).HasDefaultValue(false);
+            entity.Property(x => x.IsClosedState).HasDefaultValue(false);
+            entity.Property(x => x.SortOrder).HasDefaultValue(0);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<AiPromptTemplate>(entity =>
+        {
+            entity.Property(x => x.IsSystem).HasDefaultValue(false);
+            entity.Property(x => x.Version).HasDefaultValue(1);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
         builder.Entity<NumberSequence>()
             .HasOne(x => x.ResetFrequency)
             .WithMany()
@@ -1342,6 +1508,34 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Document>().HasIndex(x => x.OpportunityId);
         builder.Entity<Document>().HasIndex(x => x.CaseId);
         builder.Entity<DocumentVersion>().HasIndex(x => new { x.DocumentId, x.VersionNumber }).IsUnique();
+        builder.Entity<Workflow>().HasIndex(x => x.Code).IsUnique();
+        builder.Entity<Workflow>().HasIndex(x => x.Name);
+        builder.Entity<Workflow>().HasIndex(x => x.WorkflowTypeId);
+        builder.Entity<Workflow>().HasIndex(x => x.WorkflowStatusId);
+        builder.Entity<SecurityPolicy>().HasIndex(x => x.EntityName).IsUnique();
+        builder.Entity<SecurityPolicy>().HasIndex(x => x.ScopeTypeId);
+        builder.Entity<NotificationTemplate>().HasIndex(x => x.Code).IsUnique();
+        builder.Entity<NotificationTemplate>().HasIndex(x => x.ChannelId);
+        builder.Entity<Notification>().HasIndex(x => x.RecipientUserId);
+        builder.Entity<Notification>().HasIndex(x => x.StatusId);
+        builder.Entity<Notification>().HasIndex(x => x.ChannelId);
+        builder.Entity<Notification>().HasIndex(x => x.PriorityId);
+        builder.Entity<Notification>().HasIndex(x => x.CreatedAt);
+        builder.Entity<IntegrationConnection>().HasIndex(x => x.Code).IsUnique();
+        builder.Entity<IntegrationConnection>().HasIndex(x => x.ProviderId);
+        builder.Entity<IntegrationConnection>().HasIndex(x => x.DirectionId);
+        builder.Entity<IntegrationConnection>().HasIndex(x => x.AuthTypeId);
+        builder.Entity<IntegrationConnection>().HasIndex(x => x.LastSyncStatusId);
+        builder.Entity<IntegrationSyncRun>().HasIndex(x => x.IntegrationConnectionId);
+        builder.Entity<IntegrationSyncRun>().HasIndex(x => x.StatusId);
+        builder.Entity<IntegrationSyncRun>().HasIndex(x => x.TriggerTypeId);
+        builder.Entity<IntegrationSyncRun>().HasIndex(x => x.StartedAt);
+        builder.Entity<CustomFieldDefinition>().HasIndex(x => new { x.EntityName, x.FieldKey }).IsUnique();
+        builder.Entity<CustomFieldDefinition>().HasIndex(x => x.DataTypeId);
+        builder.Entity<RecordStatusDefinition>().HasIndex(x => new { x.EntityName, x.StatusCode }).IsUnique();
+        builder.Entity<RecordStatusDefinition>().HasIndex(x => new { x.EntityName, x.SortOrder });
+        builder.Entity<AiPromptTemplate>().HasIndex(x => new { x.UseCaseCode, x.Version }).IsUnique();
+        builder.Entity<AiPromptTemplate>().HasIndex(x => x.Name);
         builder.Entity<OpportunityProduct>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityCompetitor>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityActivity>().HasIndex(x => x.OpportunityId);

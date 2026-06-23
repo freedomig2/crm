@@ -59,6 +59,208 @@ export type NumberSequencePreview = {
   preview: string
 }
 
+export type Workflow = {
+  id: string
+  name: string
+  code: string
+  description?: string
+  workflowTypeId: string
+  workflowTypeName: string
+  workflowTypeCode: string
+  workflowStatusId: string
+  workflowStatusName: string
+  workflowStatusCode: string
+  triggerEntity: string
+  triggerEvent: string
+  isDefault: boolean
+  isSystem: boolean
+  version: number
+  sortOrder: number
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type ReportingDashboardSummary = {
+  totalLeads: number
+  openOpportunities: number
+  totalAccounts: number
+  openCases: number
+  openActivities: number
+  pipelineValue: number
+  weightedPipelineValue: number
+  revenueThisMonth: number
+  winRate: number
+}
+
+export type ReportLibraryItem = {
+  key: string
+  name: string
+  category: string
+  description: string
+  route: string
+  isImplemented: boolean
+  lastUpdatedAt: string
+}
+
+export type KpiMonitoringItem = {
+  key: string
+  name: string
+  currentValue: number
+  targetValue: number
+  unit: string
+  achievementPercent: number
+  trend: string
+}
+
+export type NotificationTemplate = {
+  id: string
+  name: string
+  code: string
+  subjectTemplate: string
+  bodyTemplate: string
+  channelId: string
+  channelName: string
+  channelCode: string
+  isSystem: boolean
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type Notification = {
+  id: string
+  recipientUserId: string
+  recipientUserEmail?: string
+  notificationTemplateId?: string
+  notificationTemplateName?: string
+  channelId?: string
+  channelName?: string
+  channelCode?: string
+  statusId: string
+  statusName: string
+  statusCode: string
+  priorityId?: string
+  priorityName?: string
+  subject: string
+  message: string
+  actionUrl?: string
+  relatedEntityType?: string
+  relatedEntityId?: string
+  sentAt?: string
+  readAt?: string
+  isDismissed: boolean
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type SecurityPolicy = {
+  id: string
+  entityName: string
+  scopeTypeName: string
+  scopeTypeCode: string
+  maskSensitiveFields: boolean
+  sensitiveFieldList?: string
+  description?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type IntegrationConnection = {
+  id: string
+  name: string
+  code: string
+  providerCode: string
+  providerName: string
+  directionCode: string
+  directionName: string
+  authTypeCode: string
+  authTypeName: string
+  endpointUrl?: string
+  apiKeyReference?: string
+  lastSyncStatusCode?: string
+  lastSyncStatusName?: string
+  lastSyncAt?: string
+  description?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type IntegrationSyncRun = {
+  id: string
+  integrationConnectionId: string
+  integrationConnectionName: string
+  integrationConnectionCode: string
+  triggerTypeCode: string
+  triggerTypeName: string
+  statusCode: string
+  statusName: string
+  startedAt: string
+  completedAt?: string
+  recordsProcessed: number
+  errorMessage?: string
+  createdAt: string
+}
+
+export type CustomFieldDefinition = {
+  id: string
+  entityName: string
+  fieldKey: string
+  displayName: string
+  dataTypeCode: string
+  dataTypeName: string
+  isRequired: boolean
+  isIndexed: boolean
+  defaultValue?: string
+  optionsJson?: string
+  sortOrder: number
+  description?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type RecordStatusDefinition = {
+  id: string
+  entityName: string
+  statusCode: string
+  statusName: string
+  isDefault: boolean
+  isClosedState: boolean
+  sortOrder: number
+  description?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type AiPromptTemplate = {
+  id: string
+  name: string
+  useCaseCode: string
+  systemPrompt: string
+  isSystem: boolean
+  version: number
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type AiDashboardSummary = {
+  openLeads: number
+  openOpportunities: number
+  openCases: number
+  insights: string[]
+}
+
+export type AiRecommendation = {
+  scenarioCode: string
+  actions: string[]
+}
+
 export type Account = {
   id: string
   accountNumber: string

@@ -31,6 +31,13 @@ builder.Services.AddScoped<ILeadScoringService, LeadScoringService>();
 builder.Services.AddScoped<ILeadConversionService, LeadConversionService>();
 builder.Services.AddScoped<IOpportunityConversionAdapter, OpportunityConversionAdapter>();
 builder.Services.AddScoped<INumberSequenceService, NumberSequenceService>();
+builder.Services.AddScoped<ISecurityPolicyService, SecurityPolicyService>();
+builder.Services.AddScoped<IIntegrationExecutionService, IntegrationExecutionService>();
+builder.Services.AddHttpClient<BasicReachabilityIntegrationProvider>();
+builder.Services.AddScoped<IIntegrationProvider>(sp => sp.GetRequiredService<BasicReachabilityIntegrationProvider>());
+builder.Services.AddScoped<IIntegrationProvider, WebhookIntegrationProvider>();
+builder.Services.AddScoped<IAiProvider, RulesBasedAiProvider>();
+builder.Services.AddScoped<IAiRecommendationService, AiRecommendationService>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

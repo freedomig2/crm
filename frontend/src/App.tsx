@@ -39,6 +39,14 @@ import {
   teamsConfig,
   unitOfMeasuresConfig,
   usersConfig,
+  workflowsConfig,
+  notificationTemplatesConfig,
+  securityPoliciesConfig,
+  integrationConnectionsConfig,
+  integrationSyncRunsConfig,
+  customFieldsConfig,
+  recordStatusesConfig,
+  aiPromptTemplatesConfig,
 } from './components/crud/adminConfig'
 import { EntityListPage } from './components/crud/EntityListPage'
 import { EntityCreatePage } from './components/crud/EntityCreatePage'
@@ -70,6 +78,10 @@ import { InvoiceLinesPage } from './sales/InvoiceLinesPage'
 import { CaseCommentsPage } from './service/CaseCommentsPage'
 import { ActivityCommentsPage } from './activities/ActivityCommentsPage'
 import { DocumentVersionsPage } from './documents/DocumentVersionsPage'
+import { KpiMonitoringPage, ReportingDashboardsPage, ReportsLibraryPage } from './reporting/ReportingPages'
+import { MyNotificationsPage } from './notifications/MyNotificationsPage'
+import { IntegrationActionPage } from './integrations/IntegrationActionPage'
+import { AiDashboardPage, NextBestActionsPage } from './ai/AiCopilotPages'
 
 function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   const { id } = useParams()
@@ -324,14 +336,59 @@ function App() {
               <Route path="/security/change-password" element={<ChangePasswordPage />} />
               <Route path="/security/password-policies" element={<SimpleStatePage title="Password Policies" subtitle="Configure enterprise-grade password complexity and expiry rules." />} />
               <Route path="/security/mfa-settings" element={<SimpleStatePage title="MFA Settings" subtitle="Enforce multi-factor authentication and authentication methods." />} />
+              <Route path="/security/policies" element={<EntityListPage config={securityPoliciesConfig} title={securityPoliciesConfig.title} subtitle={securityPoliciesConfig.subtitle} endpoint={securityPoliciesConfig.endpoint} columns={securityPoliciesConfig.columns} listPath={securityPoliciesConfig.listPath} createPath={securityPoliciesConfig.createPath} detailsPath={securityPoliciesConfig.detailsPath} editPath={securityPoliciesConfig.editPath} permissions={securityPoliciesConfig.permissions} />} />
+              <Route path="/security/policies/create" element={<EntityCreatePage config={securityPoliciesConfig} />} />
+              <Route path="/security/policies/:id/edit" element={<EntityEditPage config={securityPoliciesConfig} />} />
+              <Route path="/security/policies/:id" element={<EntityDetailsPage config={securityPoliciesConfig} />} />
 
               <Route path="/configuration/number-sequences" element={<NumberSequencesListPage />} />
               <Route path="/configuration/number-sequences/create" element={<NumberSequenceFormPage mode="create" />} />
               <Route path="/configuration/number-sequences/:id/edit" element={<NumberSequenceFormPage mode="edit" />} />
               <Route path="/configuration/number-sequences/:id" element={<NumberSequenceDetailsPage />} />
 
+              <Route path="/configuration/workflows" element={<EntityListPage config={workflowsConfig} title={workflowsConfig.title} subtitle={workflowsConfig.subtitle} endpoint={workflowsConfig.endpoint} columns={workflowsConfig.columns} listPath={workflowsConfig.listPath} createPath={workflowsConfig.createPath} detailsPath={workflowsConfig.detailsPath} editPath={workflowsConfig.editPath} permissions={workflowsConfig.permissions} />} />
+              <Route path="/configuration/workflows/create" element={<EntityCreatePage config={workflowsConfig} />} />
+              <Route path="/configuration/workflows/:id/edit" element={<EntityEditPage config={workflowsConfig} />} />
+              <Route path="/configuration/workflows/:id" element={<EntityDetailsPage config={workflowsConfig} />} />
+              <Route path="/configuration/notification-templates" element={<EntityListPage config={notificationTemplatesConfig} title={notificationTemplatesConfig.title} subtitle={notificationTemplatesConfig.subtitle} endpoint={notificationTemplatesConfig.endpoint} columns={notificationTemplatesConfig.columns} listPath={notificationTemplatesConfig.listPath} createPath={notificationTemplatesConfig.createPath} detailsPath={notificationTemplatesConfig.detailsPath} editPath={notificationTemplatesConfig.editPath} permissions={notificationTemplatesConfig.permissions} />} />
+              <Route path="/configuration/notification-templates/create" element={<EntityCreatePage config={notificationTemplatesConfig} />} />
+              <Route path="/configuration/notification-templates/:id/edit" element={<EntityEditPage config={notificationTemplatesConfig} />} />
+              <Route path="/configuration/notification-templates/:id" element={<EntityDetailsPage config={notificationTemplatesConfig} />} />
+              <Route path="/configuration/record-statuses" element={<EntityListPage config={recordStatusesConfig} title={recordStatusesConfig.title} subtitle={recordStatusesConfig.subtitle} endpoint={recordStatusesConfig.endpoint} columns={recordStatusesConfig.columns} listPath={recordStatusesConfig.listPath} createPath={recordStatusesConfig.createPath} detailsPath={recordStatusesConfig.detailsPath} editPath={recordStatusesConfig.editPath} permissions={recordStatusesConfig.permissions} />} />
+              <Route path="/configuration/record-statuses/create" element={<EntityCreatePage config={recordStatusesConfig} />} />
+              <Route path="/configuration/record-statuses/:id/edit" element={<EntityEditPage config={recordStatusesConfig} />} />
+              <Route path="/configuration/record-statuses/:id" element={<EntityDetailsPage config={recordStatusesConfig} />} />
+
+              <Route path="/configuration/custom-fields" element={<EntityListPage config={customFieldsConfig} title={customFieldsConfig.title} subtitle={customFieldsConfig.subtitle} endpoint={customFieldsConfig.endpoint} columns={customFieldsConfig.columns} listPath={customFieldsConfig.listPath} createPath={customFieldsConfig.createPath} detailsPath={customFieldsConfig.detailsPath} editPath={customFieldsConfig.editPath} permissions={customFieldsConfig.permissions} />} />
+              <Route path="/configuration/custom-fields/create" element={<EntityCreatePage config={customFieldsConfig} />} />
+              <Route path="/configuration/custom-fields/:id/edit" element={<EntityEditPage config={customFieldsConfig} />} />
+              <Route path="/configuration/custom-fields/:id" element={<EntityDetailsPage config={customFieldsConfig} />} />
+
+              <Route path="/ai/dashboard" element={<AiDashboardPage />} />
+              <Route path="/ai/next-best-actions" element={<NextBestActionsPage />} />
+              <Route path="/ai/prompt-templates" element={<EntityListPage config={aiPromptTemplatesConfig} title={aiPromptTemplatesConfig.title} subtitle={aiPromptTemplatesConfig.subtitle} endpoint={aiPromptTemplatesConfig.endpoint} columns={aiPromptTemplatesConfig.columns} listPath={aiPromptTemplatesConfig.listPath} createPath={aiPromptTemplatesConfig.createPath} detailsPath={aiPromptTemplatesConfig.detailsPath} editPath={aiPromptTemplatesConfig.editPath} permissions={aiPromptTemplatesConfig.permissions} />} />
+              <Route path="/ai/prompt-templates/create" element={<EntityCreatePage config={aiPromptTemplatesConfig} />} />
+              <Route path="/ai/prompt-templates/:id/edit" element={<EntityEditPage config={aiPromptTemplatesConfig} />} />
+              <Route path="/ai/prompt-templates/:id" element={<EntityDetailsPage config={aiPromptTemplatesConfig} />} />
+
+              <Route path="/integrations/connections" element={<EntityListPage config={integrationConnectionsConfig} title={integrationConnectionsConfig.title} subtitle={integrationConnectionsConfig.subtitle} endpoint={integrationConnectionsConfig.endpoint} columns={integrationConnectionsConfig.columns} listPath={integrationConnectionsConfig.listPath} createPath={integrationConnectionsConfig.createPath} detailsPath={integrationConnectionsConfig.detailsPath} editPath={integrationConnectionsConfig.editPath} permissions={integrationConnectionsConfig.permissions} />} />
+              <Route path="/integrations/connections/create" element={<EntityCreatePage config={integrationConnectionsConfig} />} />
+              <Route path="/integrations/connections/:id/edit" element={<EntityEditPage config={integrationConnectionsConfig} />} />
+              <Route path="/integrations/connections/:id" element={<EntityDetailsPage config={integrationConnectionsConfig} />} />
+              <Route path="/integrations/connections/:id/test" element={<IntegrationActionPage action="test" />} />
+              <Route path="/integrations/connections/:id/sync" element={<IntegrationActionPage action="sync" />} />
+
+              <Route path="/integrations/sync-runs" element={<EntityListPage config={integrationSyncRunsConfig} title={integrationSyncRunsConfig.title} subtitle={integrationSyncRunsConfig.subtitle} endpoint={integrationSyncRunsConfig.endpoint} columns={integrationSyncRunsConfig.columns} listPath={integrationSyncRunsConfig.listPath} createPath={integrationSyncRunsConfig.createPath} detailsPath={integrationSyncRunsConfig.detailsPath} editPath={integrationSyncRunsConfig.editPath} permissions={integrationSyncRunsConfig.permissions} />} />
+              <Route path="/integrations/sync-runs/:id" element={<EntityDetailsPage config={integrationSyncRunsConfig} />} />
+
+              <Route path="/reporting/dashboards" element={<ReportingDashboardsPage />} />
+              <Route path="/reporting/reports" element={<ReportsLibraryPage />} />
+              <Route path="/reporting/kpi-monitoring" element={<KpiMonitoringPage />} />
+              <Route path="/reporting/sales-analytics" element={<SalesPerformancePage />} />
+
               <Route path="/audit/data-changes" element={<SimpleStatePage title="Data Changes" subtitle="Track field-level data modifications across entities." />} />
               <Route path="/audit/security-events" element={<SimpleStatePage title="Security Events" subtitle="Review high-risk events and policy violations." />} />
+              <Route path="/personal/notifications" element={<MyNotificationsPage />} />
 
               <Route path="/crm-setup/lead-sources" element={<SimpleStatePage title="Lead Sources" subtitle="Manage lead source values and defaults." />} />
               <Route path="/crm-setup/industries" element={<SimpleStatePage title="Industries" subtitle="Define industry lookup values for segmentation." />} />

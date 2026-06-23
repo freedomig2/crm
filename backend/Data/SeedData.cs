@@ -23,6 +23,8 @@ public static class SeedData
             "Teams.View", "Teams.Create", "Teams.Update", "Teams.Delete",
             "Departments.View", "Departments.Create", "Departments.Update", "Departments.Delete",
             "Dashboard.View", "Activities.View", "Security.View", "Configuration.View",
+            "Reports.View",
+            "SecurityPolicies.View", "SecurityPolicies.Create", "SecurityPolicies.Update", "SecurityPolicies.Delete", "SecurityPolicies.ViewSensitiveFields",
             "Settings.View", "Settings.Update",
             "AuditLogs.View",
             "ReferenceData.View", "ReferenceData.Create", "ReferenceData.Update", "ReferenceData.Delete",
@@ -60,6 +62,14 @@ public static class SeedData
             "ActivityComments.View", "ActivityComments.Create", "ActivityComments.Delete",
             "Documents.View", "Documents.Create", "Documents.Update", "Documents.Delete", "Documents.Download",
             "DocumentVersions.View", "DocumentVersions.Create",
+            "Workflows.View", "Workflows.Create", "Workflows.Update", "Workflows.Delete",
+            "NotificationTemplates.View", "NotificationTemplates.Create", "NotificationTemplates.Update", "NotificationTemplates.Delete",
+            "Notifications.View", "Notifications.Create", "Notifications.Update", "Notifications.Delete", "Notifications.MarkRead",
+            "Integrations.View", "Integrations.Create", "Integrations.Update", "Integrations.Delete", "Integrations.TestConnection", "Integrations.RunSync",
+            "IntegrationSyncRuns.View",
+            "CustomFields.View", "CustomFields.Create", "CustomFields.Update", "CustomFields.Delete",
+            "RecordStatuses.View", "RecordStatuses.Create", "RecordStatuses.Update", "RecordStatuses.Delete",
+            "AI.View", "AITemplates.View", "AITemplates.Create", "AITemplates.Update", "AITemplates.Delete",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -240,6 +250,62 @@ public static class SeedData
         {
             ("Email", "EMAIL"), ("Phone", "PHONE"), ("Web", "WEB"), ("Chat", "CHAT"), ("Portal", "PORTAL")
         });
+
+        await EnsureLookupCategoryAsync(db, "Workflow Type", "WORKFLOW_TYPE", new[]
+        {
+            ("Approval", "APPROVAL"), ("Automation", "AUTOMATION"), ("Notification", "NOTIFICATION"), ("Escalation", "ESCALATION")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Workflow Status", "WORKFLOW_STATUS", new[]
+        {
+            ("Draft", "DRAFT"), ("Active", "ACTIVE"), ("Inactive", "INACTIVE"), ("Archived", "ARCHIVED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Security Scope Type", "SECURITY_SCOPE_TYPE", new[]
+        {
+            ("All Records", "ALL"), ("Owner Records", "OWNER"), ("Team Records", "TEAM"), ("Owner Or Team Records", "OWNER_OR_TEAM")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Notification Channel", "NOTIFICATION_CHANNEL", new[]
+        {
+            ("In-App", "IN_APP"), ("Email", "EMAIL"), ("SMS", "SMS"), ("Push", "PUSH")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Notification Status", "NOTIFICATION_STATUS", new[]
+        {
+            ("Unread", "UNREAD"), ("Read", "READ"), ("Archived", "ARCHIVED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Integration Provider", "INTEGRATION_PROVIDER", new[]
+        {
+            ("API Management", "API_MANAGEMENT"), ("Webhook", "WEBHOOK")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Integration Direction", "INTEGRATION_DIRECTION", new[]
+        {
+            ("Inbound", "INBOUND"), ("Outbound", "OUTBOUND"), ("Bidirectional", "BIDIRECTIONAL")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Integration Auth Type", "INTEGRATION_AUTH_TYPE", new[]
+        {
+            ("None", "NONE"), ("API Key", "API_KEY"), ("OAuth2", "OAUTH2")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Integration Sync Status", "INTEGRATION_SYNC_STATUS", new[]
+        {
+            ("Running", "RUNNING"), ("Success", "SUCCESS"), ("Failed", "FAILED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Integration Trigger Type", "INTEGRATION_TRIGGER_TYPE", new[]
+        {
+            ("Manual", "MANUAL"), ("Schedule", "SCHEDULE"), ("Webhook", "WEBHOOK")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Custom Field Data Type", "CUSTOM_FIELD_DATA_TYPE", new[]
+        {
+            ("Text", "TEXT"), ("Number", "NUMBER"), ("Date", "DATE"), ("Boolean", "BOOLEAN")
+        });
+
         await EnsureLookupCategoryAsync(db, "Opportunity Stage", "OPPORTUNITY_STAGE", new[]
         {
             ("Qualify", "QUALIFY"), ("Develop", "DEVELOP"), ("Propose", "PROPOSE"), ("Negotiate", "NEGOTIATE"), ("Close", "CLOSE")

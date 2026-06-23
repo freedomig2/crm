@@ -12,20 +12,25 @@ namespace backend.Controllers;
 [Route("api/accounts")]
 public class AccountsController : ControllerBase
 {
+    private const string AccountSecurityEntityName = "ACCOUNT";
+
     private readonly AppDbContext _dbContext;
     private readonly INumberSequenceService _numberSequenceService;
+    private readonly ISecurityPolicyService _securityPolicyService;
 
-    public AccountsController(AppDbContext dbContext, INumberSequenceService numberSequenceService)
+    public AccountsController(AppDbContext dbContext, INumberSequenceService numberSequenceService, ISecurityPolicyService securityPolicyService)
     {
         _dbContext = dbContext;
         _numberSequenceService = numberSequenceService;
+        _securityPolicyService = securityPolicyService;
     }
 
     [HttpGet]
     [HasPermission("Accounts.View")]
     public async Task<ActionResult<PagedResult<AccountDto>>> GetAccounts([FromQuery] ListQueryDto query)
     {
-        var accountsQuery = _dbContext.Accounts.AsQueryable();
+        var policy = await _securityPolicyService.GetPolicyAsync(AccountSecurityEntityName);
+        var accountsQuery = await _securityPolicyService.ApplyAccountScopeAsync(_dbContext.Accounts.AsQueryable(), policy);
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
@@ -68,14 +73,23 @@ public class AccountsController : ControllerBase
             OwnerTeamId = x.OwnerTeamId
         });
 
-        return Ok(await projected.ToPagedAsync(query));
+        var paged = await projected.ToPagedAsync(query);
+        foreach (var account in paged.Items)
+        {
+            _securityPolicyService.ApplyAccountFieldMask(account, policy, User);
+        }
+
+        return Ok(paged);
     }
 
     [HttpGet("{id:guid}")]
     [HasPermission("Accounts.View")]
     public async Task<ActionResult<AccountDto>> GetAccount(Guid id)
     {
-        var account = await _dbContext.Accounts
+        var policy = await _securityPolicyService.GetPolicyAsync(AccountSecurityEntityName);
+        var scopedQuery = await _securityPolicyService.ApplyAccountScopeAsync(_dbContext.Accounts.AsQueryable(), policy);
+
+        var account = await scopedQuery
             .Where(x => x.Id == id)
             .Select(x => new AccountDto
             {
@@ -106,6 +120,11 @@ public class AccountsController : ControllerBase
                 OwnerTeamId = x.OwnerTeamId
             })
             .FirstOrDefaultAsync();
+
+        if (account is not null)
+        {
+            _securityPolicyService.ApplyAccountFieldMask(account, policy, User);
+        }
 
         return account is null ? NotFound() : Ok(account);
     }
@@ -185,6 +204,12 @@ public class AccountsController : ControllerBase
             return NotFound();
         }
 
+        var policy = await _securityPolicyService.GetPolicyAsync(AccountSecurityEntityName);
+        if (!await _securityPolicyService.CanAccessAccountAsync(item, policy))
+        {
+            return Forbid();
+        }
+
         if (string.IsNullOrWhiteSpace(item.AccountNumber))
         {
             item.AccountNumber = await _numberSequenceService.GenerateNextAsync("ACCOUNT");
@@ -226,6 +251,12 @@ public class AccountsController : ControllerBase
         if (item is null)
         {
             return NotFound();
+        }
+
+        var policy = await _securityPolicyService.GetPolicyAsync(AccountSecurityEntityName);
+        if (!await _securityPolicyService.CanAccessAccountAsync(item, policy))
+        {
+            return Forbid();
         }
 
         item.IsDeleted = true;

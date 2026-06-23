@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -10,9 +11,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623143341_AddNotificationModule16")]
+    partial class AddNotificationModule16
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -606,67 +609,6 @@ namespace backend.Migrations
                     b.ToTable("ActivityComments");
                 });
 
-            modelBuilder.Entity("backend.Entities.AiPromptTemplate", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsSystem")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SystemPrompt")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UseCaseCode")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Version")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(1);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name");
-
-                    b.HasIndex("UseCaseCode", "Version")
-                        .IsUnique();
-
-                    b.ToTable("AiPromptTemplates");
-                });
-
             modelBuilder.Entity("backend.Entities.AppRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1227,84 +1169,6 @@ namespace backend.Migrations
                     b.ToTable("ContactInteractions");
                 });
 
-            modelBuilder.Entity("backend.Entities.CustomFieldDefinition", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("DataTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DefaultValue")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EntityName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FieldKey")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsIndexed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsRequired")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("OptionsJson")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DataTypeId");
-
-                    b.HasIndex("EntityName", "FieldKey")
-                        .IsUnique();
-
-                    b.ToTable("CustomFieldDefinitions");
-                });
-
             modelBuilder.Entity("backend.Entities.CustomerProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1672,141 +1536,6 @@ namespace backend.Migrations
                         .IsUnique();
 
                     b.ToTable("DocumentVersions");
-                });
-
-            modelBuilder.Entity("backend.Entities.IntegrationConnection", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ApiKeyReference")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AuthTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("DirectionId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EndpointUrl")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("LastSyncAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("LastSyncStatusId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ProviderId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthTypeId");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.HasIndex("DirectionId");
-
-                    b.HasIndex("LastSyncStatusId");
-
-                    b.HasIndex("ProviderId");
-
-                    b.ToTable("IntegrationConnections");
-                });
-
-            modelBuilder.Entity("backend.Entities.IntegrationSyncRun", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("IntegrationConnectionId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("RecordsProcessed")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("StatusId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("TriggerTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IntegrationConnectionId");
-
-                    b.HasIndex("StartedAt");
-
-                    b.HasIndex("StatusId");
-
-                    b.HasIndex("TriggerTypeId");
-
-                    b.ToTable("IntegrationSyncRuns");
                 });
 
             modelBuilder.Entity("backend.Entities.Invoice", b =>
@@ -4027,75 +3756,6 @@ namespace backend.Migrations
                     b.ToTable("QuoteLines");
                 });
 
-            modelBuilder.Entity("backend.Entities.RecordStatusDefinition", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EntityName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsClosedState")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsDefault")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("StatusCode")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("StatusName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EntityName", "SortOrder");
-
-                    b.HasIndex("EntityName", "StatusCode")
-                        .IsUnique();
-
-                    b.ToTable("RecordStatusDefinitions");
-                });
-
             modelBuilder.Entity("backend.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -4387,63 +4047,6 @@ namespace backend.Migrations
                     b.HasIndex("TargetTypeId");
 
                     b.ToTable("SalesTargets");
-                });
-
-            modelBuilder.Entity("backend.Entities.SecurityPolicy", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EntityName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("MaskSensitiveFields")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<Guid>("ScopeTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SensitiveFieldList")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EntityName")
-                        .IsUnique();
-
-                    b.HasIndex("ScopeTypeId");
-
-                    b.ToTable("SecurityPolicies");
                 });
 
             modelBuilder.Entity("backend.Entities.ServiceCase", b =>
@@ -5217,17 +4820,6 @@ namespace backend.Migrations
                     b.Navigation("InteractionType");
                 });
 
-            modelBuilder.Entity("backend.Entities.CustomFieldDefinition", b =>
-                {
-                    b.HasOne("backend.Entities.LookupValue", "DataType")
-                        .WithMany()
-                        .HasForeignKey("DataTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DataType");
-                });
-
             modelBuilder.Entity("backend.Entities.Department", b =>
                 {
                     b.HasOne("backend.Entities.Department", "ParentDepartment")
@@ -5326,67 +4918,6 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Document");
-                });
-
-            modelBuilder.Entity("backend.Entities.IntegrationConnection", b =>
-                {
-                    b.HasOne("backend.Entities.LookupValue", "AuthType")
-                        .WithMany()
-                        .HasForeignKey("AuthTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "Direction")
-                        .WithMany()
-                        .HasForeignKey("DirectionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "LastSyncStatus")
-                        .WithMany()
-                        .HasForeignKey("LastSyncStatusId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.LookupValue", "Provider")
-                        .WithMany()
-                        .HasForeignKey("ProviderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AuthType");
-
-                    b.Navigation("Direction");
-
-                    b.Navigation("LastSyncStatus");
-
-                    b.Navigation("Provider");
-                });
-
-            modelBuilder.Entity("backend.Entities.IntegrationSyncRun", b =>
-                {
-                    b.HasOne("backend.Entities.IntegrationConnection", "IntegrationConnection")
-                        .WithMany("SyncRuns")
-                        .HasForeignKey("IntegrationConnectionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "TriggerType")
-                        .WithMany()
-                        .HasForeignKey("TriggerTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("IntegrationConnection");
-
-                    b.Navigation("Status");
-
-                    b.Navigation("TriggerType");
                 });
 
             modelBuilder.Entity("backend.Entities.Invoice", b =>
@@ -6402,17 +5933,6 @@ namespace backend.Migrations
                     b.Navigation("TargetType");
                 });
 
-            modelBuilder.Entity("backend.Entities.SecurityPolicy", b =>
-                {
-                    b.HasOne("backend.Entities.LookupValue", "ScopeType")
-                        .WithMany()
-                        .HasForeignKey("ScopeTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("ScopeType");
-                });
-
             modelBuilder.Entity("backend.Entities.ServiceCase", b =>
                 {
                     b.HasOne("backend.Entities.Account", "Account")
@@ -6622,11 +6142,6 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Entities.Document", b =>
                 {
                     b.Navigation("Versions");
-                });
-
-            modelBuilder.Entity("backend.Entities.IntegrationConnection", b =>
-                {
-                    b.Navigation("SyncRuns");
                 });
 
             modelBuilder.Entity("backend.Entities.Invoice", b =>
