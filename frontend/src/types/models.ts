@@ -562,6 +562,63 @@ export type Discount = {
   updatedAt?: string
 }
 
+export type Quote = {
+  id: string
+  quoteNumber: string
+  accountId: string
+  accountName?: string
+  contactId?: string
+  contactName?: string
+  opportunityId?: string
+  opportunityTopic?: string
+  priceListId: string
+  priceListName?: string
+  currencyId: string
+  currencyName?: string
+  quoteStatusId: string
+  quoteStatusName?: string
+  approvalStatusId: string
+  approvalStatusName?: string
+  validFrom?: string
+  validTo?: string
+  subtotalAmount: number
+  discountAmount: number
+  taxAmount: number
+  totalAmount: number
+  notes?: string
+  termsAndConditions?: string
+  approvedById?: string
+  approvedAt?: string
+  convertedOrderId?: string
+  convertedAt?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type QuoteLine = {
+  id: string
+  quoteId: string
+  productId?: string
+  productBundleId?: string
+  productName: string
+  description?: string
+  unitOfMeasureId?: string
+  unitOfMeasureName?: string
+  quantity: number
+  unitPrice: number
+  discountPercent: number
+  discountAmount: number
+  taxRate: number
+  taxAmount: number
+  lineTotal: number
+  sortOrder: number
+  createdAt: string
+  updatedAt?: string
+}
+
 export type OpportunityCompetitor = {
   id: string
   opportunityId: string

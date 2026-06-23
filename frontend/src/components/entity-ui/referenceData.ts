@@ -34,6 +34,8 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     opportunityratingid: 'OPPORTUNITY_RATING',
     opportunitysourceid: 'OPPORTUNITY_SOURCE',
     currencyid: 'CURRENCY',
+    quotestatusid: 'QUOTE_STATUS',
+    approvalstatusid: 'QUOTE_APPROVAL_STATUS',
     winreasonid: 'WIN_REASON',
     lossreasonid: 'LOSS_REASON',
     threatlevelid: 'COMPETITOR_THREAT_LEVEL',

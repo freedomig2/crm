@@ -58,6 +58,8 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<ProductBundleItem> ProductBundleItems => Set<ProductBundleItem>();
     public DbSet<UnitOfMeasure> UnitOfMeasures => Set<UnitOfMeasure>();
     public DbSet<Discount> Discounts => Set<Discount>();
+    public DbSet<Quote> Quotes => Set<Quote>();
+    public DbSet<QuoteLine> QuoteLines => Set<QuoteLine>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -627,6 +629,109 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .Property(x => x.IsDefault)
             .HasDefaultValue(false);
 
+        builder.Entity<Quote>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.Opportunity)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.PriceList)
+            .WithMany()
+            .HasForeignKey(x => x.PriceListId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.QuoteStatus)
+            .WithMany()
+            .HasForeignKey(x => x.QuoteStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.ApprovalStatus)
+            .WithMany()
+            .HasForeignKey(x => x.ApprovalStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.ApprovedBy)
+            .WithMany()
+            .HasForeignKey(x => x.ApprovedById)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Quote>(entity =>
+        {
+            entity.Property(x => x.SubtotalAmount).HasDefaultValue(0m);
+            entity.Property(x => x.DiscountAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TaxAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TotalAmount).HasDefaultValue(0m);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<QuoteLine>()
+            .HasOne(x => x.Quote)
+            .WithMany(x => x.Lines)
+            .HasForeignKey(x => x.QuoteId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<QuoteLine>()
+            .HasOne(x => x.Product)
+            .WithMany()
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<QuoteLine>()
+            .HasOne(x => x.ProductBundle)
+            .WithMany()
+            .HasForeignKey(x => x.ProductBundleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<QuoteLine>()
+            .HasOne(x => x.UnitOfMeasure)
+            .WithMany()
+            .HasForeignKey(x => x.UnitOfMeasureId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<QuoteLine>(entity =>
+        {
+            entity.Property(x => x.DiscountPercent).HasDefaultValue(0m);
+            entity.Property(x => x.DiscountAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TaxRate).HasDefaultValue(0m);
+            entity.Property(x => x.TaxAmount).HasDefaultValue(0m);
+            entity.Property(x => x.LineTotal).HasDefaultValue(0m);
+            entity.Property(x => x.SortOrder).HasDefaultValue(0);
+        });
+
         builder.Entity<NumberSequence>()
             .HasOne(x => x.ResetFrequency)
             .WithMany()
@@ -677,6 +782,12 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<UnitOfMeasure>().HasIndex(x => x.Name).IsUnique();
         builder.Entity<Discount>().HasIndex(x => x.Code).IsUnique();
         builder.Entity<Discount>().HasIndex(x => x.Name);
+        builder.Entity<Quote>().HasIndex(x => x.QuoteNumber).IsUnique();
+        builder.Entity<Quote>().HasIndex(x => x.AccountId);
+        builder.Entity<Quote>().HasIndex(x => x.OpportunityId);
+        builder.Entity<Quote>().HasIndex(x => x.QuoteStatusId);
+        builder.Entity<Quote>().HasIndex(x => x.ApprovalStatusId);
+        builder.Entity<QuoteLine>().HasIndex(x => new { x.QuoteId, x.SortOrder });
         builder.Entity<OpportunityProduct>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityCompetitor>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityActivity>().HasIndex(x => x.OpportunityId);

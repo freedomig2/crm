@@ -48,6 +48,8 @@ public static class SeedData
             "ProductBundles.View", "ProductBundles.Create", "ProductBundles.Update", "ProductBundles.Delete",
             "UnitOfMeasures.View", "UnitOfMeasures.Create", "UnitOfMeasures.Update", "UnitOfMeasures.Delete",
             "Discounts.View", "Discounts.Create", "Discounts.Update", "Discounts.Delete",
+            "Quotes.View", "Quotes.Create", "Quotes.Update", "Quotes.Delete", "Quotes.Approve", "Quotes.ConvertToOrder",
+            "QuoteLines.View", "QuoteLines.Create", "QuoteLines.Update", "QuoteLines.Delete",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -271,6 +273,21 @@ public static class SeedData
         await EnsureLookupCategoryAsync(db, "Discount Type", "DISCOUNT_TYPE", new[]
         {
             ("Percentage", "PERCENTAGE"), ("Fixed Amount", "FIXED_AMOUNT")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Quote Status", "QUOTE_STATUS", new[]
+        {
+            ("Draft", "DRAFT"), ("Sent", "SENT"), ("Accepted", "ACCEPTED"), ("Rejected", "REJECTED"), ("Expired", "EXPIRED"), ("Cancelled", "CANCELLED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Quote Approval Status", "QUOTE_APPROVAL_STATUS", new[]
+        {
+            ("Not Required", "NOT_REQUIRED"), ("Pending", "PENDING"), ("Approved", "APPROVED"), ("Rejected", "REJECTED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Tax Type", "TAX_TYPE", new[]
+        {
+            ("Exclusive", "EXCLUSIVE"), ("Inclusive", "INCLUSIVE"), ("Exempt", "EXEMPT")
         });
 
         await EnsureLookupCategoryAsync(db, "Salutation", "SALUTATION", new[]

@@ -122,6 +122,14 @@ export function EntityDetailsPage<TItem extends { id: string }>({
       appearance: 'secondary',
     })
   }
+  if (id && config.key === 'quotes') {
+    actions.push({
+      key: 'manage-lines',
+      label: 'Manage Lines',
+      onClick: () => navigate(`/sales/quotes/${id}/lines`),
+      appearance: 'secondary',
+    })
+  }
   actions.push({ key: 'back', label: 'Back to List', onClick: () => navigate(config.listPath), appearance: 'subtle' })
 
   const summaryRows = [

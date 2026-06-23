@@ -28,6 +28,7 @@ import {
   productBundlesConfig,
   productCategoriesConfig,
   productsConfig,
+  quotesConfig,
   rolesConfig,
   settingsConfig,
   teamsConfig,
@@ -58,6 +59,7 @@ import { ForecastDetailsPage, ForecastFormPage, ForecastsPage } from './sales/Fo
 import { SalesTargetDetailsPage, SalesTargetFormPage, SalesTargetsListPage } from './sales/SalesTargetsPages'
 import { RevenueTrackingPage, SalesPerformancePage } from './sales/SalesAnalyticsPages'
 import { PriceListItemsPage, ProductBundleItemsPage } from './sales/ProductPricingPages'
+import { QuoteLinesPage } from './sales/QuoteLinesPage'
 
 function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   const { id } = useParams()
@@ -238,6 +240,12 @@ function App() {
               <Route path="/sales/discounts/create" element={<EntityCreatePage config={discountsConfig} />} />
               <Route path="/sales/discounts/:id/edit" element={<EntityEditPage config={discountsConfig} />} />
               <Route path="/sales/discounts/:id" element={<EntityDetailsPage config={discountsConfig} />} />
+
+              <Route path="/sales/quotes" element={<EntityListPage config={quotesConfig} title={quotesConfig.title} subtitle={quotesConfig.subtitle} endpoint={quotesConfig.endpoint} columns={quotesConfig.columns} listPath={quotesConfig.listPath} createPath={quotesConfig.createPath} detailsPath={quotesConfig.detailsPath} editPath={quotesConfig.editPath} permissions={quotesConfig.permissions} />} />
+              <Route path="/sales/quotes/create" element={<EntityCreatePage config={quotesConfig} />} />
+              <Route path="/sales/quotes/:id/edit" element={<EntityEditPage config={quotesConfig} />} />
+              <Route path="/sales/quotes/:id" element={<EntityDetailsPage config={quotesConfig} />} />
+              <Route path="/sales/quotes/:id/lines" element={<QuoteLinesPage />} />
 
               <Route path="/crm/account-addresses" element={<EntityListPage config={accountAddressesConfig} title={accountAddressesConfig.title} subtitle={accountAddressesConfig.subtitle} endpoint={accountAddressesConfig.endpoint} columns={accountAddressesConfig.columns} listPath={accountAddressesConfig.listPath} createPath={accountAddressesConfig.createPath} detailsPath={accountAddressesConfig.detailsPath} editPath={accountAddressesConfig.editPath} permissions={accountAddressesConfig.permissions} />} />
               <Route path="/crm/account-addresses/create" element={<EntityCreatePage config={accountAddressesConfig} />} />

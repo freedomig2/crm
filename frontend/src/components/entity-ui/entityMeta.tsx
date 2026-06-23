@@ -233,6 +233,16 @@ export const sectionMap = (configKey: string, fields: EntityField[]): SectionDef
       .filter((section) => section.fields.length > 0)
   }
 
+  if (configKey === 'quotes') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['quoteNumber', 'accountId', 'contactId', 'opportunityId'] },
+      { key: 'commercial', title: 'Commercial Terms', icon: <DataPieRegular />, fields: ['priceListId', 'currencyId', 'quoteStatusId', 'approvalStatusId', 'validFrom', 'validTo'] },
+      { key: 'ownership', title: 'Ownership', icon: <PersonRegular />, fields: ['ownerUserId', 'ownerTeamId', 'isActive'] },
+      { key: 'notes', title: 'Notes', icon: <ClipboardTaskRegular />, fields: ['notes', 'termsAndConditions'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
   return fallbackSections(fields)
 }
 
@@ -297,7 +307,7 @@ export const getEntityIcon = (configKey: string) => {
   if (configKey === 'contacts') return <PersonCallRegular />
   if (configKey === 'lookup-categories' || configKey === 'lookup-values') return <BookDatabaseRegular />
   if (configKey === 'system-settings') return <SettingsRegular />
-  if (configKey === 'products' || configKey === 'product-categories' || configKey === 'price-lists' || configKey === 'product-bundles' || configKey === 'unit-of-measures' || configKey === 'discounts') return <BookDatabaseRegular />
+  if (configKey === 'products' || configKey === 'product-categories' || configKey === 'price-lists' || configKey === 'product-bundles' || configKey === 'unit-of-measures' || configKey === 'discounts' || configKey === 'quotes') return <BookDatabaseRegular />
   return <BookDatabaseRegular />
 }
 

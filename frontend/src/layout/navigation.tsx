@@ -77,6 +77,7 @@ const defaultEnabledItems = new Set([
   'sales-pipeline',
   'sales-forecasts',
   'sales-targets',
+  'quotes',
   'products',
   'product-categories',
   'price-lists',
