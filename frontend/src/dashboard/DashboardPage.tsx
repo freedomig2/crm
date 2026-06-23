@@ -45,18 +45,48 @@ export function DashboardPage() {
   const [leadSummary, setLeadSummary] = useState<LeadDashboardSummary | null>(null)
   const [opportunitySummary, setOpportunitySummary] = useState<OpportunityDashboardSummary | null>(null)
   const [salesPerformance, setSalesPerformance] = useState<SalesPerformanceDashboard | null>(null)
+  const [productMetrics, setProductMetrics] = useState({
+    totalProducts: 0,
+    activeProducts: 0,
+    totalPriceLists: 0,
+    activePriceLists: 0,
+    defaultPriceLists: 0,
+  })
 
   useEffect(() => {
     void (async () => {
-      const [leads, opportunities, performance] = await Promise.allSettled([
+      const [leads, opportunities, performance, products, activeProducts, priceLists] = await Promise.allSettled([
         api.get<LeadDashboardSummary>('api/leads/dashboard-summary'),
         api.get<OpportunityDashboardSummary>('api/opportunities/dashboard-summary'),
         api.get<SalesPerformanceDashboard>('api/sales/performance'),
+        api.get<{ totalCount: number }>('api/products', { params: { page: 1, pageSize: 1 } }),
+        api.get<{ totalCount: number }>('api/products', { params: { page: 1, pageSize: 1, isActive: true } }),
+        api.get<{ items: Array<{ isDefault: boolean; isActive: boolean }>; totalCount: number }>('api/price-lists', { params: { page: 1, pageSize: 200 } }),
       ])
 
       setLeadSummary(leads.status === 'fulfilled' ? leads.value.data : null)
       setOpportunitySummary(opportunities.status === 'fulfilled' ? opportunities.value.data : null)
       setSalesPerformance(performance.status === 'fulfilled' ? performance.value.data : null)
+
+      const totalProducts = products.status === 'fulfilled' ? products.value.data.totalCount : 0
+      const activeProductsCount = activeProducts.status === 'fulfilled' ? activeProducts.value.data.totalCount : 0
+      const totalPriceLists = priceLists.status === 'fulfilled' ? priceLists.value.data.totalCount : 0
+      const activePriceListsCount =
+        priceLists.status === 'fulfilled'
+          ? priceLists.value.data.items.filter((item) => item.isActive).length
+          : 0
+      const defaultPriceListsCount =
+        priceLists.status === 'fulfilled'
+          ? priceLists.value.data.items.filter((item) => item.isDefault).length
+          : 0
+
+      setProductMetrics({
+        totalProducts,
+        activeProducts: activeProductsCount,
+        totalPriceLists,
+        activePriceLists: activePriceListsCount,
+        defaultPriceLists: defaultPriceListsCount,
+      })
     })()
   }, [])
 
@@ -91,6 +121,11 @@ export function DashboardPage() {
         <DashboardCard label="Revenue This Month" value={formatMoney(salesPerformance?.revenueThisMonth)} />
         <DashboardCard label="Forecast Revenue" value={formatMoney(salesPerformance?.forecastRevenue)} />
         <DashboardCard label="Forecast Accuracy" value={`${salesPerformance?.forecastAccuracy ?? 0}%`} />
+        <DashboardCard label="Total Products" value={productMetrics.totalProducts} />
+        <DashboardCard label="Active Products" value={productMetrics.activeProducts} />
+        <DashboardCard label="Price Lists" value={productMetrics.totalPriceLists} />
+        <DashboardCard label="Active Price Lists" value={productMetrics.activePriceLists} />
+        <DashboardCard label="Default Price Lists" value={productMetrics.defaultPriceLists} />
       </section>
 
       <section className={styles.chartGrid}>

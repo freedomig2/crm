@@ -429,6 +429,139 @@ export type OpportunityProduct = {
   sortOrder: number
 }
 
+export type Product = {
+  id: string
+  productCode: string
+  name: string
+  description?: string
+  productCategoryId: string
+  productCategoryName?: string
+  productTypeId: string
+  productTypeName?: string
+  unitOfMeasureId: string
+  unitOfMeasureName?: string
+  productStatusId: string
+  productStatusName?: string
+  sku?: string
+  barcode?: string
+  manufacturer?: string
+  brand?: string
+  costPrice?: number
+  standardPrice?: number
+  taxRate?: number
+  weight?: number
+  volume?: number
+  isStockItem: boolean
+  allowDiscount: boolean
+  effectiveFrom?: string
+  effectiveTo?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type ProductCategory = {
+  id: string
+  name: string
+  code: string
+  description?: string
+  parentCategoryId?: string
+  parentCategoryName?: string
+  sortOrder: number
+  productCount: number
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type PriceList = {
+  id: string
+  priceListNumber: string
+  name: string
+  description?: string
+  currencyId: string
+  currencyName?: string
+  effectiveFrom?: string
+  effectiveTo?: string
+  isDefault: boolean
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type PriceListItem = {
+  id: string
+  priceListId: string
+  productId: string
+  productCode: string
+  productName: string
+  unitPrice: number
+  minimumQuantity?: number
+  maximumQuantity?: number
+  discountPercent?: number
+  effectiveFrom?: string
+  effectiveTo?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type ProductBundle = {
+  id: string
+  bundleCode: string
+  name: string
+  description?: string
+  bundlePrice?: number
+  allowComponentOverride: boolean
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type ProductBundleItem = {
+  id: string
+  productBundleId: string
+  productId: string
+  productCode: string
+  productName: string
+  quantity: number
+  sortOrder: number
+  unitPrice: number
+  lineTotal: number
+  createdAt: string
+  updatedAt?: string
+}
+
+export type UnitOfMeasure = {
+  id: string
+  name: string
+  code: string
+  description?: string
+  sortOrder: number
+  isDefault: boolean
+  isActive: boolean
+  createdAt: string
+  updatedAt?: string
+}
+
+export type Discount = {
+  id: string
+  name: string
+  code: string
+  discountTypeId: string
+  discountTypeName?: string
+  value: number
+  maximumAmount?: number
+  isStackable: boolean
+  isActive: boolean
+  effectiveFrom?: string
+  effectiveTo?: string
+  description?: string
+  createdAt: string
+  updatedAt?: string
+}
+
 export type OpportunityCompetitor = {
   id: string
   opportunityId: string

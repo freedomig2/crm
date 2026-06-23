@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Button, Dropdown, Field, Input, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
+import { Button, Dropdown, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { DeleteConfirmDialog } from '../components/crud/DeleteConfirmDialog'
-import { LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { DateRangeFilterField } from '../components/filters/DateRangeFilterField'
+import { FilterField } from '../components/filters/FilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
 import { loadLookupOptionsByCategoryCode } from '../components/entity-ui/referenceData'
 import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { Lead, PagedResult } from '../types/models'
@@ -47,7 +50,7 @@ export function LeadsListPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<Lead | null>(null)
-  const [query, setQuery] = useState<LeadQuery>({
+  const defaultQuery: LeadQuery = {
     page: 1,
     pageSize: 20,
     search: '',
@@ -62,6 +65,18 @@ export function LeadsListPage() {
     createdFrom: '',
     createdTo: '',
     isActive: '',
+  }
+  const { query, setQuery } = useListQueryState<LeadQuery>({ defaults: defaultQuery, numberKeys: ['page', 'pageSize'] })
+  const [draftFilters, setDraftFilters] = useState<Pick<LeadQuery, 'leadStatusId' | 'qualificationStatusId' | 'ratingId' | 'leadSourceId' | 'ownerUserId' | 'assignedToUserId' | 'createdFrom' | 'createdTo' | 'isActive'>>({
+    leadStatusId: query.leadStatusId,
+    qualificationStatusId: query.qualificationStatusId,
+    ratingId: query.ratingId,
+    leadSourceId: query.leadSourceId,
+    ownerUserId: query.ownerUserId,
+    assignedToUserId: query.assignedToUserId,
+    createdFrom: query.createdFrom,
+    createdTo: query.createdTo,
+    isActive: query.isActive,
   })
 
   const load = async () => {
@@ -103,6 +118,18 @@ export function LeadsListPage() {
     void Promise.resolve().then(load)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, query])
+
+  const activeFilterCount = [
+    query.leadStatusId,
+    query.qualificationStatusId,
+    query.ratingId,
+    query.leadSourceId,
+    query.ownerUserId,
+    query.assignedToUserId,
+    query.createdFrom,
+    query.createdTo,
+    query.isActive,
+  ].filter(Boolean).length
 
   const refresh = () => setQuery((current) => ({ ...current }))
 
@@ -227,45 +254,6 @@ export function LeadsListPage() {
       />
       <CommandBar actions={canCreate ? [{ key: 'create', label: 'New Lead', onClick: () => navigate('/leads/create') }] : []} />
 
-      <section className={styles.filterBar}>
-        <Field label="Status">
-          <LookupCombobox fieldKey="leadStatusId" value={query.leadStatusId} onChange={(value) => setQuery((current) => ({ ...current, leadStatusId: value, page: 1 }))} />
-        </Field>
-        <Field label="Qualification">
-          <LookupCombobox fieldKey="qualificationStatusId" value={query.qualificationStatusId} onChange={(value) => setQuery((current) => ({ ...current, qualificationStatusId: value, page: 1 }))} />
-        </Field>
-        <Field label="Rating">
-          <LookupCombobox fieldKey="ratingId" value={query.ratingId} onChange={(value) => setQuery((current) => ({ ...current, ratingId: value, page: 1 }))} />
-        </Field>
-        <Field label="Lead Source">
-          <LookupCombobox fieldKey="leadSourceId" value={query.leadSourceId} onChange={(value) => setQuery((current) => ({ ...current, leadSourceId: value, page: 1 }))} />
-        </Field>
-        <Field label="Owner">
-          <LookupCombobox fieldKey="ownerUserId" value={query.ownerUserId} onChange={(value) => setQuery((current) => ({ ...current, ownerUserId: value, page: 1 }))} />
-        </Field>
-        <Field label="Assigned User">
-          <LookupCombobox fieldKey="assignedToUserId" value={query.assignedToUserId} onChange={(value) => setQuery((current) => ({ ...current, assignedToUserId: value, page: 1 }))} />
-        </Field>
-        <Field label="Created From">
-          <Input size="small" type="date" value={query.createdFrom} onChange={(_, data) => setQuery((current) => ({ ...current, createdFrom: data.value, page: 1 }))} />
-        </Field>
-        <Field label="Created To">
-          <Input size="small" type="date" value={query.createdTo} onChange={(_, data) => setQuery((current) => ({ ...current, createdTo: data.value, page: 1 }))} />
-        </Field>
-        <Field label="Active">
-          <Dropdown
-            size="small"
-            selectedOptions={query.isActive ? [query.isActive] : []}
-            value={query.isActive === 'true' ? 'Active' : query.isActive === 'false' ? 'Inactive' : ''}
-            onOptionSelect={(_, data) => setQuery((current) => ({ ...current, isActive: data.optionValue ?? '', page: 1 }))}
-          >
-            <Option value="">All</Option>
-            <Option value="true">Active</Option>
-            <Option value="false">Inactive</Option>
-          </Dropdown>
-        </Field>
-      </section>
-
       {loading ? <Spinner size="small" label="Loading leads..." style={{ margin: '8px 0' }} /> : null}
       {error ? (
         <MessageBar intent="error" style={{ marginBottom: 10 }}>
@@ -297,6 +285,64 @@ export function LeadsListPage() {
         onEdit={canEdit ? (row) => navigate(`/leads/${row.id}/edit`) : undefined}
         onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
         emptyMessage="No leads match the current filters."
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField label="Status" fieldKey="leadStatusId" value={draftFilters.leadStatusId} onChange={(value) => setDraftFilters((current) => ({ ...current, leadStatusId: value }))} />
+            <LookupFilterField label="Qualification" fieldKey="qualificationStatusId" value={draftFilters.qualificationStatusId} onChange={(value) => setDraftFilters((current) => ({ ...current, qualificationStatusId: value }))} />
+            <LookupFilterField label="Rating" fieldKey="ratingId" value={draftFilters.ratingId} onChange={(value) => setDraftFilters((current) => ({ ...current, ratingId: value }))} />
+            <LookupFilterField label="Lead Source" fieldKey="leadSourceId" value={draftFilters.leadSourceId} onChange={(value) => setDraftFilters((current) => ({ ...current, leadSourceId: value }))} />
+            <LookupFilterField label="Owner" fieldKey="ownerUserId" value={draftFilters.ownerUserId} onChange={(value) => setDraftFilters((current) => ({ ...current, ownerUserId: value }))} />
+            <LookupFilterField label="Assigned User" fieldKey="assignedToUserId" value={draftFilters.assignedToUserId} onChange={(value) => setDraftFilters((current) => ({ ...current, assignedToUserId: value }))} />
+            <DateRangeFilterField
+              fromLabel="Created From"
+              toLabel="Created To"
+              fromValue={draftFilters.createdFrom}
+              toValue={draftFilters.createdTo}
+              onFromChange={(value) => setDraftFilters((current) => ({ ...current, createdFrom: value }))}
+              onToChange={(value) => setDraftFilters((current) => ({ ...current, createdTo: value }))}
+            />
+            <FilterField label="Active">
+              <Dropdown
+                size="small"
+                selectedOptions={draftFilters.isActive ? [draftFilters.isActive] : []}
+                value={draftFilters.isActive === 'true' ? 'Active' : draftFilters.isActive === 'false' ? 'Inactive' : ''}
+                onOptionSelect={(_, data) => setDraftFilters((current) => ({ ...current, isActive: data.optionValue ?? '' }))}
+              >
+                <Option value="">All</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Dropdown>
+            </FilterField>
+          </>
+        }
+        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+        onCancelFilters={() =>
+          setDraftFilters({
+            leadStatusId: query.leadStatusId,
+            qualificationStatusId: query.qualificationStatusId,
+            ratingId: query.ratingId,
+            leadSourceId: query.leadSourceId,
+            ownerUserId: query.ownerUserId,
+            assignedToUserId: query.assignedToUserId,
+            createdFrom: query.createdFrom,
+            createdTo: query.createdTo,
+            isActive: query.isActive,
+          })
+        }
+        onClearFilters={() =>
+          setDraftFilters({
+            leadStatusId: '',
+            qualificationStatusId: '',
+            ratingId: '',
+            leadSourceId: '',
+            ownerUserId: '',
+            assignedToUserId: '',
+            createdFrom: '',
+            createdTo: '',
+            isActive: '',
+          })
+        }
       />
 
       <DeleteConfirmDialog

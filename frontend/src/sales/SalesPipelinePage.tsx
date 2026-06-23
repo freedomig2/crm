@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Badge, Button, Field, Input, MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
+import { Badge, Input, MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
 import { BranchRequestRegular } from '@fluentui/react-icons'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { EntityHeader, EntityPageLayout, LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { EntityHeader, EntityPageLayout } from '../components/entity-ui/EntityComponents'
+import { DateRangeFilterField } from '../components/filters/DateRangeFilterField'
+import { FilterField } from '../components/filters/FilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
+import { DenseDataGrid } from '../components/grid/DenseDataGrid'
 import type { SalesPipelineBoard, SalesPipelineCard } from '../types/models'
 import { formatCurrency, formatDate, formatPercent } from './salesUtils'
 import styles from './Sales.module.css'
@@ -69,6 +73,7 @@ export function SalesPipelinePage() {
   const canMove = hasPermission('Pipeline.MoveStage')
   const [board, setBoard] = useState<SalesPipelineBoard | null>(null)
   const [filters, setFilters] = useState<PipelineFilters>(() => loadStoredFilters())
+  const [draftFilters, setDraftFilters] = useState<PipelineFilters>(() => loadStoredFilters())
   const [draggedOpportunityId, setDraggedOpportunityId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -121,9 +126,11 @@ export function SalesPipelinePage() {
     averageDealSize: 0,
   }, [board])
 
-  const setFilter = <K extends keyof PipelineFilters>(key: K, value: PipelineFilters[K]) => {
-    setFilters((current) => ({ ...current, [key]: value }))
+  const setDraftFilter = <K extends keyof PipelineFilters>(key: K, value: PipelineFilters[K]) => {
+    setDraftFilters((current) => ({ ...current, [key]: value }))
   }
+
+  const activeFilterCount = Object.values(filters).filter(Boolean).length
 
   const moveStage = async (newStageId: string) => {
     if (!draggedOpportunityId || !canMove) {
@@ -161,47 +168,51 @@ export function SalesPipelinePage() {
       ]} />}
       alerts={error ? [{ intent: 'error', text: error }] : undefined}
     >
-      <section className={styles.filterBar}>
-        <Field label="Account">
-          <LookupCombobox fieldKey="accountId" value={filters.accountId} onChange={(value) => setFilter('accountId', value)} />
-        </Field>
-        <Field label="Stage">
-          <LookupCombobox fieldKey="opportunityStageId" value={filters.stageId} onChange={(value) => setFilter('stageId', value)} />
-        </Field>
-        <Field label="Rating">
-          <LookupCombobox fieldKey="opportunityRatingId" value={filters.ratingId} onChange={(value) => setFilter('ratingId', value)} />
-        </Field>
-        <Field label="Industry">
-          <LookupCombobox fieldKey="industryId" value={filters.industryId} onChange={(value) => setFilter('industryId', value)} />
-        </Field>
-        <Field label="Owner">
-          <LookupCombobox fieldKey="ownerUserId" value={filters.ownerUserId} onChange={(value) => setFilter('ownerUserId', value)} />
-        </Field>
-        <Field label="Team">
-          <LookupCombobox fieldKey="ownerTeamId" value={filters.ownerTeamId} onChange={(value) => setFilter('ownerTeamId', value)} />
-        </Field>
-        <Field label="Min Revenue">
-          <Input size="small" type="number" value={filters.minRevenue} onChange={(_, data) => setFilter('minRevenue', data.value)} />
-        </Field>
-        <Field label="Max Revenue">
-          <Input size="small" type="number" value={filters.maxRevenue} onChange={(_, data) => setFilter('maxRevenue', data.value)} />
-        </Field>
-        <Field label="Min Probability">
-          <Input size="small" type="number" value={filters.minProbability} onChange={(_, data) => setFilter('minProbability', data.value)} />
-        </Field>
-        <Field label="Max Probability">
-          <Input size="small" type="number" value={filters.maxProbability} onChange={(_, data) => setFilter('maxProbability', data.value)} />
-        </Field>
-        <Field label="Close From">
-          <Input size="small" type="date" value={filters.closeDateFrom} onChange={(_, data) => setFilter('closeDateFrom', data.value)} />
-        </Field>
-        <Field label="Close To">
-          <Input size="small" type="date" value={filters.closeDateTo} onChange={(_, data) => setFilter('closeDateTo', data.value)} />
-        </Field>
-        <div className={styles.inlineActions}>
-          <Button size="small" appearance="secondary" onClick={() => setFilters(emptyFilters)}>Clear Filters</Button>
-        </div>
-      </section>
+      <DenseDataGrid
+        rows={[]}
+        columns={[]}
+        page={1}
+        pageSize={10}
+        search=""
+        onPageChange={() => undefined}
+        onPageSizeChange={() => undefined}
+        onSearchChange={() => undefined}
+        emptyMessage=""
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField label="Account" fieldKey="accountId" value={draftFilters.accountId} onChange={(value) => setDraftFilter('accountId', value)} />
+            <LookupFilterField label="Stage" fieldKey="opportunityStageId" value={draftFilters.stageId} onChange={(value) => setDraftFilter('stageId', value)} />
+            <LookupFilterField label="Rating" fieldKey="opportunityRatingId" value={draftFilters.ratingId} onChange={(value) => setDraftFilter('ratingId', value)} />
+            <LookupFilterField label="Industry" fieldKey="industryId" value={draftFilters.industryId} onChange={(value) => setDraftFilter('industryId', value)} />
+            <LookupFilterField label="Owner" fieldKey="ownerUserId" value={draftFilters.ownerUserId} onChange={(value) => setDraftFilter('ownerUserId', value)} />
+            <LookupFilterField label="Team" fieldKey="ownerTeamId" value={draftFilters.ownerTeamId} onChange={(value) => setDraftFilter('ownerTeamId', value)} />
+            <FilterField label="Min Revenue">
+              <Input size="small" type="number" value={draftFilters.minRevenue} onChange={(_, data) => setDraftFilter('minRevenue', data.value)} />
+            </FilterField>
+            <FilterField label="Max Revenue">
+              <Input size="small" type="number" value={draftFilters.maxRevenue} onChange={(_, data) => setDraftFilter('maxRevenue', data.value)} />
+            </FilterField>
+            <FilterField label="Min Probability">
+              <Input size="small" type="number" value={draftFilters.minProbability} onChange={(_, data) => setDraftFilter('minProbability', data.value)} />
+            </FilterField>
+            <FilterField label="Max Probability">
+              <Input size="small" type="number" value={draftFilters.maxProbability} onChange={(_, data) => setDraftFilter('maxProbability', data.value)} />
+            </FilterField>
+            <DateRangeFilterField
+              fromLabel="Close From"
+              toLabel="Close To"
+              fromValue={draftFilters.closeDateFrom}
+              toValue={draftFilters.closeDateTo}
+              onFromChange={(value) => setDraftFilter('closeDateFrom', value)}
+              onToChange={(value) => setDraftFilter('closeDateTo', value)}
+            />
+          </>
+        }
+        onApplyFilters={() => setFilters(draftFilters)}
+        onCancelFilters={() => setDraftFilters(filters)}
+        onClearFilters={() => setDraftFilters(emptyFilters)}
+      />
 
       {loading ? <Spinner size="small" label="Loading pipeline..." /> : null}
 

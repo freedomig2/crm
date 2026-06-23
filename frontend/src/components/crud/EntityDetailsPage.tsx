@@ -106,6 +106,22 @@ export function EntityDetailsPage<TItem extends { id: string }>({
   if (canEdit && id && !config.readOnly) {
     actions.push({ key: 'edit', label: 'Edit', onClick: () => navigate(config.editPath(id)), appearance: 'primary' })
   }
+  if (id && config.key === 'price-lists') {
+    actions.push({
+      key: 'manage-items',
+      label: 'Manage Items',
+      onClick: () => navigate(`/sales/price-lists/${id}/items`),
+      appearance: 'secondary',
+    })
+  }
+  if (id && config.key === 'product-bundles') {
+    actions.push({
+      key: 'manage-items',
+      label: 'Manage Items',
+      onClick: () => navigate(`/sales/product-bundles/${id}/items`),
+      appearance: 'secondary',
+    })
+  }
   actions.push({ key: 'back', label: 'Back to List', onClick: () => navigate(config.listPath), appearance: 'subtle' })
 
   const summaryRows = [

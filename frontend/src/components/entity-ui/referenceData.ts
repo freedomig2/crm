@@ -47,6 +47,9 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     targettypeid: 'SALES_TARGET_TYPE',
     targetperiodid: 'SALES_TARGET_PERIOD',
     forecasttypeid: 'FORECAST_TYPE',
+    producttypeid: 'PRODUCT_TYPE',
+    productstatusid: 'PRODUCT_STATUS',
+    discounttypeid: 'DISCOUNT_TYPE',
   }
 
   return map[fieldKey.toLowerCase()] ?? null
@@ -79,6 +82,30 @@ const endpointForFieldKey = (fieldKey: string): string => {
 
   if (fieldKey.includes('competitor')) {
     return 'api/opportunity-competitors'
+  }
+
+  if (fieldKey.includes('productcategory')) {
+    return 'api/product-categories'
+  }
+
+  if (fieldKey.includes('productbundle')) {
+    return 'api/product-bundles'
+  }
+
+  if (fieldKey.includes('product')) {
+    return 'api/products'
+  }
+
+  if (fieldKey.includes('unitofmeasure')) {
+    return 'api/unit-of-measures'
+  }
+
+  if (fieldKey.includes('pricelist')) {
+    return 'api/price-lists'
+  }
+
+  if (fieldKey.includes('discount')) {
+    return 'api/discounts'
   }
 
   if (fieldKey.includes('role')) {

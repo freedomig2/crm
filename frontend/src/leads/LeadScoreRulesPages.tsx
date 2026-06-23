@@ -13,7 +13,10 @@ import {
   LookupCombobox,
   StickySaveBar,
 } from '../components/entity-ui/EntityComponents'
+import { FilterField } from '../components/filters/FilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
 import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { LeadScoreRule, PagedResult } from '../types/models'
@@ -23,7 +26,6 @@ import {
   leadScoreRuleToForm,
   type LeadScoreRuleFormState,
 } from './leadUtils'
-import styles from '../contacts/Contacts.module.css'
 
 type RuleQuery = {
   page: number
@@ -48,7 +50,7 @@ export function LeadScoreRulesListPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<LeadScoreRule | null>(null)
-  const [query, setQuery] = useState<RuleQuery>({
+  const defaultQuery: RuleQuery = {
     page: 1,
     pageSize: 20,
     search: '',
@@ -56,6 +58,11 @@ export function LeadScoreRulesListPage() {
     sortDir: 'asc',
     ruleTypeId: '',
     isActive: '',
+  }
+  const { query, setQuery } = useListQueryState<RuleQuery>({ defaults: defaultQuery, numberKeys: ['page', 'pageSize'] })
+  const [draftFilters, setDraftFilters] = useState<Pick<RuleQuery, 'ruleTypeId' | 'isActive'>>({
+    ruleTypeId: query.ruleTypeId,
+    isActive: query.isActive,
   })
 
   const load = async () => {
@@ -90,6 +97,8 @@ export function LeadScoreRulesListPage() {
     void Promise.resolve().then(load)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, query])
+
+  const activeFilterCount = [query.ruleTypeId, query.isActive].filter(Boolean).length
 
   const refresh = () => setQuery((current) => ({ ...current }))
 
@@ -165,24 +174,6 @@ export function LeadScoreRulesListPage() {
         ]}
       />
 
-      <section className={styles.filterBar}>
-        <Field label="Rule Type">
-          <LookupCombobox fieldKey="ruleTypeId" value={query.ruleTypeId} onChange={(value) => setQuery((current) => ({ ...current, ruleTypeId: value, page: 1 }))} />
-        </Field>
-        <Field label="Active">
-          <Dropdown
-            size="small"
-            selectedOptions={query.isActive ? [query.isActive] : []}
-            value={query.isActive === 'true' ? 'Active' : query.isActive === 'false' ? 'Inactive' : ''}
-            onOptionSelect={(_, data) => setQuery((current) => ({ ...current, isActive: data.optionValue ?? '', page: 1 }))}
-          >
-            <Option value="">All</Option>
-            <Option value="true">Active</Option>
-            <Option value="false">Inactive</Option>
-          </Dropdown>
-        </Field>
-      </section>
-
       {loading ? <Spinner size="small" label="Loading lead score rules..." style={{ margin: '8px 0' }} /> : null}
       {error ? (
         <MessageBar intent="error" style={{ marginBottom: 10 }}>
@@ -214,6 +205,37 @@ export function LeadScoreRulesListPage() {
         onEdit={canEdit ? (row) => navigate(`/lead-score-rules/${row.id}/edit`) : undefined}
         onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
         emptyMessage="No lead score rules match the current filters."
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField label="Rule Type" fieldKey="ruleTypeId" value={draftFilters.ruleTypeId} onChange={(value) => setDraftFilters((current) => ({ ...current, ruleTypeId: value }))} />
+            <FilterField label="Active">
+              <Dropdown
+                size="small"
+                selectedOptions={draftFilters.isActive ? [draftFilters.isActive] : []}
+                value={draftFilters.isActive === 'true' ? 'Active' : draftFilters.isActive === 'false' ? 'Inactive' : ''}
+                onOptionSelect={(_, data) => setDraftFilters((current) => ({ ...current, isActive: data.optionValue ?? '' }))}
+              >
+                <Option value="">All</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Dropdown>
+            </FilterField>
+          </>
+        }
+        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+        onCancelFilters={() =>
+          setDraftFilters({
+            ruleTypeId: query.ruleTypeId,
+            isActive: query.isActive,
+          })
+        }
+        onClearFilters={() =>
+          setDraftFilters({
+            ruleTypeId: '',
+            isActive: '',
+          })
+        }
       />
 
       <DeleteConfirmDialog

@@ -19,13 +19,19 @@ import {
   accountsConfig,
   auditLogsConfig,
   customerProfilesConfig,
+  discountsConfig,
   departmentsConfig,
   lookupCategoriesConfig,
   lookupValuesConfig,
   permissionsConfig,
+  priceListsConfig,
+  productBundlesConfig,
+  productCategoriesConfig,
+  productsConfig,
   rolesConfig,
   settingsConfig,
   teamsConfig,
+  unitOfMeasuresConfig,
   usersConfig,
 } from './components/crud/adminConfig'
 import { EntityListPage } from './components/crud/EntityListPage'
@@ -51,6 +57,7 @@ import { SalesPipelinePage } from './sales/SalesPipelinePage'
 import { ForecastDetailsPage, ForecastFormPage, ForecastsPage } from './sales/ForecastsPages'
 import { SalesTargetDetailsPage, SalesTargetFormPage, SalesTargetsListPage } from './sales/SalesTargetsPages'
 import { RevenueTrackingPage, SalesPerformancePage } from './sales/SalesAnalyticsPages'
+import { PriceListItemsPage, ProductBundleItemsPage } from './sales/ProductPricingPages'
 
 function LegacyContactRedirect({ edit }: { edit?: boolean }) {
   const { id } = useParams()
@@ -199,6 +206,38 @@ function App() {
               <Route path="/sales/targets/:id" element={<SalesTargetDetailsPage />} />
               <Route path="/sales/revenue" element={<RevenueTrackingPage />} />
               <Route path="/sales/performance" element={<SalesPerformancePage />} />
+
+              <Route path="/sales/products" element={<EntityListPage config={productsConfig} title={productsConfig.title} subtitle={productsConfig.subtitle} endpoint={productsConfig.endpoint} columns={productsConfig.columns} listPath={productsConfig.listPath} createPath={productsConfig.createPath} detailsPath={productsConfig.detailsPath} editPath={productsConfig.editPath} permissions={productsConfig.permissions} />} />
+              <Route path="/sales/products/create" element={<EntityCreatePage config={productsConfig} />} />
+              <Route path="/sales/products/:id/edit" element={<EntityEditPage config={productsConfig} />} />
+              <Route path="/sales/products/:id" element={<EntityDetailsPage config={productsConfig} />} />
+
+              <Route path="/sales/product-categories" element={<EntityListPage config={productCategoriesConfig} title={productCategoriesConfig.title} subtitle={productCategoriesConfig.subtitle} endpoint={productCategoriesConfig.endpoint} columns={productCategoriesConfig.columns} listPath={productCategoriesConfig.listPath} createPath={productCategoriesConfig.createPath} detailsPath={productCategoriesConfig.detailsPath} editPath={productCategoriesConfig.editPath} permissions={productCategoriesConfig.permissions} />} />
+              <Route path="/sales/product-categories/create" element={<EntityCreatePage config={productCategoriesConfig} />} />
+              <Route path="/sales/product-categories/:id/edit" element={<EntityEditPage config={productCategoriesConfig} />} />
+              <Route path="/sales/product-categories/:id" element={<EntityDetailsPage config={productCategoriesConfig} />} />
+
+              <Route path="/sales/price-lists" element={<EntityListPage config={priceListsConfig} title={priceListsConfig.title} subtitle={priceListsConfig.subtitle} endpoint={priceListsConfig.endpoint} columns={priceListsConfig.columns} listPath={priceListsConfig.listPath} createPath={priceListsConfig.createPath} detailsPath={priceListsConfig.detailsPath} editPath={priceListsConfig.editPath} permissions={priceListsConfig.permissions} />} />
+              <Route path="/sales/price-lists/create" element={<EntityCreatePage config={priceListsConfig} />} />
+              <Route path="/sales/price-lists/:id/edit" element={<EntityEditPage config={priceListsConfig} />} />
+              <Route path="/sales/price-lists/:id" element={<EntityDetailsPage config={priceListsConfig} />} />
+              <Route path="/sales/price-lists/:id/items" element={<PriceListItemsPage />} />
+
+              <Route path="/sales/product-bundles" element={<EntityListPage config={productBundlesConfig} title={productBundlesConfig.title} subtitle={productBundlesConfig.subtitle} endpoint={productBundlesConfig.endpoint} columns={productBundlesConfig.columns} listPath={productBundlesConfig.listPath} createPath={productBundlesConfig.createPath} detailsPath={productBundlesConfig.detailsPath} editPath={productBundlesConfig.editPath} permissions={productBundlesConfig.permissions} />} />
+              <Route path="/sales/product-bundles/create" element={<EntityCreatePage config={productBundlesConfig} />} />
+              <Route path="/sales/product-bundles/:id/edit" element={<EntityEditPage config={productBundlesConfig} />} />
+              <Route path="/sales/product-bundles/:id" element={<EntityDetailsPage config={productBundlesConfig} />} />
+              <Route path="/sales/product-bundles/:id/items" element={<ProductBundleItemsPage />} />
+
+              <Route path="/sales/unit-of-measures" element={<EntityListPage config={unitOfMeasuresConfig} title={unitOfMeasuresConfig.title} subtitle={unitOfMeasuresConfig.subtitle} endpoint={unitOfMeasuresConfig.endpoint} columns={unitOfMeasuresConfig.columns} listPath={unitOfMeasuresConfig.listPath} createPath={unitOfMeasuresConfig.createPath} detailsPath={unitOfMeasuresConfig.detailsPath} editPath={unitOfMeasuresConfig.editPath} permissions={unitOfMeasuresConfig.permissions} />} />
+              <Route path="/sales/unit-of-measures/create" element={<EntityCreatePage config={unitOfMeasuresConfig} />} />
+              <Route path="/sales/unit-of-measures/:id/edit" element={<EntityEditPage config={unitOfMeasuresConfig} />} />
+              <Route path="/sales/unit-of-measures/:id" element={<EntityDetailsPage config={unitOfMeasuresConfig} />} />
+
+              <Route path="/sales/discounts" element={<EntityListPage config={discountsConfig} title={discountsConfig.title} subtitle={discountsConfig.subtitle} endpoint={discountsConfig.endpoint} columns={discountsConfig.columns} listPath={discountsConfig.listPath} createPath={discountsConfig.createPath} detailsPath={discountsConfig.detailsPath} editPath={discountsConfig.editPath} permissions={discountsConfig.permissions} />} />
+              <Route path="/sales/discounts/create" element={<EntityCreatePage config={discountsConfig} />} />
+              <Route path="/sales/discounts/:id/edit" element={<EntityEditPage config={discountsConfig} />} />
+              <Route path="/sales/discounts/:id" element={<EntityDetailsPage config={discountsConfig} />} />
 
               <Route path="/crm/account-addresses" element={<EntityListPage config={accountAddressesConfig} title={accountAddressesConfig.title} subtitle={accountAddressesConfig.subtitle} endpoint={accountAddressesConfig.endpoint} columns={accountAddressesConfig.columns} listPath={accountAddressesConfig.listPath} createPath={accountAddressesConfig.createPath} detailsPath={accountAddressesConfig.detailsPath} editPath={accountAddressesConfig.editPath} permissions={accountAddressesConfig.permissions} />} />
               <Route path="/crm/account-addresses/create" element={<EntityCreatePage config={accountAddressesConfig} />} />

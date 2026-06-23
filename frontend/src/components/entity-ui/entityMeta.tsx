@@ -182,6 +182,57 @@ export const sectionMap = (configKey: string, fields: EntityField[]): SectionDef
       .filter((section) => section.fields.length > 0)
   }
 
+  if (configKey === 'products') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['productCode', 'name', 'description', 'productCategoryId', 'productTypeId', 'productStatusId', 'unitOfMeasureId'] },
+      { key: 'pricing', title: 'Pricing', icon: <DataPieRegular />, fields: ['costPrice', 'standardPrice', 'taxRate', 'allowDiscount'] },
+      { key: 'attributes', title: 'Attributes', icon: <ClipboardTaskRegular />, fields: ['sku', 'barcode', 'manufacturer', 'brand', 'weight', 'volume', 'isStockItem'] },
+      { key: 'lifecycle', title: 'Lifecycle', icon: <CalendarAgendaRegular />, fields: ['effectiveFrom', 'effectiveTo', 'isActive'] },
+      { key: 'ownership', title: 'Ownership', icon: <PersonRegular />, fields: ['ownerUserId', 'ownerTeamId'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'product-categories') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['name', 'code', 'description', 'parentCategoryId', 'sortOrder', 'isActive'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'price-lists') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['priceListNumber', 'name', 'description', 'currencyId'] },
+      { key: 'timeline', title: 'Timeline', icon: <CalendarAgendaRegular />, fields: ['effectiveFrom', 'effectiveTo'] },
+      { key: 'flags', title: 'Flags', icon: <ShieldRegular />, fields: ['isDefault', 'isActive'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'product-bundles') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['bundleCode', 'name', 'description'] },
+      { key: 'pricing', title: 'Pricing', icon: <DataPieRegular />, fields: ['bundlePrice', 'allowComponentOverride', 'isActive'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'unit-of-measures') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['name', 'code', 'description', 'sortOrder', 'isDefault', 'isActive'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'discounts') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['name', 'code', 'discountTypeId', 'description'] },
+      { key: 'value', title: 'Value and Rules', icon: <DataPieRegular />, fields: ['value', 'maximumAmount', 'isStackable', 'isActive'] },
+      { key: 'timeline', title: 'Timeline', icon: <CalendarAgendaRegular />, fields: ['effectiveFrom', 'effectiveTo'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
   return fallbackSections(fields)
 }
 
@@ -246,6 +297,7 @@ export const getEntityIcon = (configKey: string) => {
   if (configKey === 'contacts') return <PersonCallRegular />
   if (configKey === 'lookup-categories' || configKey === 'lookup-values') return <BookDatabaseRegular />
   if (configKey === 'system-settings') return <SettingsRegular />
+  if (configKey === 'products' || configKey === 'product-categories' || configKey === 'price-lists' || configKey === 'product-bundles' || configKey === 'unit-of-measures' || configKey === 'discounts') return <BookDatabaseRegular />
   return <BookDatabaseRegular />
 }
 

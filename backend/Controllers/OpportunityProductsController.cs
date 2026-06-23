@@ -72,19 +72,26 @@ public class OpportunityProductsController : ControllerBase
     [HasPermission("OpportunityProducts.Create")]
     public async Task<ActionResult<OpportunityProductDto>> CreateProduct(Guid opportunityId, UpsertOpportunityProductRequestDto dto)
     {
-        if (!await _dbContext.Opportunities.AnyAsync(x => x.Id == opportunityId))
+        var opportunity = await _dbContext.Opportunities.FirstOrDefaultAsync(x => x.Id == opportunityId);
+        if (opportunity is null)
         {
             return NotFound();
         }
 
-        var validationError = ValidateProduct(dto);
+        var resolved = await ResolveRequestDefaultsAsync(opportunity, dto);
+        if (resolved.Error is not null)
+        {
+            return BadRequest(resolved.Error);
+        }
+
+        var validationError = ValidateProduct(resolved.Request);
         if (validationError is not null)
         {
             return BadRequest(validationError);
         }
 
         var product = new OpportunityProduct { OpportunityId = opportunityId };
-        ApplyProductValues(product, dto);
+        ApplyProductValues(product, resolved.Request);
 
         _dbContext.OpportunityProducts.Add(product);
         await _dbContext.SaveChangesAsync();
@@ -104,13 +111,25 @@ public class OpportunityProductsController : ControllerBase
             return NotFound();
         }
 
-        var validationError = ValidateProduct(dto);
+        var opportunity = await _dbContext.Opportunities.FirstOrDefaultAsync(x => x.Id == product.OpportunityId);
+        if (opportunity is null)
+        {
+            return NotFound();
+        }
+
+        var resolved = await ResolveRequestDefaultsAsync(opportunity, dto);
+        if (resolved.Error is not null)
+        {
+            return BadRequest(resolved.Error);
+        }
+
+        var validationError = ValidateProduct(resolved.Request);
         if (validationError is not null)
         {
             return BadRequest(validationError);
         }
 
-        ApplyProductValues(product, dto);
+        ApplyProductValues(product, resolved.Request);
         await _dbContext.SaveChangesAsync();
         await RecalculateOpportunityRevenueAsync(product.OpportunityId);
 
@@ -154,9 +173,9 @@ public class OpportunityProductsController : ControllerBase
 
     private static string? ValidateProduct(UpsertOpportunityProductRequestDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.ProductName))
+        if (dto.ProductId is null && string.IsNullOrWhiteSpace(dto.ProductName))
         {
-            return "Product name is required.";
+            return "Product name is required when ProductId is not provided.";
         }
 
         if (dto.Quantity <= 0)
@@ -180,6 +199,110 @@ public class OpportunityProductsController : ControllerBase
         }
 
         return null;
+    }
+
+    private async Task<(UpsertOpportunityProductRequestDto Request, string? Error)> ResolveRequestDefaultsAsync(Opportunity opportunity, UpsertOpportunityProductRequestDto dto)
+    {
+        Product? product = null;
+        if (dto.ProductId.HasValue)
+        {
+            product = await _dbContext.Products
+                .Where(x => x.Id == dto.ProductId.Value)
+                .Select(x => new Product
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Description = x.Description,
+                    StandardPrice = x.StandardPrice,
+                    TaxRate = x.TaxRate,
+                })
+                .FirstOrDefaultAsync();
+
+            if (product is null)
+            {
+                return (dto, "Product is invalid.");
+            }
+        }
+
+        var resolved = new UpsertOpportunityProductRequestDto
+        {
+            ProductId = dto.ProductId,
+            ProductName = !string.IsNullOrWhiteSpace(dto.ProductName)
+                ? dto.ProductName
+                : (product?.Name ?? string.Empty),
+            Description = !string.IsNullOrWhiteSpace(dto.Description)
+                ? dto.Description
+                : product?.Description,
+            Quantity = dto.Quantity,
+            UnitPrice = dto.UnitPrice,
+            DiscountPercent = dto.DiscountPercent,
+            DiscountAmount = dto.DiscountAmount,
+            TaxAmount = dto.TaxAmount,
+            SortOrder = dto.SortOrder,
+        };
+
+        if (resolved.ProductId.HasValue && resolved.UnitPrice <= 0)
+        {
+            var pricedUnit = await ResolveUnitPriceAsync(opportunity, resolved.ProductId.Value, resolved.Quantity);
+            if (pricedUnit.HasValue)
+            {
+                resolved.UnitPrice = pricedUnit.Value;
+            }
+            else if (product?.StandardPrice.HasValue == true)
+            {
+                resolved.UnitPrice = product.StandardPrice.Value;
+            }
+        }
+
+        if (!resolved.TaxAmount.HasValue && product?.TaxRate.HasValue == true)
+        {
+            var gross = resolved.Quantity * resolved.UnitPrice;
+            var discountAmount = resolved.DiscountAmount ?? (resolved.DiscountPercent.HasValue ? gross * resolved.DiscountPercent.Value / 100m : 0m);
+            var taxable = Math.Max(0m, gross - discountAmount);
+            resolved.TaxAmount = Math.Round(taxable * product.TaxRate.Value / 100m, 2);
+        }
+
+        return (resolved, null);
+    }
+
+    private async Task<decimal?> ResolveUnitPriceAsync(Opportunity opportunity, Guid productId, decimal quantity)
+    {
+        var now = DateTime.UtcNow;
+        var normalizedQuantity = quantity <= 0 ? 1 : quantity;
+
+        var defaultPriceListId = await _dbContext.PriceLists
+            .Where(x =>
+                x.IsActive &&
+                x.IsDefault &&
+                (!x.EffectiveFrom.HasValue || x.EffectiveFrom.Value <= now) &&
+                (!x.EffectiveTo.HasValue || x.EffectiveTo.Value >= now) &&
+                (opportunity.CurrencyId.HasValue
+                    ? x.CurrencyId == opportunity.CurrencyId.Value
+                    : true))
+            .OrderByDescending(x => opportunity.CurrencyId.HasValue && x.CurrencyId == opportunity.CurrencyId.Value)
+            .ThenBy(x => x.Name)
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync();
+
+        if (defaultPriceListId == Guid.Empty)
+        {
+            return null;
+        }
+
+        var unitPrice = await _dbContext.PriceListItems
+            .Where(x =>
+                x.PriceListId == defaultPriceListId &&
+                x.ProductId == productId &&
+                (!x.EffectiveFrom.HasValue || x.EffectiveFrom.Value <= now) &&
+                (!x.EffectiveTo.HasValue || x.EffectiveTo.Value >= now) &&
+                (!x.MinimumQuantity.HasValue || x.MinimumQuantity.Value <= normalizedQuantity) &&
+                (!x.MaximumQuantity.HasValue || x.MaximumQuantity.Value >= normalizedQuantity))
+            .OrderByDescending(x => x.MinimumQuantity ?? 0)
+            .ThenBy(x => x.CreatedAt)
+            .Select(x => x.UnitPrice)
+            .FirstOrDefaultAsync();
+
+        return unitPrice == 0m ? null : unitPrice;
     }
 
     private static void ApplyProductValues(OpportunityProduct product, UpsertOpportunityProductRequestDto dto)

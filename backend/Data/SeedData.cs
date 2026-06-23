@@ -42,6 +42,12 @@ public static class SeedData
             "Forecasts.View", "Forecasts.Create", "Forecasts.Update", "Forecasts.Delete",
             "SalesTargets.View", "SalesTargets.Create", "SalesTargets.Update", "SalesTargets.Delete",
             "SalesPerformance.View",
+            "Products.View", "Products.Create", "Products.Update", "Products.Delete",
+            "ProductCategories.View", "ProductCategories.Create", "ProductCategories.Update", "ProductCategories.Delete",
+            "PriceLists.View", "PriceLists.Create", "PriceLists.Update", "PriceLists.Delete",
+            "ProductBundles.View", "ProductBundles.Create", "ProductBundles.Update", "ProductBundles.Delete",
+            "UnitOfMeasures.View", "UnitOfMeasures.Create", "UnitOfMeasures.Update", "UnitOfMeasures.Delete",
+            "Discounts.View", "Discounts.Create", "Discounts.Update", "Discounts.Delete",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -246,6 +252,27 @@ public static class SeedData
             ("Conservative", "CONSERVATIVE"), ("Expected", "EXPECTED"), ("Aggressive", "AGGRESSIVE")
         });
 
+        await EnsureLookupCategoryAsync(db, "Product Type", "PRODUCT_TYPE", new[]
+        {
+            ("Product", "PRODUCT"), ("Service", "SERVICE"), ("Subscription", "SUBSCRIPTION"), ("Bundle", "BUNDLE")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Product Status", "PRODUCT_STATUS", new[]
+        {
+            ("Draft", "DRAFT"), ("Active", "ACTIVE"), ("Inactive", "INACTIVE"), ("Discontinued", "DISCONTINUED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Unit Of Measure", "UNIT_OF_MEASURE", new[]
+        {
+            ("Each", "EACH"), ("Hour", "HOUR"), ("Day", "DAY"), ("Week", "WEEK"), ("Month", "MONTH"), ("Year", "YEAR"),
+            ("Kilogram", "KILOGRAM"), ("Gram", "GRAM"), ("Meter", "METER"), ("Liter", "LITER"), ("Package", "PACKAGE")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Discount Type", "DISCOUNT_TYPE", new[]
+        {
+            ("Percentage", "PERCENTAGE"), ("Fixed Amount", "FIXED_AMOUNT")
+        });
+
         await EnsureLookupCategoryAsync(db, "Salutation", "SALUTATION", new[]
         {
             ("Mr", "MR"), ("Mrs", "MRS"), ("Ms", "MS"), ("Dr", "DR"), ("Prof", "PROF")
@@ -315,6 +342,9 @@ public static class SeedData
         await EnsureNumberSequenceAsync(db, "Invoice", "INVOICE", "INV", true, "YEARLY");
         await EnsureNumberSequenceAsync(db, "Case", "CASE", "CAS", true, "YEARLY");
         await EnsureNumberSequenceAsync(db, "Document", "DOCUMENT", "DOC", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Product", "PRODUCT", "PRD", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Price List", "PRICE_LIST", "PL", true, "YEARLY");
+        await EnsureNumberSequenceAsync(db, "Product Bundle", "PRODUCT_BUNDLE", "BND", true, "YEARLY");
 
         await EnsureLeadScoreRuleAsync(db, "Email exists", "EMAIL_EXISTS", "FIELD_COMPLETENESS", "Email", "exists", null, 10, 10);
         await EnsureLeadScoreRuleAsync(db, "Company name exists", "COMPANY_NAME_EXISTS", "FIELD_COMPLETENESS", "CompanyName", "exists", null, 10, 20);

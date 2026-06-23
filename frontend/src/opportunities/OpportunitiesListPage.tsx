@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Dropdown, Field, Input, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
+import { Dropdown, Input, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { DeleteConfirmDialog } from '../components/crud/DeleteConfirmDialog'
-import { LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { DateRangeFilterField } from '../components/filters/DateRangeFilterField'
+import { FilterField } from '../components/filters/FilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
 import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { Opportunity, PagedResult } from '../types/models'
 import { formatCurrency, formatDate } from './opportunityUtils'
-import styles from '../contacts/Contacts.module.css'
 
 type OpportunityQuery = {
   page: number
@@ -47,7 +49,7 @@ export function OpportunitiesListPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<Opportunity | null>(null)
-  const [query, setQuery] = useState<OpportunityQuery>({
+  const defaultQuery: OpportunityQuery = {
     page: 1,
     pageSize: 20,
     search: '',
@@ -64,6 +66,20 @@ export function OpportunitiesListPage() {
     minRevenue: '',
     maxRevenue: '',
     isActive: '',
+  }
+  const { query, setQuery } = useListQueryState<OpportunityQuery>({ defaults: defaultQuery, numberKeys: ['page', 'pageSize'] })
+  const [draftFilters, setDraftFilters] = useState<Pick<OpportunityQuery, 'accountId' | 'opportunityStageId' | 'opportunityStatusId' | 'ratingId' | 'sourceId' | 'ownerUserId' | 'estimatedCloseFrom' | 'estimatedCloseTo' | 'minRevenue' | 'maxRevenue' | 'isActive'>>({
+    accountId: query.accountId,
+    opportunityStageId: query.opportunityStageId,
+    opportunityStatusId: query.opportunityStatusId,
+    ratingId: query.ratingId,
+    sourceId: query.sourceId,
+    ownerUserId: query.ownerUserId,
+    estimatedCloseFrom: query.estimatedCloseFrom,
+    estimatedCloseTo: query.estimatedCloseTo,
+    minRevenue: query.minRevenue,
+    maxRevenue: query.maxRevenue,
+    isActive: query.isActive,
   })
 
   const load = async () => {
@@ -104,6 +120,20 @@ export function OpportunitiesListPage() {
     void Promise.resolve().then(load)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, query])
+
+  const activeFilterCount = [
+    query.accountId,
+    query.opportunityStageId,
+    query.opportunityStatusId,
+    query.ratingId,
+    query.sourceId,
+    query.ownerUserId,
+    query.estimatedCloseFrom,
+    query.estimatedCloseTo,
+    query.minRevenue,
+    query.maxRevenue,
+    query.isActive,
+  ].filter(Boolean).length
 
   const refresh = () => setQuery((current) => ({ ...current }))
 
@@ -179,51 +209,6 @@ export function OpportunitiesListPage() {
         ]}
       />
 
-      <section className={styles.filterBar}>
-        <Field label="Account">
-          <LookupCombobox fieldKey="accountId" value={query.accountId} onChange={(value) => setQuery((current) => ({ ...current, accountId: value, page: 1 }))} />
-        </Field>
-        <Field label="Stage">
-          <LookupCombobox fieldKey="opportunityStageId" value={query.opportunityStageId} onChange={(value) => setQuery((current) => ({ ...current, opportunityStageId: value, page: 1 }))} />
-        </Field>
-        <Field label="Status">
-          <LookupCombobox fieldKey="opportunityStatusId" value={query.opportunityStatusId} onChange={(value) => setQuery((current) => ({ ...current, opportunityStatusId: value, page: 1 }))} />
-        </Field>
-        <Field label="Rating">
-          <LookupCombobox fieldKey="opportunityRatingId" value={query.ratingId} onChange={(value) => setQuery((current) => ({ ...current, ratingId: value, page: 1 }))} />
-        </Field>
-        <Field label="Source">
-          <LookupCombobox fieldKey="opportunitySourceId" value={query.sourceId} onChange={(value) => setQuery((current) => ({ ...current, sourceId: value, page: 1 }))} />
-        </Field>
-        <Field label="Owner">
-          <LookupCombobox fieldKey="ownerUserId" value={query.ownerUserId} onChange={(value) => setQuery((current) => ({ ...current, ownerUserId: value, page: 1 }))} />
-        </Field>
-        <Field label="Close From">
-          <Input size="small" type="date" value={query.estimatedCloseFrom} onChange={(_, data) => setQuery((current) => ({ ...current, estimatedCloseFrom: data.value, page: 1 }))} />
-        </Field>
-        <Field label="Close To">
-          <Input size="small" type="date" value={query.estimatedCloseTo} onChange={(_, data) => setQuery((current) => ({ ...current, estimatedCloseTo: data.value, page: 1 }))} />
-        </Field>
-        <Field label="Min Revenue">
-          <Input size="small" type="number" value={query.minRevenue} onChange={(_, data) => setQuery((current) => ({ ...current, minRevenue: data.value, page: 1 }))} />
-        </Field>
-        <Field label="Max Revenue">
-          <Input size="small" type="number" value={query.maxRevenue} onChange={(_, data) => setQuery((current) => ({ ...current, maxRevenue: data.value, page: 1 }))} />
-        </Field>
-        <Field label="Active">
-          <Dropdown
-            size="small"
-            selectedOptions={query.isActive ? [query.isActive] : []}
-            value={query.isActive === 'true' ? 'Active' : query.isActive === 'false' ? 'Inactive' : ''}
-            onOptionSelect={(_, data) => setQuery((current) => ({ ...current, isActive: data.optionValue ?? '', page: 1 }))}
-          >
-            <Option value="">All</Option>
-            <Option value="true">Active</Option>
-            <Option value="false">Inactive</Option>
-          </Dropdown>
-        </Field>
-      </section>
-
       {loading ? <Spinner size="small" label="Loading opportunities..." style={{ margin: '8px 0' }} /> : null}
       {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
 
@@ -252,6 +237,84 @@ export function OpportunitiesListPage() {
           { key: 'timeline', label: 'Timeline', onClick: (row) => navigate(`/opportunities/${row.id}/timeline`) },
         ]}
         emptyMessage="No opportunities match the current filters."
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField label="Account" fieldKey="accountId" value={draftFilters.accountId} onChange={(value) => setDraftFilters((current) => ({ ...current, accountId: value }))} />
+            <LookupFilterField label="Stage" fieldKey="opportunityStageId" value={draftFilters.opportunityStageId} onChange={(value) => setDraftFilters((current) => ({ ...current, opportunityStageId: value }))} />
+            <LookupFilterField label="Status" fieldKey="opportunityStatusId" value={draftFilters.opportunityStatusId} onChange={(value) => setDraftFilters((current) => ({ ...current, opportunityStatusId: value }))} />
+            <LookupFilterField label="Rating" fieldKey="opportunityRatingId" value={draftFilters.ratingId} onChange={(value) => setDraftFilters((current) => ({ ...current, ratingId: value }))} />
+            <LookupFilterField label="Source" fieldKey="opportunitySourceId" value={draftFilters.sourceId} onChange={(value) => setDraftFilters((current) => ({ ...current, sourceId: value }))} />
+            <LookupFilterField label="Owner" fieldKey="ownerUserId" value={draftFilters.ownerUserId} onChange={(value) => setDraftFilters((current) => ({ ...current, ownerUserId: value }))} />
+            <DateRangeFilterField
+              fromLabel="Close From"
+              toLabel="Close To"
+              fromValue={draftFilters.estimatedCloseFrom}
+              toValue={draftFilters.estimatedCloseTo}
+              onFromChange={(value) => setDraftFilters((current) => ({ ...current, estimatedCloseFrom: value }))}
+              onToChange={(value) => setDraftFilters((current) => ({ ...current, estimatedCloseTo: value }))}
+            />
+            <FilterField label="Min Revenue">
+              <Input
+                size="small"
+                type="number"
+                value={draftFilters.minRevenue}
+                onChange={(_, data) => setDraftFilters((current) => ({ ...current, minRevenue: data.value }))}
+              />
+            </FilterField>
+            <FilterField label="Max Revenue">
+              <Input
+                size="small"
+                type="number"
+                value={draftFilters.maxRevenue}
+                onChange={(_, data) => setDraftFilters((current) => ({ ...current, maxRevenue: data.value }))}
+              />
+            </FilterField>
+            <FilterField label="Active">
+              <Dropdown
+                size="small"
+                selectedOptions={draftFilters.isActive ? [draftFilters.isActive] : []}
+                value={draftFilters.isActive === 'true' ? 'Active' : draftFilters.isActive === 'false' ? 'Inactive' : ''}
+                onOptionSelect={(_, data) => setDraftFilters((current) => ({ ...current, isActive: data.optionValue ?? '' }))}
+              >
+                <Option value="">All</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Dropdown>
+            </FilterField>
+          </>
+        }
+        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+        onCancelFilters={() =>
+          setDraftFilters({
+            accountId: query.accountId,
+            opportunityStageId: query.opportunityStageId,
+            opportunityStatusId: query.opportunityStatusId,
+            ratingId: query.ratingId,
+            sourceId: query.sourceId,
+            ownerUserId: query.ownerUserId,
+            estimatedCloseFrom: query.estimatedCloseFrom,
+            estimatedCloseTo: query.estimatedCloseTo,
+            minRevenue: query.minRevenue,
+            maxRevenue: query.maxRevenue,
+            isActive: query.isActive,
+          })
+        }
+        onClearFilters={() =>
+          setDraftFilters({
+            accountId: '',
+            opportunityStageId: '',
+            opportunityStatusId: '',
+            ratingId: '',
+            sourceId: '',
+            ownerUserId: '',
+            estimatedCloseFrom: '',
+            estimatedCloseTo: '',
+            minRevenue: '',
+            maxRevenue: '',
+            isActive: '',
+          })
+        }
       />
 
       <DeleteConfirmDialog

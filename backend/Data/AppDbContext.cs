@@ -50,6 +50,14 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<SalesTarget> SalesTargets => Set<SalesTarget>();
     public DbSet<RevenueForecast> RevenueForecasts => Set<RevenueForecast>();
     public DbSet<SalesPerformanceSnapshot> SalesPerformanceSnapshots => Set<SalesPerformanceSnapshot>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
+    public DbSet<PriceList> PriceLists => Set<PriceList>();
+    public DbSet<PriceListItem> PriceListItems => Set<PriceListItem>();
+    public DbSet<ProductBundle> ProductBundles => Set<ProductBundle>();
+    public DbSet<ProductBundleItem> ProductBundleItems => Set<ProductBundleItem>();
+    public DbSet<UnitOfMeasure> UnitOfMeasures => Set<UnitOfMeasure>();
+    public DbSet<Discount> Discounts => Set<Discount>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -378,6 +386,12 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<OpportunityProduct>()
+            .HasOne<Product>()
+            .WithMany()
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OpportunityProduct>()
             .Property(x => x.SortOrder)
             .HasDefaultValue(0);
 
@@ -515,6 +529,104 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             .HasForeignKey(x => x.TeamId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder.Entity<ProductCategory>()
+            .HasOne(x => x.ParentCategory)
+            .WithMany(x => x.Children)
+            .HasForeignKey(x => x.ParentCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Product>()
+            .HasOne(x => x.ProductCategory)
+            .WithMany(x => x.Products)
+            .HasForeignKey(x => x.ProductCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Product>()
+            .HasOne(x => x.ProductType)
+            .WithMany()
+            .HasForeignKey(x => x.ProductTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Product>()
+            .HasOne(x => x.UnitOfMeasure)
+            .WithMany(x => x.Products)
+            .HasForeignKey(x => x.UnitOfMeasureId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Product>()
+            .HasOne(x => x.ProductStatus)
+            .WithMany()
+            .HasForeignKey(x => x.ProductStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Product>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Product>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Product>()
+            .Property(x => x.AllowDiscount)
+            .HasDefaultValue(true);
+
+        builder.Entity<Product>()
+            .Property(x => x.IsStockItem)
+            .HasDefaultValue(false);
+
+        builder.Entity<PriceList>()
+            .HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<PriceListItem>()
+            .HasOne(x => x.PriceList)
+            .WithMany(x => x.Items)
+            .HasForeignKey(x => x.PriceListId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<PriceListItem>()
+            .HasOne(x => x.Product)
+            .WithMany(x => x.PriceListItems)
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ProductBundleItem>()
+            .HasOne(x => x.ProductBundle)
+            .WithMany(x => x.Items)
+            .HasForeignKey(x => x.ProductBundleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ProductBundleItem>()
+            .HasOne(x => x.Product)
+            .WithMany(x => x.ProductBundleItems)
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ProductBundleItem>()
+            .Property(x => x.SortOrder)
+            .HasDefaultValue(0);
+
+        builder.Entity<Discount>()
+            .HasOne(x => x.DiscountType)
+            .WithMany()
+            .HasForeignKey(x => x.DiscountTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Discount>()
+            .Property(x => x.IsActive)
+            .HasDefaultValue(true);
+
+        builder.Entity<UnitOfMeasure>()
+            .Property(x => x.IsDefault)
+            .HasDefaultValue(false);
+
         builder.Entity<NumberSequence>()
             .HasOne(x => x.ResetFrequency)
             .WithMany()
@@ -551,6 +663,20 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Opportunity>().HasIndex(x => x.OpportunityStageId);
         builder.Entity<Opportunity>().HasIndex(x => x.OpportunityStatusId);
         builder.Entity<Opportunity>().HasIndex(x => x.EstimatedCloseDate);
+        builder.Entity<Product>().HasIndex(x => x.ProductCode).IsUnique();
+        builder.Entity<Product>().HasIndex(x => x.Name);
+        builder.Entity<ProductCategory>().HasIndex(x => x.Code).IsUnique();
+        builder.Entity<ProductCategory>().HasIndex(x => x.Name);
+        builder.Entity<PriceList>().HasIndex(x => x.PriceListNumber).IsUnique();
+        builder.Entity<PriceList>().HasIndex(x => new { x.CurrencyId, x.IsDefault });
+        builder.Entity<PriceListItem>().HasIndex(x => new { x.PriceListId, x.ProductId, x.MinimumQuantity, x.MaximumQuantity });
+        builder.Entity<ProductBundle>().HasIndex(x => x.BundleCode).IsUnique();
+        builder.Entity<ProductBundle>().HasIndex(x => x.Name);
+        builder.Entity<ProductBundleItem>().HasIndex(x => new { x.ProductBundleId, x.ProductId });
+        builder.Entity<UnitOfMeasure>().HasIndex(x => x.Code).IsUnique();
+        builder.Entity<UnitOfMeasure>().HasIndex(x => x.Name).IsUnique();
+        builder.Entity<Discount>().HasIndex(x => x.Code).IsUnique();
+        builder.Entity<Discount>().HasIndex(x => x.Name);
         builder.Entity<OpportunityProduct>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityCompetitor>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityActivity>().HasIndex(x => x.OpportunityId);

@@ -42,6 +42,10 @@
   cursor: pointer;
 }
 
+.groupHeaderActive {
+  background: rgba(15, 185, 177, 0.16);
+}
+
 .groupHeaderLeft {
   display: flex;
   align-items: center;

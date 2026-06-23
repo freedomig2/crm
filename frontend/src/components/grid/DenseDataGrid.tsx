@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Button,
   Checkbox,
-  Input,
   Menu,
   MenuItem,
   MenuList,
@@ -14,13 +13,14 @@ import {
 import {
   ArrowDownloadRegular,
   ArrowSortRegular,
-  FilterRegular,
   MoreHorizontalRegular,
-  SearchRegular,
   SettingsRegular,
 } from '@fluentui/react-icons'
 import styles from './DenseDataGrid.module.css'
 import { StatusBadge } from '../common/StatusBadge'
+import { FilterDrawer } from '../filters/FilterDrawer'
+import { FilterPopover } from '../filters/FilterPopover'
+import { ListCommandBar } from './ListCommandBar'
 
 export type DenseColumn<T> = {
   key: keyof T
@@ -52,6 +52,11 @@ export function DenseDataGrid<T extends { id: string }>({
   onDelete,
   customActions,
   emptyMessage,
+  filterPanel,
+  activeFilterCount,
+  onApplyFilters,
+  onCancelFilters,
+  onClearFilters,
 }: {
   rows: T[]
   columns: DenseColumn<T>[]
@@ -70,12 +75,19 @@ export function DenseDataGrid<T extends { id: string }>({
   onDelete?: (row: T) => void
   customActions?: Array<{ key: string; label: string; onClick: (row: T) => void; disabled?: (row: T) => boolean }>
   emptyMessage?: string
+  filterPanel?: React.ReactNode
+  activeFilterCount?: number
+  onApplyFilters?: () => void
+  onCancelFilters?: () => void
+  onClearFilters?: () => void
 }) {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<DenseSort<T> | null>(null)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [selected, setSelected] = useState<Record<string, boolean>>({})
+  const [searchDraft, setSearchDraft] = useState(controlledSearch ?? '')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
     Object.fromEntries(columns.map((column) => [String(column.key), true])),
   )
@@ -143,6 +155,32 @@ export function DenseDataGrid<T extends { id: string }>({
   const pages = Math.max(1, Math.ceil(totalRows / effectivePageSize))
   const selectedCount = Object.values(selected).filter(Boolean).length
   const visibleDataColumns = columns.filter((column) => effectiveVisibleColumns[String(column.key)])
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 900)
+  const appliedFilterCount = activeFilterCount ?? 0
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 900)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (searchDraft === effectiveSearch) {
+        return
+      }
+
+      if (isControlled) {
+        onSearchChange(searchDraft)
+        onPageChange(1)
+      } else {
+        setSearch(searchDraft)
+        setPage(1)
+      }
+    }, 300)
+
+    return () => window.clearTimeout(timeout)
+  }, [effectiveSearch, isControlled, onPageChange, onSearchChange, searchDraft])
 
   const toggleSort = (key: keyof T) => {
     const next = !effectiveSort || effectiveSort.key !== key
@@ -175,29 +213,64 @@ export function DenseDataGrid<T extends { id: string }>({
     URL.revokeObjectURL(url)
   }
 
+  const applyFilters = () => {
+    onApplyFilters?.()
+    setFilterOpen(false)
+  }
+
+  const clearFilters = () => {
+    onClearFilters?.()
+  }
+
+  const cancelFilters = () => {
+    onCancelFilters?.()
+    setFilterOpen(false)
+  }
+
+  const filterActions = (
+    <div className={styles.filterActions}>
+      <Button size="small" appearance="subtle" onClick={clearFilters}>
+        Clear
+      </Button>
+      <Button size="small" appearance="subtle" onClick={cancelFilters}>
+        Cancel
+      </Button>
+      <Button size="small" appearance="primary" onClick={applyFilters}>
+        Apply
+      </Button>
+    </div>
+  )
+
+  const filterContent = filterPanel ? (
+    <>
+      <div className={styles.filterBody}>{filterPanel}</div>
+      {filterActions}
+    </>
+  ) : (
+    <div className={styles.filterBody}>No additional filters are configured for this list.</div>
+  )
+
   return (
     <div className={styles.wrap}>
-      <div className={styles.toolbar}>
-        <Input
-          size="small"
-          contentBefore={<SearchRegular />}
-          placeholder="Search rows"
-          value={effectiveSearch}
-          onChange={(_, data) => {
-            if (isControlled) {
-              onSearchChange(data.value)
-              onPageChange(1)
-            } else {
-              setSearch(data.value)
-              setPage(1)
-            }
-          }}
-        />
-
-        <div>
-          <Button size="small" appearance="subtle" icon={<FilterRegular />}>
-            Filters
-          </Button>
+      <ListCommandBar
+        searchValue={searchDraft}
+        onSearchChange={setSearchDraft}
+        rightActions={
+          <>
+            {isMobile ? (
+              <FilterDrawer
+                open={filterOpen}
+                onOpenChange={setFilterOpen}
+                onClose={cancelFilters}
+                activeCount={appliedFilterCount}
+              >
+                {filterContent}
+              </FilterDrawer>
+            ) : (
+              <FilterPopover open={filterOpen} onOpenChange={setFilterOpen} activeCount={appliedFilterCount}>
+                {filterContent}
+              </FilterPopover>
+            )}
           <Menu>
             <MenuTrigger disableButtonEnhancement>
               <Button size="small" appearance="subtle" icon={<SettingsRegular />}>
@@ -226,8 +299,9 @@ export function DenseDataGrid<T extends { id: string }>({
           <Button size="small" appearance="subtle" icon={<ArrowDownloadRegular />} onClick={exportCsv}>
             Export to Excel
           </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>

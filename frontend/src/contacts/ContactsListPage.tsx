@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Dropdown, Field, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
+import { Dropdown, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { DeleteConfirmDialog } from '../components/crud/DeleteConfirmDialog'
-import { LookupCombobox } from '../components/entity-ui/EntityComponents'
 import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { FilterField } from '../components/filters/FilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
+import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { Contact, PagedResult } from '../types/models'
-import styles from './Contacts.module.css'
 
 type ContactQuery = {
   page: number
@@ -35,7 +36,7 @@ export function ContactsListPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<Contact | null>(null)
-  const [query, setQuery] = useState<ContactQuery>({
+  const defaultQuery: ContactQuery = {
     page: 1,
     pageSize: 20,
     search: '',
@@ -45,6 +46,13 @@ export function ContactsListPage() {
     contactRoleId: '',
     preferredContactMethodId: '',
     isActive: '',
+  }
+  const { query, setQuery } = useListQueryState<ContactQuery>({ defaults: defaultQuery, numberKeys: ['page', 'pageSize'] })
+  const [draftFilters, setDraftFilters] = useState<Pick<ContactQuery, 'accountId' | 'contactRoleId' | 'preferredContactMethodId' | 'isActive'>>({
+    accountId: query.accountId,
+    contactRoleId: query.contactRoleId,
+    preferredContactMethodId: query.preferredContactMethodId,
+    isActive: query.isActive,
   })
 
   const columns = useMemo<DenseColumn<Contact>[]>(
@@ -97,6 +105,8 @@ export function ContactsListPage() {
     void run()
   }, [canView, query])
 
+  const activeFilterCount = [query.accountId, query.contactRoleId, query.preferredContactMethodId, query.isActive].filter(Boolean).length
+
   const deleteContact = async () => {
     if (!deleteTarget) {
       return
@@ -136,30 +146,6 @@ export function ContactsListPage() {
       />
       <CommandBar actions={canCreate ? [{ key: 'create', label: 'Create Contact', onClick: () => navigate('/contacts/create') }] : []} />
 
-      <section className={styles.filterBar}>
-        <Field label="Account">
-          <LookupCombobox fieldKey="accountId" value={query.accountId} onChange={(value) => setQuery((current) => ({ ...current, accountId: value, page: 1 }))} />
-        </Field>
-        <Field label="Role">
-          <LookupCombobox fieldKey="contactRoleId" value={query.contactRoleId} onChange={(value) => setQuery((current) => ({ ...current, contactRoleId: value, page: 1 }))} />
-        </Field>
-        <Field label="Preferred Contact Method">
-          <LookupCombobox fieldKey="preferredContactMethodId" value={query.preferredContactMethodId} onChange={(value) => setQuery((current) => ({ ...current, preferredContactMethodId: value, page: 1 }))} />
-        </Field>
-        <Field label="Active">
-          <Dropdown
-            size="small"
-            selectedOptions={query.isActive ? [query.isActive] : []}
-            value={query.isActive === 'true' ? 'Active' : query.isActive === 'false' ? 'Inactive' : ''}
-            onOptionSelect={(_, data) => setQuery((current) => ({ ...current, isActive: data.optionValue ?? '', page: 1 }))}
-          >
-            <Option value="">All</Option>
-            <Option value="true">Active</Option>
-            <Option value="false">Inactive</Option>
-          </Dropdown>
-        </Field>
-      </section>
-
       {loading ? <Spinner size="small" label="Loading contacts..." style={{ margin: '8px 0' }} /> : null}
       {error ? (
         <MessageBar intent="error" style={{ marginBottom: 10 }}>
@@ -191,6 +177,69 @@ export function ContactsListPage() {
         onEdit={canEdit ? (row) => navigate(`/contacts/${row.id}/edit`) : undefined}
         onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
         emptyMessage="No contacts match the current filters."
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField
+              label="Account"
+              fieldKey="accountId"
+              value={draftFilters.accountId}
+              onChange={(value) => setDraftFilters((current) => ({ ...current, accountId: value }))}
+            />
+            <LookupFilterField
+              label="Role"
+              fieldKey="contactRoleId"
+              value={draftFilters.contactRoleId}
+              onChange={(value) => setDraftFilters((current) => ({ ...current, contactRoleId: value }))}
+            />
+            <LookupFilterField
+              label="Preferred Contact Method"
+              fieldKey="preferredContactMethodId"
+              value={draftFilters.preferredContactMethodId}
+              onChange={(value) => setDraftFilters((current) => ({ ...current, preferredContactMethodId: value }))}
+            />
+            <FilterField label="Active">
+              <Dropdown
+                size="small"
+                selectedOptions={draftFilters.isActive ? [draftFilters.isActive] : []}
+                value={draftFilters.isActive === 'true' ? 'Active' : draftFilters.isActive === 'false' ? 'Inactive' : ''}
+                onOptionSelect={(_, data) =>
+                  setDraftFilters((current) => ({
+                    ...current,
+                    isActive: data.optionValue ?? '',
+                  }))
+                }
+              >
+                <Option value="">All</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Dropdown>
+            </FilterField>
+          </>
+        }
+        onApplyFilters={() =>
+          setQuery((current) => ({
+            ...current,
+            ...draftFilters,
+            page: 1,
+          }))
+        }
+        onCancelFilters={() =>
+          setDraftFilters({
+            accountId: query.accountId,
+            contactRoleId: query.contactRoleId,
+            preferredContactMethodId: query.preferredContactMethodId,
+            isActive: query.isActive,
+          })
+        }
+        onClearFilters={() =>
+          setDraftFilters({
+            accountId: '',
+            contactRoleId: '',
+            preferredContactMethodId: '',
+            isActive: '',
+          })
+        }
       />
 
       <DeleteConfirmDialog

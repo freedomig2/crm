@@ -77,6 +77,12 @@ const defaultEnabledItems = new Set([
   'sales-pipeline',
   'sales-forecasts',
   'sales-targets',
+  'products',
+  'product-categories',
+  'price-lists',
+  'product-bundles',
+  'unit-of-measures',
+  'discounts',
   'account-activities',
   'relationships',
   'users',
@@ -104,6 +110,27 @@ const defaultEnabledItems = new Set([
 
 const enabledGroupsOverride = parseCsv(import.meta.env.VITE_ENABLED_NAV_GROUPS)
 const enabledItemsOverride = parseCsv(import.meta.env.VITE_ENABLED_NAV_ITEMS)
+
+const groupOrder: Record<string, number> = {
+  dashboard: 1,
+  customers: 2,
+  sales: 3,
+  marketing: 4,
+  service: 5,
+  projects: 6,
+  documents: 7,
+  activities: 8,
+  finance: 9,
+  reporting: 10,
+  administration: 11,
+  security: 12,
+  configuration: 13,
+  'data-management': 14,
+  audit: 15,
+  integrations: 16,
+  'ai-copilot': 17,
+  personal: 18,
+}
 
 const isGroupEnabled = (key: string) => (enabledGroupsOverride ? enabledGroupsOverride.has(key) : defaultEnabledGroups.has(key))
 const isItemEnabled = (key: string) => (enabledItemsOverride ? enabledItemsOverride.has(key) : defaultEnabledItems.has(key))
@@ -149,8 +176,11 @@ export const navGroups: NavGroup[] = [
       { key: 'orders', label: 'Orders', to: '/sales/orders', icon: <ClipboardTaskRegular />, permission: 'Orders.View', enabled: isItemEnabled('orders') },
       { key: 'invoices-sales', label: 'Invoices', to: '/sales/invoices', icon: <DocumentSearchRegular />, permission: 'Invoices.View', enabled: isItemEnabled('invoices-sales') },
       { key: 'products', label: 'Products', to: '/sales/products', icon: <BookDatabaseRegular />, permission: 'Products.View', enabled: isItemEnabled('products') },
-      { key: 'price-lists', label: 'Price Lists', to: '/sales/price-lists', icon: <BookDatabaseRegular />, permission: 'Products.View', enabled: isItemEnabled('price-lists') },
-      { key: 'product-bundles', label: 'Product Bundles', to: '/sales/product-bundles', icon: <BookDatabaseRegular />, permission: 'Products.View', enabled: isItemEnabled('product-bundles') },
+      { key: 'product-categories', label: 'Product Categories', to: '/sales/product-categories', icon: <BookDatabaseRegular />, permission: 'ProductCategories.View', enabled: isItemEnabled('product-categories') },
+      { key: 'price-lists', label: 'Price Lists', to: '/sales/price-lists', icon: <BookDatabaseRegular />, permission: 'PriceLists.View', enabled: isItemEnabled('price-lists') },
+      { key: 'product-bundles', label: 'Product Bundles', to: '/sales/product-bundles', icon: <BookDatabaseRegular />, permission: 'ProductBundles.View', enabled: isItemEnabled('product-bundles') },
+      { key: 'unit-of-measures', label: 'Units Of Measure', to: '/sales/unit-of-measures', icon: <BookDatabaseRegular />, permission: 'UnitOfMeasures.View', enabled: isItemEnabled('unit-of-measures') },
+      { key: 'discounts', label: 'Discounts', to: '/sales/discounts', icon: <BookDatabaseRegular />, permission: 'Discounts.View', enabled: isItemEnabled('discounts') },
       { key: 'competitors', label: 'Competitors', to: '/sales/competitors', icon: <BranchRequestRegular />, permission: 'Products.View', enabled: isItemEnabled('competitors') },
       { key: 'sales-territories', label: 'Sales Territories', to: '/sales/territories', icon: <LocationRegular />, permission: 'Opportunities.View', enabled: isItemEnabled('sales-territories') },
     ],
@@ -376,4 +406,4 @@ export const navGroups: NavGroup[] = [
       { key: 'my-saved-views', label: 'My Saved Views', to: '/personal/saved-views', icon: <DocumentSearchRegular />, enabled: isItemEnabled('my-saved-views') },
     ],
   },
-]
+].sort((a, b) => (groupOrder[a.key] ?? Number.MAX_SAFE_INTEGER) - (groupOrder[b.key] ?? Number.MAX_SAFE_INTEGER))

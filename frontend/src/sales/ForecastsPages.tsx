@@ -14,7 +14,10 @@ import {
   LookupCombobox,
   StickySaveBar,
 } from '../components/entity-ui/EntityComponents'
+import { DateRangeFilterField } from '../components/filters/DateRangeFilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
 import { DenseDataGrid, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { ForecastDashboard, PagedResult, RevenueForecast } from '../types/models'
@@ -53,7 +56,7 @@ export function ForecastsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<RevenueForecast | null>(null)
-  const [query, setQuery] = useState<ForecastQuery>({
+  const defaultQuery: ForecastQuery = {
     page: 1,
     pageSize: 20,
     search: '',
@@ -62,6 +65,12 @@ export function ForecastsPage() {
     forecastTypeId: '',
     periodFrom: '',
     periodTo: '',
+  }
+  const { query, setQuery } = useListQueryState<ForecastQuery>({ defaults: defaultQuery, numberKeys: ['page', 'pageSize'] })
+  const [draftFilters, setDraftFilters] = useState<Pick<ForecastQuery, 'forecastTypeId' | 'periodFrom' | 'periodTo'>>({
+    forecastTypeId: query.forecastTypeId,
+    periodFrom: query.periodFrom,
+    periodTo: query.periodTo,
   })
 
   const load = async () => {
@@ -101,6 +110,8 @@ export function ForecastsPage() {
     void Promise.resolve().then(load)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, query])
+
+  const activeFilterCount = [query.forecastTypeId, query.periodFrom, query.periodTo].filter(Boolean).length
 
   const refresh = () => setQuery((current) => ({ ...current }))
 
@@ -169,18 +180,6 @@ export function ForecastsPage() {
         <div className={styles.metricCard}><p className={styles.metricLabel}>Forecast Accuracy</p><p className={styles.metricValue}>{formatPercent(dashboard?.forecastAccuracy)}</p></div>
       </section>
 
-      <section className={styles.filterBar}>
-        <Field label="Forecast Type">
-          <LookupCombobox fieldKey="forecastTypeId" value={query.forecastTypeId} onChange={(value) => setQuery((current) => ({ ...current, forecastTypeId: value, page: 1 }))} />
-        </Field>
-        <Field label="Period From">
-          <Input size="small" type="date" value={query.periodFrom} onChange={(_, data) => setQuery((current) => ({ ...current, periodFrom: data.value, page: 1 }))} />
-        </Field>
-        <Field label="Period To">
-          <Input size="small" type="date" value={query.periodTo} onChange={(_, data) => setQuery((current) => ({ ...current, periodTo: data.value, page: 1 }))} />
-        </Field>
-      </section>
-
       {loading ? <Spinner size="small" label="Loading forecasts..." style={{ margin: '8px 0' }} /> : null}
       {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
 
@@ -203,6 +202,40 @@ export function ForecastsPage() {
         onEdit={canEdit ? (row) => navigate(`/sales/forecasts/${row.id}/edit`) : undefined}
         onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
         emptyMessage="No forecasts match the current filters."
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField
+              label="Forecast Type"
+              fieldKey="forecastTypeId"
+              value={draftFilters.forecastTypeId}
+              onChange={(value) => setDraftFilters((current) => ({ ...current, forecastTypeId: value }))}
+            />
+            <DateRangeFilterField
+              fromLabel="Period From"
+              toLabel="Period To"
+              fromValue={draftFilters.periodFrom}
+              toValue={draftFilters.periodTo}
+              onFromChange={(value) => setDraftFilters((current) => ({ ...current, periodFrom: value }))}
+              onToChange={(value) => setDraftFilters((current) => ({ ...current, periodTo: value }))}
+            />
+          </>
+        }
+        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+        onCancelFilters={() =>
+          setDraftFilters({
+            forecastTypeId: query.forecastTypeId,
+            periodFrom: query.periodFrom,
+            periodTo: query.periodTo,
+          })
+        }
+        onClearFilters={() =>
+          setDraftFilters({
+            forecastTypeId: '',
+            periodFrom: '',
+            periodTo: '',
+          })
+        }
       />
 
       <section className={styles.chartGrid}>

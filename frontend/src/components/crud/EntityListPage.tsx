@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
 import { api } from '../../api/client'
 import { DenseDataGrid, type DenseColumn, type DenseSort } from '../grid/DenseDataGrid'
+import { useListQueryState } from '../../hooks/useListQueryState'
 import { CommandBar } from '../../layout/components/CommandBar'
 import { PageHeader } from '../../layout/components/PageHeader'
 import { useAuth } from '../../auth/AuthContext'
 import type { PagedResult } from '../../types/models'
+import type { EntityConfig } from './adminConfig'
 
 export function EntityListPage<TItem extends { id: string }>({
   config,
@@ -21,7 +23,7 @@ export function EntityListPage<TItem extends { id: string }>({
   permissions,
   emptyMessage,
 }: {
-  config?: unknown
+  config?: EntityConfig<TItem>
   title: string
   subtitle?: string
   endpoint: string
@@ -45,7 +47,10 @@ export function EntityListPage<TItem extends { id: string }>({
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [query, setQuery] = useState({ page: 1, pageSize: 20, search: '', sortBy: '', sortDir: 'asc' as 'asc' | 'desc' })
+  const { query, setQuery } = useListQueryState({
+    defaults: { page: 1, pageSize: 20, search: '', sortBy: '', sortDir: 'asc' as 'asc' | 'desc' },
+    numberKeys: ['page', 'pageSize'],
+  })
 
   useEffect(() => {
     const run = async () => {
@@ -76,6 +81,16 @@ export function EntityListPage<TItem extends { id: string }>({
   const actions = useMemo(
     () => (canCreate ? [{ key: 'create', label: `Create ${title.replace(/s$/, '')}`, onClick: () => navigate(createPath) }] : []),
     [canCreate, createPath, navigate, title],
+  )
+
+  const rowActions = useMemo(
+    () =>
+      (config?.listRowActions ?? []).map((action) => ({
+        key: action.key,
+        label: action.label,
+        onClick: (row: TItem) => navigate(action.to(row)),
+      })),
+    [config, navigate],
   )
 
   if (!hasPermission(permissions.view)) {
@@ -124,6 +139,7 @@ export function EntityListPage<TItem extends { id: string }>({
         onView={(row) => navigate(detailsPath(row.id))}
         onEdit={canEdit ? (row) => navigate(editPath(row.id)) : undefined}
         onDelete={canDelete ? (row) => navigate(editPath(row.id)) : undefined}
+        customActions={rowActions.length > 0 ? rowActions : undefined}
         emptyMessage={emptyMessage}
       />
     </div>

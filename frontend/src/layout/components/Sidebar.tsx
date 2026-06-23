@@ -1,8 +1,11 @@
 import { ChevronDown16Regular, ChevronUp16Regular } from '@fluentui/react-icons'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import type { NavGroup } from '../navigation'
 import styles from './Sidebar.module.css'
+
+const expandedGroupsStorageKey = 'crm.sidebar.expanded-groups.v2'
+const legacyExpandedGroupsStorageKey = 'crm.sidebar.expanded-groups'
 
 export function Sidebar({
   collapsed,
@@ -13,35 +16,88 @@ export function Sidebar({
   groups: NavGroup[]
   hasPermission: (permission?: string) => boolean
 }) {
-  const initialState = useMemo(() => {
-    const raw = localStorage.getItem('crm.sidebar.expanded-groups')
-    if (raw) {
+  const { pathname } = useLocation()
+
+  const visibleGroups = useMemo(
+    () =>
+      groups
+        .filter((group) => group.enabled !== false)
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => item.enabled !== false && hasPermission(item.permission)),
+        }))
+        .filter((group) => group.items.length > 0),
+    [groups, hasPermission],
+  )
+
+  const activeGroupKey = useMemo(
+    () =>
+      visibleGroups.find((group) =>
+        group.items.some((item) => pathname === item.to || pathname.startsWith(`${item.to}/`)),
+      )?.key,
+    [pathname, visibleGroups],
+  )
+
+  const defaultExpandedState = useMemo(
+    () =>
+      Object.fromEntries(
+        visibleGroups.map((group) => [group.key, group.key === activeGroupKey]),
+      ) as Record<string, boolean>,
+    [activeGroupKey, visibleGroups],
+  )
+
+  const storedExpandedState = useMemo(() => {
+    const parseStored = (raw: string): Record<string, boolean> | null => {
       try {
-        return JSON.parse(raw) as Record<string, boolean>
+        const stored = JSON.parse(raw) as Record<string, boolean>
+        return Object.fromEntries(
+          visibleGroups.map((group) => [group.key, Boolean(stored[group.key])]),
+        ) as Record<string, boolean>
       } catch {
-        localStorage.removeItem('crm.sidebar.expanded-groups')
+        return null
       }
     }
 
-    return Object.fromEntries(groups.map((g) => [g.key, true])) as Record<string, boolean>
-  }, [groups])
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(initialState)
+    const currentRaw = localStorage.getItem(expandedGroupsStorageKey)
+    if (currentRaw) {
+      const parsed = parseStored(currentRaw)
+      if (parsed) {
+        return parsed
+      }
+      localStorage.removeItem(expandedGroupsStorageKey)
+    }
+
+    const legacyRaw = localStorage.getItem(legacyExpandedGroupsStorageKey)
+    if (legacyRaw) {
+      const parsed = parseStored(legacyRaw)
+      localStorage.removeItem(legacyExpandedGroupsStorageKey)
+      if (parsed) {
+        localStorage.setItem(expandedGroupsStorageKey, JSON.stringify(parsed))
+        return parsed
+      }
+    }
+
+    return null
+  }, [visibleGroups])
+
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(
+    () => storedExpandedState ?? defaultExpandedState,
+  )
+  const [hasCustomizedExpansion, setHasCustomizedExpansion] = useState(
+    () => storedExpandedState !== null,
+  )
+
+  const effectiveExpanded = hasCustomizedExpansion ? expanded : defaultExpandedState
 
   const toggleGroup = (key: string) => {
+    setHasCustomizedExpansion(true)
     setExpanded((current) => {
-      const next = { ...current, [key]: !current[key] }
-      localStorage.setItem('crm.sidebar.expanded-groups', JSON.stringify(next))
+      const base = hasCustomizedExpansion ? current : defaultExpandedState
+      const next = { ...base, [key]: !base[key] }
+      localStorage.setItem(expandedGroupsStorageKey, JSON.stringify(next))
       return next
     })
   }
-
-  const visibleGroups = groups
-    .filter((group) => group.enabled !== false)
-    .map((group) => ({
-      ...group,
-      items: group.items.filter((item) => item.enabled !== false && hasPermission(item.permission)),
-    }))
-    .filter((group) => group.items.length > 0)
 
   return (
     <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
@@ -51,17 +107,18 @@ export function Sidebar({
       </div>
 
       {visibleGroups.map((group) => {
-        const isExpanded = collapsed ? false : expanded[group.key]
+        const isExpanded = collapsed ? false : effectiveExpanded[group.key]
+        const isGroupActive = group.items.some((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
         return (
           <section className={styles.group} key={group.key}>
-            <button className={styles.groupHeader} type="button" onClick={() => toggleGroup(group.key)} title={group.label}>
+            <button className={`${styles.groupHeader} ${isGroupActive ? styles.groupHeaderActive : ''}`} type="button" onClick={() => toggleGroup(group.key)} title={group.label}>
               <span className={styles.groupHeaderLeft}>
                 <span className={styles.groupIcon}>{group.icon}</span>
                 <span className={styles.groupTitle}>{group.label}</span>
               </span>
               <span className={styles.toggleIcon}>{isExpanded ? <ChevronUp16Regular /> : <ChevronDown16Regular />}</span>
             </button>
-            {(isExpanded || collapsed) && (
+            {isExpanded && (
               <div className={styles.links}>
                 {group.items.map((item) => (
                   <NavLink

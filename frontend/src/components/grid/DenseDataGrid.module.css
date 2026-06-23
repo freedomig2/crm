@@ -8,9 +8,40 @@
 .toolbar {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
   padding: 4px 6px;
   border-bottom: 1px solid #e5e7eb;
+}
+
+.searchInput {
+  max-width: 280px;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filterPopover {
+  width: min(420px, calc(100vw - 24px));
+}
+
+.filterBody {
+  display: grid;
+  gap: 8px;
+  max-height: 60vh;
+  overflow: auto;
+  padding-bottom: 10px;
+}
+
+.filterActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  border-top: 1px solid #eef2f7;
+  padding-top: 8px;
 }
 
 .tableWrap {

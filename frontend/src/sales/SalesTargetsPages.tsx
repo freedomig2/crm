@@ -13,7 +13,10 @@ import {
   LookupCombobox,
   StickySaveBar,
 } from '../components/entity-ui/EntityComponents'
+import { FilterField } from '../components/filters/FilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
 import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { PagedResult, SalesTarget } from '../types/models'
@@ -55,7 +58,7 @@ export function SalesTargetsListPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<SalesTarget | null>(null)
-  const [query, setQuery] = useState<TargetQuery>({
+  const defaultQuery: TargetQuery = {
     page: 1,
     pageSize: 20,
     search: '',
@@ -66,6 +69,14 @@ export function SalesTargetsListPage() {
     assignedUserId: '',
     assignedTeamId: '',
     isActive: '',
+  }
+  const { query, setQuery } = useListQueryState<TargetQuery>({ defaults: defaultQuery, numberKeys: ['page', 'pageSize'] })
+  const [draftFilters, setDraftFilters] = useState<Pick<TargetQuery, 'targetTypeId' | 'targetPeriodId' | 'assignedUserId' | 'assignedTeamId' | 'isActive'>>({
+    targetTypeId: query.targetTypeId,
+    targetPeriodId: query.targetPeriodId,
+    assignedUserId: query.assignedUserId,
+    assignedTeamId: query.assignedTeamId,
+    isActive: query.isActive,
   })
 
   const load = async () => {
@@ -103,6 +114,8 @@ export function SalesTargetsListPage() {
     void Promise.resolve().then(load)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, query])
+
+  const activeFilterCount = [query.targetTypeId, query.targetPeriodId, query.assignedUserId, query.assignedTeamId, query.isActive].filter(Boolean).length
 
   const refresh = () => setQuery((current) => ({ ...current }))
 
@@ -164,33 +177,6 @@ export function SalesTargetsListPage() {
         ]}
       />
 
-      <section className={styles.filterBar}>
-        <Field label="Type">
-          <LookupCombobox fieldKey="targetTypeId" value={query.targetTypeId} onChange={(value) => setQuery((current) => ({ ...current, targetTypeId: value, page: 1 }))} />
-        </Field>
-        <Field label="Period">
-          <LookupCombobox fieldKey="targetPeriodId" value={query.targetPeriodId} onChange={(value) => setQuery((current) => ({ ...current, targetPeriodId: value, page: 1 }))} />
-        </Field>
-        <Field label="Assigned User">
-          <LookupCombobox fieldKey="assignedToUserId" value={query.assignedUserId} onChange={(value) => setQuery((current) => ({ ...current, assignedUserId: value, assignedTeamId: '', page: 1 }))} />
-        </Field>
-        <Field label="Assigned Team">
-          <LookupCombobox fieldKey="ownerTeamId" value={query.assignedTeamId} onChange={(value) => setQuery((current) => ({ ...current, assignedTeamId: value, assignedUserId: '', page: 1 }))} />
-        </Field>
-        <Field label="Active">
-          <Dropdown
-            size="small"
-            selectedOptions={query.isActive ? [query.isActive] : []}
-            value={query.isActive === 'true' ? 'Active' : query.isActive === 'false' ? 'Inactive' : ''}
-            onOptionSelect={(_, data) => setQuery((current) => ({ ...current, isActive: data.optionValue ?? '', page: 1 }))}
-          >
-            <Option value="">All</Option>
-            <Option value="true">Active</Option>
-            <Option value="false">Inactive</Option>
-          </Dropdown>
-        </Field>
-      </section>
-
       {loading ? <Spinner size="small" label="Loading sales targets..." style={{ margin: '8px 0' }} /> : null}
       {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
 
@@ -213,6 +199,68 @@ export function SalesTargetsListPage() {
         onEdit={canEdit ? (row) => navigate(`/sales/targets/${row.id}/edit`) : undefined}
         onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
         emptyMessage="No sales targets match the current filters."
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField label="Type" fieldKey="targetTypeId" value={draftFilters.targetTypeId} onChange={(value) => setDraftFilters((current) => ({ ...current, targetTypeId: value }))} />
+            <LookupFilterField label="Period" fieldKey="targetPeriodId" value={draftFilters.targetPeriodId} onChange={(value) => setDraftFilters((current) => ({ ...current, targetPeriodId: value }))} />
+            <LookupFilterField
+              label="Assigned User"
+              fieldKey="assignedToUserId"
+              value={draftFilters.assignedUserId}
+              onChange={(value) =>
+                setDraftFilters((current) => ({
+                  ...current,
+                  assignedUserId: value,
+                  assignedTeamId: '',
+                }))
+              }
+            />
+            <LookupFilterField
+              label="Assigned Team"
+              fieldKey="ownerTeamId"
+              value={draftFilters.assignedTeamId}
+              onChange={(value) =>
+                setDraftFilters((current) => ({
+                  ...current,
+                  assignedTeamId: value,
+                  assignedUserId: '',
+                }))
+              }
+            />
+            <FilterField label="Active">
+              <Dropdown
+                size="small"
+                selectedOptions={draftFilters.isActive ? [draftFilters.isActive] : []}
+                value={draftFilters.isActive === 'true' ? 'Active' : draftFilters.isActive === 'false' ? 'Inactive' : ''}
+                onOptionSelect={(_, data) => setDraftFilters((current) => ({ ...current, isActive: data.optionValue ?? '' }))}
+              >
+                <Option value="">All</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Dropdown>
+            </FilterField>
+          </>
+        }
+        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+        onCancelFilters={() =>
+          setDraftFilters({
+            targetTypeId: query.targetTypeId,
+            targetPeriodId: query.targetPeriodId,
+            assignedUserId: query.assignedUserId,
+            assignedTeamId: query.assignedTeamId,
+            isActive: query.isActive,
+          })
+        }
+        onClearFilters={() =>
+          setDraftFilters({
+            targetTypeId: '',
+            targetPeriodId: '',
+            assignedUserId: '',
+            assignedTeamId: '',
+            isActive: '',
+          })
+        }
       />
 
       <DeleteConfirmDialog

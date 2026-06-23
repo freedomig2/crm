@@ -16,7 +16,10 @@ import {
   LookupCombobox,
   StickySaveBar,
 } from '../components/entity-ui/EntityComponents'
+import { FilterField } from '../components/filters/FilterField'
+import { LookupFilterField } from '../components/filters/LookupFilterField'
 import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { NumberSequence, NumberSequencePreview, PagedResult } from '../types/models'
@@ -27,7 +30,6 @@ import {
   numberSequenceToForm,
   type NumberSequenceFormState,
 } from './numberSequenceUtils'
-import styles from '../contacts/Contacts.module.css'
 
 type SequenceQuery = {
   page: number
@@ -66,7 +68,7 @@ export function NumberSequencesListPage() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<NumberSequence | null>(null)
-  const [query, setQuery] = useState<SequenceQuery>({
+  const defaultQuery: SequenceQuery = {
     page: 1,
     pageSize: 20,
     search: '',
@@ -74,6 +76,11 @@ export function NumberSequencesListPage() {
     sortDir: 'asc',
     resetFrequencyId: '',
     isActive: '',
+  }
+  const { query, setQuery } = useListQueryState<SequenceQuery>({ defaults: defaultQuery, numberKeys: ['page', 'pageSize'] })
+  const [draftFilters, setDraftFilters] = useState<Pick<SequenceQuery, 'resetFrequencyId' | 'isActive'>>({
+    resetFrequencyId: query.resetFrequencyId,
+    isActive: query.isActive,
   })
 
   const load = async () => {
@@ -108,6 +115,8 @@ export function NumberSequencesListPage() {
     void Promise.resolve().then(load)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canView, query])
+
+  const activeFilterCount = [query.resetFrequencyId, query.isActive].filter(Boolean).length
 
   const refresh = () => setQuery((current) => ({ ...current }))
 
@@ -196,24 +205,6 @@ export function NumberSequencesListPage() {
         ...(canCreate ? [{ key: 'create', label: 'New Sequence', onClick: () => navigate('/configuration/number-sequences/create') }] : []),
       ]} />
 
-      <section className={styles.filterBar}>
-        <Field label="Reset Frequency">
-          <LookupCombobox fieldKey="resetFrequencyId" value={query.resetFrequencyId} onChange={(value) => setQuery((current) => ({ ...current, resetFrequencyId: value, page: 1 }))} />
-        </Field>
-        <Field label="Active">
-          <Dropdown
-            size="small"
-            selectedOptions={query.isActive ? [query.isActive] : []}
-            value={query.isActive === 'true' ? 'Active' : query.isActive === 'false' ? 'Inactive' : ''}
-            onOptionSelect={(_, data) => setQuery((current) => ({ ...current, isActive: data.optionValue ?? '', page: 1 }))}
-          >
-            <Option value="">All</Option>
-            <Option value="true">Active</Option>
-            <Option value="false">Inactive</Option>
-          </Dropdown>
-        </Field>
-      </section>
-
       {loading ? <Spinner size="small" label="Loading number sequences..." style={{ margin: '8px 0' }} /> : null}
       {error ? (
         <MessageBar intent="error" style={{ marginBottom: 10 }}>
@@ -254,6 +245,37 @@ export function NumberSequencesListPage() {
           ...(canReset ? [{ key: 'reset', label: 'Reset', onClick: (row: NumberSequence) => void reset(row) }] : []),
         ]}
         emptyMessage="No number sequences match the current filters."
+        activeFilterCount={activeFilterCount}
+        filterPanel={
+          <>
+            <LookupFilterField label="Reset Frequency" fieldKey="resetFrequencyId" value={draftFilters.resetFrequencyId} onChange={(value) => setDraftFilters((current) => ({ ...current, resetFrequencyId: value }))} />
+            <FilterField label="Active">
+              <Dropdown
+                size="small"
+                selectedOptions={draftFilters.isActive ? [draftFilters.isActive] : []}
+                value={draftFilters.isActive === 'true' ? 'Active' : draftFilters.isActive === 'false' ? 'Inactive' : ''}
+                onOptionSelect={(_, data) => setDraftFilters((current) => ({ ...current, isActive: data.optionValue ?? '' }))}
+              >
+                <Option value="">All</Option>
+                <Option value="true">Active</Option>
+                <Option value="false">Inactive</Option>
+              </Dropdown>
+            </FilterField>
+          </>
+        }
+        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+        onCancelFilters={() =>
+          setDraftFilters({
+            resetFrequencyId: query.resetFrequencyId,
+            isActive: query.isActive,
+          })
+        }
+        onClearFilters={() =>
+          setDraftFilters({
+            resetFrequencyId: '',
+            isActive: '',
+          })
+        }
       />
 
       <DeleteConfirmDialog
