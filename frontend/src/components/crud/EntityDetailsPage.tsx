@@ -130,6 +130,30 @@ export function EntityDetailsPage<TItem extends { id: string }>({
       appearance: 'secondary',
     })
   }
+  if (id && config.key === 'orders') {
+    actions.push({
+      key: 'manage-lines',
+      label: 'Manage Lines',
+      onClick: () => navigate(`/sales/orders/${id}/lines`),
+      appearance: 'secondary',
+    })
+  }
+  if (id && config.key === 'invoices') {
+    actions.push({
+      key: 'manage-lines',
+      label: 'Manage Lines',
+      onClick: () => navigate(`/sales/invoices/${id}/lines`),
+      appearance: 'secondary',
+    })
+  }
+  if (id && config.key === 'cases') {
+    actions.push({
+      key: 'manage-comments',
+      label: 'Manage Comments',
+      onClick: () => navigate(`/service/cases/${id}/comments`),
+      appearance: 'secondary',
+    })
+  }
   actions.push({ key: 'back', label: 'Back to List', onClick: () => navigate(config.listPath), appearance: 'subtle' })
 
   const summaryRows = [

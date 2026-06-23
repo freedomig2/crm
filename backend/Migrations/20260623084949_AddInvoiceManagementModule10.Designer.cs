@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -10,9 +11,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623084949_AddInvoiceManagementModule10")]
+    partial class AddInvoiceManagementModule10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -620,113 +623,6 @@ namespace backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AuditLogs");
-                });
-
-            modelBuilder.Entity("backend.Entities.CaseActivity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("ActivityDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ActivityTypeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AssignedToUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CaseId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid?>("PriorityId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("StatusId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ActivityTypeId");
-
-                    b.HasIndex("AssignedToUserId");
-
-                    b.HasIndex("PriorityId");
-
-                    b.HasIndex("StatusId");
-
-                    b.HasIndex("CaseId", "ActivityDate");
-
-                    b.ToTable("CaseActivities");
-                });
-
-            modelBuilder.Entity("backend.Entities.CaseComment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CaseId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CommentText")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsInternal")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CaseId", "CreatedAt");
-
-                    b.ToTable("CaseComments");
                 });
 
             modelBuilder.Entity("backend.Entities.Contact", b =>
@@ -3536,133 +3432,6 @@ namespace backend.Migrations
                     b.ToTable("SalesTargets");
                 });
 
-            modelBuilder.Entity("backend.Entities.ServiceCase", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("AssignedToUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CaseNumber")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("CaseStatusId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CategoryId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ClosedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("ContactId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("CreatedById")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DueAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("EscalatedToUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("OpenedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<Guid?>("OpportunityId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("OwnerTeamId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("OwnerUserId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("PriorityId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ResolutionSummary")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ResolvedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("SeverityId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("SourceId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Subject")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TenantId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UpdatedById")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("AssignedToUserId");
-
-                    b.HasIndex("CaseNumber")
-                        .IsUnique();
-
-                    b.HasIndex("CaseStatusId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("ContactId");
-
-                    b.HasIndex("DueAt");
-
-                    b.HasIndex("EscalatedToUserId");
-
-                    b.HasIndex("OpportunityId");
-
-                    b.HasIndex("OwnerTeamId");
-
-                    b.HasIndex("OwnerUserId");
-
-                    b.HasIndex("PriorityId");
-
-                    b.HasIndex("SeverityId");
-
-                    b.HasIndex("SourceId");
-
-                    b.ToTable("ServiceCases");
-                });
-
             modelBuilder.Entity("backend.Entities.SystemSetting", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3963,56 +3732,6 @@ namespace backend.Migrations
                         .WithMany()
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("backend.Entities.CaseActivity", b =>
-                {
-                    b.HasOne("backend.Entities.LookupValue", "ActivityType")
-                        .WithMany()
-                        .HasForeignKey("ActivityTypeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.AppUser", "AssignedToUser")
-                        .WithMany()
-                        .HasForeignKey("AssignedToUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.ServiceCase", "Case")
-                        .WithMany("Activities")
-                        .HasForeignKey("CaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "Priority")
-                        .WithMany()
-                        .HasForeignKey("PriorityId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.LookupValue", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ActivityType");
-
-                    b.Navigation("AssignedToUser");
-
-                    b.Navigation("Case");
-
-                    b.Navigation("Priority");
-
-                    b.Navigation("Status");
-                });
-
-            modelBuilder.Entity("backend.Entities.CaseComment", b =>
-                {
-                    b.HasOne("backend.Entities.ServiceCase", "Case")
-                        .WithMany("Comments")
-                        .HasForeignKey("CaseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Case");
                 });
 
             modelBuilder.Entity("backend.Entities.Contact", b =>
@@ -5102,96 +4821,6 @@ namespace backend.Migrations
                     b.Navigation("TargetType");
                 });
 
-            modelBuilder.Entity("backend.Entities.ServiceCase", b =>
-                {
-                    b.HasOne("backend.Entities.Account", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.AppUser", "AssignedToUser")
-                        .WithMany()
-                        .HasForeignKey("AssignedToUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.LookupValue", "CaseStatus")
-                        .WithMany()
-                        .HasForeignKey("CaseStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.Contact", "Contact")
-                        .WithMany()
-                        .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.AppUser", "EscalatedToUser")
-                        .WithMany()
-                        .HasForeignKey("EscalatedToUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.Opportunity", "Opportunity")
-                        .WithMany()
-                        .HasForeignKey("OpportunityId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.Team", "OwnerTeam")
-                        .WithMany()
-                        .HasForeignKey("OwnerTeamId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("backend.Entities.AppUser", "OwnerUser")
-                        .WithMany()
-                        .HasForeignKey("OwnerUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("backend.Entities.LookupValue", "Priority")
-                        .WithMany()
-                        .HasForeignKey("PriorityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("backend.Entities.LookupValue", "Severity")
-                        .WithMany()
-                        .HasForeignKey("SeverityId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("backend.Entities.LookupValue", "Source")
-                        .WithMany()
-                        .HasForeignKey("SourceId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Account");
-
-                    b.Navigation("AssignedToUser");
-
-                    b.Navigation("CaseStatus");
-
-                    b.Navigation("Category");
-
-                    b.Navigation("Contact");
-
-                    b.Navigation("EscalatedToUser");
-
-                    b.Navigation("Opportunity");
-
-                    b.Navigation("OwnerTeam");
-
-                    b.Navigation("OwnerUser");
-
-                    b.Navigation("Priority");
-
-                    b.Navigation("Severity");
-
-                    b.Navigation("Source");
-                });
-
             modelBuilder.Entity("backend.Entities.Team", b =>
                 {
                     b.HasOne("backend.Entities.AppUser", "OwnerUser")
@@ -5347,13 +4976,6 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Entities.Quote", b =>
                 {
                     b.Navigation("Lines");
-                });
-
-            modelBuilder.Entity("backend.Entities.ServiceCase", b =>
-                {
-                    b.Navigation("Activities");
-
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("backend.Entities.Team", b =>

@@ -50,6 +50,7 @@ const friendlyOverrides: Record<string, string> = {
   preferredCommunicationId: 'Preferred Communication',
   preferredContactMethodId: 'Preferred Contact Method',
   preferredTimeZoneId: 'Preferred Time Zone',
+  caseStatusId: 'Case Status',
   communicationTypeId: 'Communication Type',
   interactionTypeId: 'Interaction Type',
   addressTypeId: 'Address Type',
@@ -60,6 +61,7 @@ const friendlyOverrides: Record<string, string> = {
   timeZoneId: 'Time Zone',
   riskRatingId: 'Risk Rating',
   lifecycleStageId: 'Lifecycle Stage',
+  orderApprovalStatusId: 'Approval Status',
   relationshipTypeId: 'Relationship Type',
   strengthId: 'Relationship Strength',
   sourceAccountId: 'Source Account',
@@ -69,6 +71,7 @@ const friendlyOverrides: Record<string, string> = {
   statusId: 'Status',
   outcomeId: 'Outcome',
   assignedToUserId: 'Assigned To',
+  escalatedToUserId: 'Escalated To',
   relatedEntityId: 'Related Record',
   relatedEntityType: 'Related Entity Type',
   isEnabled: 'Enabled',
@@ -243,6 +246,39 @@ export const sectionMap = (configKey: string, fields: EntityField[]): SectionDef
       .filter((section) => section.fields.length > 0)
   }
 
+  if (configKey === 'orders') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['orderNumber', 'quoteId', 'accountId', 'contactId', 'opportunityId'] },
+      { key: 'status', title: 'Status and Dates', icon: <CalendarAgendaRegular />, fields: ['orderStatusId', 'approvalStatusId', 'deliveryStatusId', 'billingStatusId', 'orderDate', 'expectedDeliveryDate', 'deliveryDate', 'billingDate'] },
+      { key: 'commercial', title: 'Commercial Terms', icon: <DataPieRegular />, fields: ['currencyId'] },
+      { key: 'ownership', title: 'Ownership', icon: <PersonRegular />, fields: ['ownerUserId', 'ownerTeamId', 'isActive'] },
+      { key: 'notes', title: 'Notes', icon: <ClipboardTaskRegular />, fields: ['notes'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'invoices') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['invoiceNumber', 'orderId', 'quoteId', 'accountId', 'contactId', 'opportunityId'] },
+      { key: 'status', title: 'Status and Dates', icon: <CalendarAgendaRegular />, fields: ['invoiceStatusId', 'paymentStatusId', 'invoiceDate', 'dueDate', 'paidDate'] },
+      { key: 'commercial', title: 'Commercial Terms', icon: <DataPieRegular />, fields: ['currencyId', 'paidAmount'] },
+      { key: 'ownership', title: 'Ownership', icon: <PersonRegular />, fields: ['ownerUserId', 'ownerTeamId', 'isActive'] },
+      { key: 'notes', title: 'Notes', icon: <ClipboardTaskRegular />, fields: ['notes'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
+  if (configKey === 'cases') {
+    return [
+      { key: 'general', title: 'General Information', icon: <BookDatabaseRegular />, fields: ['caseNumber', 'accountId', 'contactId', 'opportunityId', 'subject', 'description'] },
+      { key: 'classification', title: 'Classification', icon: <DataPieRegular />, fields: ['caseStatusId', 'priorityId', 'severityId', 'categoryId', 'sourceId'] },
+      { key: 'assignment', title: 'Assignment', icon: <PersonRegular />, fields: ['assignedToUserId', 'escalatedToUserId', 'ownerUserId', 'ownerTeamId'] },
+      { key: 'timeline', title: 'Timeline', icon: <CalendarAgendaRegular />, fields: ['openedAt', 'dueAt', 'resolvedAt', 'closedAt'] },
+      { key: 'resolution', title: 'Resolution', icon: <ClipboardTaskRegular />, fields: ['resolutionSummary', 'isActive'] },
+    ].map((section) => ({ ...section, fields: section.fields.filter((fieldKey) => fields.some((field) => field.key === fieldKey)) }))
+      .filter((section) => section.fields.length > 0)
+  }
+
   return fallbackSections(fields)
 }
 
@@ -307,7 +343,8 @@ export const getEntityIcon = (configKey: string) => {
   if (configKey === 'contacts') return <PersonCallRegular />
   if (configKey === 'lookup-categories' || configKey === 'lookup-values') return <BookDatabaseRegular />
   if (configKey === 'system-settings') return <SettingsRegular />
-  if (configKey === 'products' || configKey === 'product-categories' || configKey === 'price-lists' || configKey === 'product-bundles' || configKey === 'unit-of-measures' || configKey === 'discounts' || configKey === 'quotes') return <BookDatabaseRegular />
+  if (configKey === 'products' || configKey === 'product-categories' || configKey === 'price-lists' || configKey === 'product-bundles' || configKey === 'unit-of-measures' || configKey === 'discounts' || configKey === 'quotes' || configKey === 'orders' || configKey === 'invoices') return <BookDatabaseRegular />
+  if (configKey === 'cases') return <ClipboardTaskRegular />
   return <BookDatabaseRegular />
 }
 

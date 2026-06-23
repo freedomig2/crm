@@ -619,6 +619,172 @@ export type QuoteLine = {
   updatedAt?: string
 }
 
+export type Order = {
+  id: string
+  orderNumber: string
+  quoteId?: string
+  quoteNumber?: string
+  accountId: string
+  accountName?: string
+  contactId?: string
+  contactName?: string
+  opportunityId?: string
+  opportunityTopic?: string
+  currencyId: string
+  currencyName?: string
+  orderStatusId: string
+  orderStatusName?: string
+  approvalStatusId: string
+  approvalStatusName?: string
+  deliveryStatusId: string
+  deliveryStatusName?: string
+  billingStatusId: string
+  billingStatusName?: string
+  orderDate?: string
+  expectedDeliveryDate?: string
+  deliveryDate?: string
+  billingDate?: string
+  subtotalAmount: number
+  discountAmount: number
+  taxAmount: number
+  totalAmount: number
+  notes?: string
+  approvedById?: string
+  approvedAt?: string
+  convertedInvoiceId?: string
+  convertedInvoiceAt?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type OrderLine = {
+  id: string
+  orderId: string
+  productId?: string
+  productBundleId?: string
+  productName: string
+  description?: string
+  unitOfMeasureId?: string
+  unitOfMeasureName?: string
+  quantity: number
+  unitPrice: number
+  discountPercent: number
+  discountAmount: number
+  taxRate: number
+  taxAmount: number
+  lineTotal: number
+  sortOrder: number
+  createdAt: string
+  updatedAt?: string
+}
+
+export type Invoice = {
+  id: string
+  invoiceNumber: string
+  orderId?: string
+  orderNumber?: string
+  quoteId?: string
+  quoteNumber?: string
+  accountId: string
+  accountName?: string
+  contactId?: string
+  contactName?: string
+  opportunityId?: string
+  opportunityTopic?: string
+  currencyId: string
+  currencyName?: string
+  invoiceStatusId: string
+  invoiceStatusName?: string
+  paymentStatusId: string
+  paymentStatusName?: string
+  dueDate?: string
+  invoiceDate?: string
+  paidDate?: string
+  subtotalAmount: number
+  discountAmount: number
+  taxAmount: number
+  totalAmount: number
+  paidAmount: number
+  notes?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type InvoiceLine = {
+  id: string
+  invoiceId: string
+  productId?: string
+  productBundleId?: string
+  productName: string
+  description?: string
+  unitOfMeasureId?: string
+  unitOfMeasureName?: string
+  quantity: number
+  unitPrice: number
+  discountPercent: number
+  discountAmount: number
+  taxRate: number
+  taxAmount: number
+  lineTotal: number
+  sortOrder: number
+  createdAt: string
+  updatedAt?: string
+}
+
+export type Case = {
+  id: string
+  caseNumber: string
+  accountId: string
+  accountName?: string
+  contactId?: string
+  contactName?: string
+  opportunityId?: string
+  opportunityTopic?: string
+  subject: string
+  description?: string
+  caseStatusId: string
+  caseStatusName?: string
+  caseStatusCode?: string
+  priorityId: string
+  priorityName?: string
+  severityId?: string
+  severityName?: string
+  categoryId?: string
+  categoryName?: string
+  sourceId?: string
+  sourceName?: string
+  assignedToUserId?: string
+  assignedToUserName?: string
+  escalatedToUserId?: string
+  escalatedToUserName?: string
+  openedAt: string
+  dueAt?: string
+  resolvedAt?: string
+  closedAt?: string
+  resolutionSummary?: string
+  isActive: boolean
+  ownerUserId?: string
+  ownerTeamId?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export type CaseComment = {
+  id: string
+  caseId: string
+  commentText: string
+  isInternal: boolean
+  createdAt: string
+  createdById?: string
+  createdByName?: string
+}
+
 export type OpportunityCompetitor = {
   id: string
   opportunityId: string

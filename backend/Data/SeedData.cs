@@ -50,6 +50,12 @@ public static class SeedData
             "Discounts.View", "Discounts.Create", "Discounts.Update", "Discounts.Delete",
             "Quotes.View", "Quotes.Create", "Quotes.Update", "Quotes.Delete", "Quotes.Approve", "Quotes.ConvertToOrder",
             "QuoteLines.View", "QuoteLines.Create", "QuoteLines.Update", "QuoteLines.Delete",
+            "Orders.View", "Orders.Create", "Orders.Update", "Orders.Delete", "Orders.Approve", "Orders.GenerateInvoice",
+            "OrderLines.View", "OrderLines.Create", "OrderLines.Update", "OrderLines.Delete",
+            "Invoices.View", "Invoices.Create", "Invoices.Update", "Invoices.Delete", "Invoices.MarkPaid",
+            "InvoiceLines.View", "InvoiceLines.Create", "InvoiceLines.Update", "InvoiceLines.Delete",
+            "Cases.View", "Cases.Create", "Cases.Update", "Cases.Delete", "Cases.Resolve", "Cases.Close", "Cases.Reopen",
+            "CaseComments.View", "CaseComments.Create", "CaseComments.Delete",
             "AccountAddresses.View", "AccountAddresses.Create", "AccountAddresses.Update", "AccountAddresses.Delete",
             "CustomerProfiles.View", "CustomerProfiles.Create", "CustomerProfiles.Update", "CustomerProfiles.Delete",
             "AccountRelationships.View", "AccountRelationships.Create", "AccountRelationships.Update", "AccountRelationships.Delete",
@@ -189,7 +195,30 @@ public static class SeedData
             ("Open", "OPEN"), ("In Progress", "IN_PROGRESS"), ("Completed", "COMPLETED"), ("Cancelled", "CANCELLED"), ("Deferred", "DEFERRED")
         });
 
-        await EnsureLookupCategoryAsync(db, "Case Status", "CASE_STATUS");
+        await EnsureLookupCategoryAsync(db, "Case Status", "CASE_STATUS", new[]
+        {
+            ("Open", "OPEN"), ("In Progress", "IN_PROGRESS"), ("Pending Customer", "PENDING_CUSTOMER"), ("Resolved", "RESOLVED"), ("Closed", "CLOSED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Case Priority", "CASE_PRIORITY", new[]
+        {
+            ("Low", "LOW"), ("Normal", "NORMAL"), ("High", "HIGH"), ("Urgent", "URGENT")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Case Severity", "CASE_SEVERITY", new[]
+        {
+            ("Minor", "MINOR"), ("Major", "MAJOR"), ("Critical", "CRITICAL")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Case Category", "CASE_CATEGORY", new[]
+        {
+            ("Question", "QUESTION"), ("Incident", "INCIDENT"), ("Problem", "PROBLEM"), ("Request", "REQUEST")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Case Source", "CASE_SOURCE", new[]
+        {
+            ("Email", "EMAIL"), ("Phone", "PHONE"), ("Web", "WEB"), ("Chat", "CHAT"), ("Portal", "PORTAL")
+        });
         await EnsureLookupCategoryAsync(db, "Opportunity Stage", "OPPORTUNITY_STAGE", new[]
         {
             ("Qualify", "QUALIFY"), ("Develop", "DEVELOP"), ("Propose", "PROPOSE"), ("Negotiate", "NEGOTIATE"), ("Close", "CLOSE")
@@ -283,6 +312,37 @@ public static class SeedData
         await EnsureLookupCategoryAsync(db, "Quote Approval Status", "QUOTE_APPROVAL_STATUS", new[]
         {
             ("Not Required", "NOT_REQUIRED"), ("Pending", "PENDING"), ("Approved", "APPROVED"), ("Rejected", "REJECTED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Order Status", "ORDER_STATUS", new[]
+        {
+            ("Draft", "DRAFT"), ("Pending Approval", "PENDING_APPROVAL"), ("Approved", "APPROVED"), ("Confirmed", "CONFIRMED"),
+            ("Partially Delivered", "PARTIALLY_DELIVERED"), ("Delivered", "DELIVERED"), ("Cancelled", "CANCELLED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Order Approval Status", "ORDER_APPROVAL_STATUS", new[]
+        {
+            ("Not Required", "NOT_REQUIRED"), ("Pending", "PENDING"), ("Approved", "APPROVED"), ("Rejected", "REJECTED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Order Delivery Status", "ORDER_DELIVERY_STATUS", new[]
+        {
+            ("Pending", "PENDING"), ("In Fulfillment", "IN_FULFILLMENT"), ("Partially Delivered", "PARTIALLY_DELIVERED"), ("Delivered", "DELIVERED"), ("Returned", "RETURNED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Order Billing Status", "ORDER_BILLING_STATUS", new[]
+        {
+            ("Not Billed", "NOT_BILLED"), ("Partially Billed", "PARTIALLY_BILLED"), ("Billed", "BILLED"), ("Paid", "PAID"), ("Write Off", "WRITE_OFF")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Invoice Status", "INVOICE_STATUS", new[]
+        {
+            ("Draft", "DRAFT"), ("Issued", "ISSUED"), ("Sent", "SENT"), ("Overdue", "OVERDUE"), ("Cancelled", "CANCELLED")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Invoice Payment Status", "INVOICE_PAYMENT_STATUS", new[]
+        {
+            ("Unpaid", "UNPAID"), ("Partially Paid", "PARTIALLY_PAID"), ("Paid", "PAID"), ("Overpaid", "OVERPAID"), ("Written Off", "WRITTEN_OFF")
         });
 
         await EnsureLookupCategoryAsync(db, "Tax Type", "TAX_TYPE", new[]

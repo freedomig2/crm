@@ -60,6 +60,13 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
     public DbSet<Discount> Discounts => Set<Discount>();
     public DbSet<Quote> Quotes => Set<Quote>();
     public DbSet<QuoteLine> QuoteLines => Set<QuoteLine>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderLine> OrderLines => Set<OrderLine>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceLine> InvoiceLines => Set<InvoiceLine>();
+    public DbSet<ServiceCase> ServiceCases => Set<ServiceCase>();
+    public DbSet<CaseComment> CaseComments => Set<CaseComment>();
+    public DbSet<CaseActivity> CaseActivities => Set<CaseActivity>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -732,6 +739,344 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
             entity.Property(x => x.SortOrder).HasDefaultValue(0);
         });
 
+        builder.Entity<Order>()
+            .HasOne(x => x.Quote)
+            .WithMany()
+            .HasForeignKey(x => x.QuoteId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.Opportunity)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.OrderStatus)
+            .WithMany()
+            .HasForeignKey(x => x.OrderStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.ApprovalStatus)
+            .WithMany()
+            .HasForeignKey(x => x.ApprovalStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.DeliveryStatus)
+            .WithMany()
+            .HasForeignKey(x => x.DeliveryStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.BillingStatus)
+            .WithMany()
+            .HasForeignKey(x => x.BillingStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.ApprovedBy)
+            .WithMany()
+            .HasForeignKey(x => x.ApprovedById)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Order>(entity =>
+        {
+            entity.Property(x => x.SubtotalAmount).HasDefaultValue(0m);
+            entity.Property(x => x.DiscountAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TaxAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TotalAmount).HasDefaultValue(0m);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<OrderLine>()
+            .HasOne(x => x.Order)
+            .WithMany(x => x.Lines)
+            .HasForeignKey(x => x.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderLine>()
+            .HasOne(x => x.Product)
+            .WithMany()
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderLine>()
+            .HasOne(x => x.ProductBundle)
+            .WithMany()
+            .HasForeignKey(x => x.ProductBundleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderLine>()
+            .HasOne(x => x.UnitOfMeasure)
+            .WithMany()
+            .HasForeignKey(x => x.UnitOfMeasureId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<OrderLine>(entity =>
+        {
+            entity.Property(x => x.DiscountPercent).HasDefaultValue(0m);
+            entity.Property(x => x.DiscountAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TaxRate).HasDefaultValue(0m);
+            entity.Property(x => x.TaxAmount).HasDefaultValue(0m);
+            entity.Property(x => x.LineTotal).HasDefaultValue(0m);
+            entity.Property(x => x.SortOrder).HasDefaultValue(0);
+        });
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.Order)
+            .WithMany()
+            .HasForeignKey(x => x.OrderId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.Quote)
+            .WithMany()
+            .HasForeignKey(x => x.QuoteId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.Opportunity)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.Currency)
+            .WithMany()
+            .HasForeignKey(x => x.CurrencyId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.InvoiceStatus)
+            .WithMany()
+            .HasForeignKey(x => x.InvoiceStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.PaymentStatus)
+            .WithMany()
+            .HasForeignKey(x => x.PaymentStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invoice>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Invoice>(entity =>
+        {
+            entity.Property(x => x.SubtotalAmount).HasDefaultValue(0m);
+            entity.Property(x => x.DiscountAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TaxAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TotalAmount).HasDefaultValue(0m);
+            entity.Property(x => x.PaidAmount).HasDefaultValue(0m);
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<InvoiceLine>()
+            .HasOne(x => x.Invoice)
+            .WithMany(x => x.Lines)
+            .HasForeignKey(x => x.InvoiceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<InvoiceLine>()
+            .HasOne(x => x.Product)
+            .WithMany()
+            .HasForeignKey(x => x.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<InvoiceLine>()
+            .HasOne(x => x.ProductBundle)
+            .WithMany()
+            .HasForeignKey(x => x.ProductBundleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<InvoiceLine>()
+            .HasOne(x => x.UnitOfMeasure)
+            .WithMany()
+            .HasForeignKey(x => x.UnitOfMeasureId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<InvoiceLine>(entity =>
+        {
+            entity.Property(x => x.DiscountPercent).HasDefaultValue(0m);
+            entity.Property(x => x.DiscountAmount).HasDefaultValue(0m);
+            entity.Property(x => x.TaxRate).HasDefaultValue(0m);
+            entity.Property(x => x.TaxAmount).HasDefaultValue(0m);
+            entity.Property(x => x.LineTotal).HasDefaultValue(0m);
+            entity.Property(x => x.SortOrder).HasDefaultValue(0);
+        });
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.Account)
+            .WithMany()
+            .HasForeignKey(x => x.AccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.Contact)
+            .WithMany()
+            .HasForeignKey(x => x.ContactId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.Opportunity)
+            .WithMany()
+            .HasForeignKey(x => x.OpportunityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.CaseStatus)
+            .WithMany()
+            .HasForeignKey(x => x.CaseStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.Priority)
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.Severity)
+            .WithMany()
+            .HasForeignKey(x => x.SeverityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.Category)
+            .WithMany()
+            .HasForeignKey(x => x.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.Source)
+            .WithMany()
+            .HasForeignKey(x => x.SourceId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.EscalatedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.EscalatedToUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.OwnerUser)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ServiceCase>()
+            .HasOne(x => x.OwnerTeam)
+            .WithMany()
+            .HasForeignKey(x => x.OwnerTeamId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<ServiceCase>(entity =>
+        {
+            entity.Property(x => x.IsActive).HasDefaultValue(true);
+            entity.Property(x => x.OpenedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+
+        builder.Entity<CaseComment>()
+            .HasOne(x => x.Case)
+            .WithMany(x => x.Comments)
+            .HasForeignKey(x => x.CaseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<CaseComment>(entity =>
+        {
+            entity.Property(x => x.IsInternal).HasDefaultValue(false);
+        });
+
+        builder.Entity<CaseActivity>()
+            .HasOne(x => x.Case)
+            .WithMany(x => x.Activities)
+            .HasForeignKey(x => x.CaseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<CaseActivity>()
+            .HasOne(x => x.ActivityType)
+            .WithMany()
+            .HasForeignKey(x => x.ActivityTypeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<CaseActivity>()
+            .HasOne(x => x.Status)
+            .WithMany()
+            .HasForeignKey(x => x.StatusId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<CaseActivity>()
+            .HasOne(x => x.Priority)
+            .WithMany()
+            .HasForeignKey(x => x.PriorityId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<CaseActivity>()
+            .HasOne(x => x.AssignedToUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedToUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.Entity<NumberSequence>()
             .HasOne(x => x.ResetFrequency)
             .WithMany()
@@ -788,6 +1133,31 @@ public class AppDbContext : IdentityDbContext<AppUser, AppRole, Guid>
         builder.Entity<Quote>().HasIndex(x => x.QuoteStatusId);
         builder.Entity<Quote>().HasIndex(x => x.ApprovalStatusId);
         builder.Entity<QuoteLine>().HasIndex(x => new { x.QuoteId, x.SortOrder });
+        builder.Entity<Order>().HasIndex(x => x.OrderNumber).IsUnique();
+        builder.Entity<Order>().HasIndex(x => x.QuoteId);
+        builder.Entity<Order>().HasIndex(x => x.AccountId);
+        builder.Entity<Order>().HasIndex(x => x.OpportunityId);
+        builder.Entity<Order>().HasIndex(x => x.OrderStatusId);
+        builder.Entity<Order>().HasIndex(x => x.ApprovalStatusId);
+        builder.Entity<Order>().HasIndex(x => x.DeliveryStatusId);
+        builder.Entity<Order>().HasIndex(x => x.BillingStatusId);
+        builder.Entity<OrderLine>().HasIndex(x => new { x.OrderId, x.SortOrder });
+        builder.Entity<Invoice>().HasIndex(x => x.InvoiceNumber).IsUnique();
+        builder.Entity<Invoice>().HasIndex(x => x.OrderId);
+        builder.Entity<Invoice>().HasIndex(x => x.QuoteId);
+        builder.Entity<Invoice>().HasIndex(x => x.AccountId);
+        builder.Entity<Invoice>().HasIndex(x => x.OpportunityId);
+        builder.Entity<Invoice>().HasIndex(x => x.InvoiceStatusId);
+        builder.Entity<Invoice>().HasIndex(x => x.PaymentStatusId);
+        builder.Entity<InvoiceLine>().HasIndex(x => new { x.InvoiceId, x.SortOrder });
+        builder.Entity<ServiceCase>().HasIndex(x => x.CaseNumber).IsUnique();
+        builder.Entity<ServiceCase>().HasIndex(x => x.AccountId);
+        builder.Entity<ServiceCase>().HasIndex(x => x.CaseStatusId);
+        builder.Entity<ServiceCase>().HasIndex(x => x.PriorityId);
+        builder.Entity<ServiceCase>().HasIndex(x => x.AssignedToUserId);
+        builder.Entity<ServiceCase>().HasIndex(x => x.DueAt);
+        builder.Entity<CaseComment>().HasIndex(x => new { x.CaseId, x.CreatedAt });
+        builder.Entity<CaseActivity>().HasIndex(x => new { x.CaseId, x.ActivityDate });
         builder.Entity<OpportunityProduct>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityCompetitor>().HasIndex(x => x.OpportunityId);
         builder.Entity<OpportunityActivity>().HasIndex(x => x.OpportunityId);
