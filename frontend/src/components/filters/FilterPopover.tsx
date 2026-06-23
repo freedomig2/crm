@@ -18,12 +18,12 @@ export function FilterPopover({
   return (
     <Popover open={open} onOpenChange={(_, data) => onOpenChange(data.open)} positioning="below-end" withArrow>
       <PopoverTrigger disableButtonEnhancement>
-        <Button size="small" appearance="subtle" icon={<FilterRegular />}>
+        <Button data-testid="grid-filter-button" size="small" appearance="subtle" icon={<FilterRegular />}>
           Filters
           <ActiveFilterBadge count={activeCount} />
         </Button>
       </PopoverTrigger>
-      <PopoverSurface className={styles.filterPopoverSurface}>{children}</PopoverSurface>
+      <PopoverSurface className={styles.filterPopoverSurface} data-testid="grid-filter-popover">{children}</PopoverSurface>
     </Popover>
   )
 }

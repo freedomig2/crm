@@ -1,0 +1,25 @@
+{
+  "modules": [
+    "Authentication",
+    "Administration",
+    "Security",
+    "Configuration",
+    "Accounts",
+    "Contacts",
+    "Leads",
+    "Opportunities",
+    "Sales Pipeline",
+    "Products and Price Lists",
+    "Quotes",
+    "Orders",
+    "Invoices",
+    "Cases and Service",
+    "Activities",
+    "Documents",
+    "Workflows and Business Processes",
+    "Dashboards and Reporting",
+    "Notifications",
+    "Integrations",
+    "AI / Copilot"
+  ]
+}

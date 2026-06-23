@@ -18,7 +18,7 @@ export function LoginPage() {
     setError(null)
     try {
       await login(email, password)
-      navigate('/users')
+      navigate('/dashboard')
     } catch {
       setError('Login failed. Please check your credentials.')
     } finally {
@@ -27,9 +27,9 @@ export function LoginPage() {
   }
 
   return (
-    <div className="authPage">
+    <div className="authPage" data-testid="login-page">
       <Card className="authCard">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} data-testid="login-form">
           <Text size={500} weight="semibold">CRM Enterprise Sign-In</Text>
           {error && (
             <MessageBar intent="error" style={{ marginTop: 8 }}>
@@ -37,12 +37,12 @@ export function LoginPage() {
             </MessageBar>
           )}
           <Field label="Email" required>
-            <Input type="email" value={email} onChange={(_, d) => setEmail(d.value)} />
+            <Input data-testid="login-email" type="email" value={email} onChange={(_, d) => setEmail(d.value)} />
           </Field>
           <Field label="Password" required>
-            <Input type="password" value={password} onChange={(_, d) => setPassword(d.value)} />
+            <Input data-testid="login-password" type="password" value={password} onChange={(_, d) => setPassword(d.value)} />
           </Field>
-          <Button appearance="primary" type="submit" disabled={loading}>
+          <Button data-testid="login-submit" appearance="primary" type="submit" disabled={loading}>
             {loading ? 'Signing in...' : 'Login'}
           </Button>
           <div style={{ marginTop: 8 }}>

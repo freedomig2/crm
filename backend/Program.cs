@@ -129,3 +129,5 @@ app.MapFallbackToFile("index.html");
 await SeedData.EnsureSeedDataAsync(app.Services);
 
 app.Run();
+
+public partial class Program { }

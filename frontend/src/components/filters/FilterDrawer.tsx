@@ -18,11 +18,11 @@ export function FilterDrawer({
 }) {
   return (
     <>
-      <Button size="small" appearance="subtle" icon={<FilterRegular />} onClick={() => onOpenChange(true)}>
+      <Button data-testid="grid-filter-button" size="small" appearance="subtle" icon={<FilterRegular />} onClick={() => onOpenChange(true)}>
         Filters
         <ActiveFilterBadge count={activeCount} />
       </Button>
-      <Drawer open={open} onOpenChange={(_, data) => onOpenChange(data.open)} position="end" size="small">
+      <Drawer open={open} onOpenChange={(_, data) => onOpenChange(data.open)} position="end" size="small" data-testid="grid-filter-drawer">
         <DrawerHeader>
           <DrawerHeaderTitle
             action={

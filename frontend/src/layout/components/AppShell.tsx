@@ -37,7 +37,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: { darkMode: boolean; on
   }
 
   return (
-    <div className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ''}`}>
+    <div className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ''}`} data-testid="app-shell" data-collapsed={collapsed ? 'true' : 'false'}>
       <Sidebar collapsed={collapsed} groups={navGroups} hasPermission={canAccess} />
 
       <div className={styles.mainArea}>

@@ -45,7 +45,7 @@ export function TopBar({
     <div className={styles.bar}>
       <div className={styles.left}>
         <Tooltip content={collapsed ? 'Expand menu' : 'Collapse menu'} relationship="label">
-          <Button icon={<PanelLeftRegular />} appearance="subtle" size="small" onClick={onToggleSidebar} />
+          <Button data-testid="toggle-sidebar" icon={<PanelLeftRegular />} appearance="subtle" size="small" onClick={onToggleSidebar} />
         </Tooltip>
       </div>
 

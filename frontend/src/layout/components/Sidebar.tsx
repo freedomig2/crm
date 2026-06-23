@@ -100,7 +100,7 @@ export function Sidebar({
   }
 
   return (
-    <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`}>
+    <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`} data-testid="crm-sidebar" data-collapsed={collapsed ? 'true' : 'false'}>
       <div className={styles.brand}>
         <span>CRM</span>
         <span className={styles.brandText}>Admin Console</span>
@@ -111,7 +111,7 @@ export function Sidebar({
         const isGroupActive = group.items.some((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
         return (
           <section className={styles.group} key={group.key}>
-            <button className={`${styles.groupHeader} ${isGroupActive ? styles.groupHeaderActive : ''}`} type="button" onClick={() => toggleGroup(group.key)} title={group.label}>
+            <button className={`${styles.groupHeader} ${isGroupActive ? styles.groupHeaderActive : ''}`} type="button" onClick={() => toggleGroup(group.key)} title={group.label} data-testid={`nav-group-${group.key}`}>
               <span className={styles.groupHeaderLeft}>
                 <span className={styles.groupIcon}>{group.icon}</span>
                 <span className={styles.groupTitle}>{group.label}</span>
@@ -119,11 +119,12 @@ export function Sidebar({
               <span className={styles.toggleIcon}>{isExpanded ? <ChevronUp16Regular /> : <ChevronDown16Regular />}</span>
             </button>
             {isExpanded && (
-              <div className={styles.links}>
+              <div className={styles.links} data-testid={`nav-group-links-${group.key}`}>
                 {group.items.map((item) => (
                   <NavLink
                     key={item.key}
                     to={item.to}
+                    data-testid={`nav-item-${item.key}`}
                     className={({ isActive }) => `${styles.link} ${isActive ? styles.linkActive : ''}`}
                     title={item.label}
                   >

@@ -1,0 +1,57 @@
+{
+  "users": [
+    {
+      "role": "System Administrator",
+      "email": "admin@crm.local",
+      "expectations": [
+        "all-permissions",
+        "all-modules-visible",
+        "all-actions-allowed"
+      ]
+    },
+    {
+      "role": "Sales Manager",
+      "email": "sales.manager@crm.local",
+      "expectations": [
+        "sales-module-access",
+        "record-assignment-allowed",
+        "security-settings-restricted"
+      ]
+    },
+    {
+      "role": "Sales User",
+      "email": "sales.user@crm.local",
+      "expectations": [
+        "own-sales-records",
+        "admin-module-hidden",
+        "security-module-hidden"
+      ]
+    },
+    {
+      "role": "Customer Service Manager",
+      "email": "service.manager@crm.local",
+      "expectations": [
+        "service-module-access",
+        "case-assignment-allowed",
+        "sales-config-restricted"
+      ]
+    },
+    {
+      "role": "Customer Service User",
+      "email": "service.user@crm.local",
+      "expectations": [
+        "assigned-case-access",
+        "case-activities-create",
+        "admin-module-hidden"
+      ]
+    },
+    {
+      "role": "Read Only User",
+      "email": "readonly@crm.local",
+      "expectations": [
+        "view-only",
+        "no-write-actions"
+      ]
+    }
+  ]
+}
