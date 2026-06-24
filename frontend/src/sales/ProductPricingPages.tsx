@@ -1,17 +1,18 @@
-import { Button, Field, Input, MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
+import { Field, Input, MessageBar, MessageBarBody } from '@fluentui/react-components'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { DeleteConfirmDialog } from '../components/crud/DeleteConfirmDialog'
 import { FormSectionCard, LookupCombobox } from '../components/entity-ui/EntityComponents'
 import { FilterField } from '../components/filters/FilterField'
 import { DenseDataGrid, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { RelatedRecordsSubgrid } from '../components/subgrid/RelatedRecordsSubgrid'
+import { SubgridDeleteConfirmDialog } from '../components/subgrid/SubgridDeleteConfirmDialog'
+import { SubgridModalForm } from '../components/subgrid/SubgridModalForm'
 import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { PagedResult, PriceList, PriceListItem, ProductBundle, ProductBundleItem } from '../types/models'
-import styles from './Sales.module.css'
 
 type PriceListItemQuery = {
   page: number
@@ -74,7 +75,9 @@ export function PriceListItemsPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<PriceListItem | null>(null)
   const [form, setForm] = useState<PriceListItemForm>(emptyPriceListItemForm)
 
@@ -142,6 +145,11 @@ export function PriceListItemsPage() {
     setForm(emptyPriceListItemForm)
   }
 
+  const openAddForm = () => {
+    resetForm()
+    setFormOpen(true)
+  }
+
   const editRow = (row: PriceListItem) => {
     setEditingId(row.id)
     setForm({
@@ -153,6 +161,7 @@ export function PriceListItemsPage() {
       effectiveFrom: row.effectiveFrom ? row.effectiveFrom.slice(0, 10) : '',
       effectiveTo: row.effectiveTo ? row.effectiveTo.slice(0, 10) : '',
     })
+    setFormOpen(true)
   }
 
   const saveItem = async () => {
@@ -167,6 +176,7 @@ export function PriceListItemsPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const payload = {
         productId: form.productId,
@@ -185,6 +195,8 @@ export function PriceListItemsPage() {
       }
 
       resetForm()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Price list item updated successfully.' : 'Price list item created successfully.')
       await loadItems()
     } catch {
       setError('Failed to save price list item.')
@@ -200,9 +212,11 @@ export function PriceListItemsPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.delete(`api/price-list-items/${deleteTarget.id}`)
       setDeleteTarget(null)
+      setSuccess('Price list item deleted successfully.')
       await loadItems()
     } catch {
       setError('Failed to delete price list item.')
@@ -245,8 +259,59 @@ export function PriceListItemsPage() {
       />
       <CommandBar actions={[{ key: 'back', label: 'Back to Price Lists', onClick: () => navigate('/sales/price-lists') }]} />
 
-      {canUpdate ? (
-        <FormSectionCard title={editingId ? 'Edit Price List Item' : 'Add Price List Item'}>
+      {success ? <MessageBar intent="success" style={{ marginBottom: 10 }}><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
+      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
+
+      <RelatedRecordsSubgrid
+        title="Price List Items"
+        addLabel={canUpdate ? 'Add Item' : undefined}
+        onAdd={canUpdate ? openAddForm : undefined}
+        onRefresh={() => void loadItems()}
+        loading={loading}
+        error={error}
+        hasRows={rows.length > 0}
+        emptyMessage="No price list items match the current filters."
+        emptyActionLabel={canUpdate ? 'Add Item' : undefined}
+        onEmptyAction={canUpdate ? openAddForm : undefined}
+      >
+        <DenseDataGrid
+          rows={rows}
+          columns={columns}
+          loading={loading}
+          totalCount={totalCount}
+          page={query.page}
+          pageSize={query.pageSize}
+          search={query.search}
+          sort={query.sortBy ? ({ key: query.sortBy as keyof PriceListItem, dir: query.sortDir }) : null}
+          onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
+          onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
+          onSortChange={(sort: DenseSort<PriceListItem> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'asc', page: 1 }))}
+          onEdit={canUpdate ? (row) => editRow(row) : undefined}
+          onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
+          emptyMessage="No price list items match the current filters."
+          activeFilterCount={activeFilterCount}
+          filterPanel={<FilterField label="Product"><LookupCombobox fieldKey="productId" value={draftFilters.productId} onChange={(value) => setDraftFilters((current) => ({ ...current, productId: value }))} /></FilterField>}
+          onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+          onCancelFilters={() => setDraftFilters({ productId: query.productId })}
+          onClearFilters={() => setDraftFilters({ productId: '' })}
+        />
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Price List Item' : 'Add Price List Item'}
+        submitLabel={editingId ? 'Update Item' : 'Add Item'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            resetForm()
+          }
+        }}
+        onSubmit={() => void saveItem()}
+      >
+        <FormSectionCard title="Item Details">
           <Field label="Product" required>
             <LookupCombobox fieldKey="productId" value={form.productId} disabled={loading} onChange={(value) => setForm((current) => ({ ...current, productId: value }))} />
           </Field>
@@ -268,40 +333,10 @@ export function PriceListItemsPage() {
           <Field label="Effective To">
             <Input size="small" type="date" value={form.effectiveTo} onChange={(_, data) => setForm((current) => ({ ...current, effectiveTo: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" disabled={loading} onClick={() => void saveItem()}>{editingId ? 'Update Item' : 'Add Item'}</Button>
-            <Button size="small" appearance="subtle" disabled={loading} onClick={resetForm}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      {loading ? <Spinner size="small" label="Loading price list items..." style={{ margin: '8px 0' }} /> : null}
-      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-
-      <DenseDataGrid
-        rows={rows}
-        columns={columns}
-        loading={loading}
-        totalCount={totalCount}
-        page={query.page}
-        pageSize={query.pageSize}
-        search={query.search}
-        sort={query.sortBy ? ({ key: query.sortBy as keyof PriceListItem, dir: query.sortDir }) : null}
-        onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
-        onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
-        onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
-        onSortChange={(sort: DenseSort<PriceListItem> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'asc', page: 1 }))}
-        onEdit={canUpdate ? (row) => editRow(row) : undefined}
-        onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
-        emptyMessage="No price list items match the current filters."
-        activeFilterCount={activeFilterCount}
-        filterPanel={<FilterField label="Product"><LookupCombobox fieldKey="productId" value={draftFilters.productId} onChange={(value) => setDraftFilters((current) => ({ ...current, productId: value }))} /></FilterField>}
-        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
-        onCancelFilters={() => setDraftFilters({ productId: query.productId })}
-        onClearFilters={() => setDraftFilters({ productId: '' })}
-      />
-
-      <DeleteConfirmDialog
+      <SubgridDeleteConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete Price List Item"
         message={`Delete ${deleteTarget?.productName ?? 'this item'} from the price list?`}
@@ -324,7 +359,9 @@ export function ProductBundleItemsPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<ProductBundleItem | null>(null)
   const [form, setForm] = useState<BundleItemForm>(emptyBundleItemForm)
 
@@ -389,6 +426,11 @@ export function ProductBundleItemsPage() {
     setForm(emptyBundleItemForm)
   }
 
+  const openAddForm = () => {
+    resetForm()
+    setFormOpen(true)
+  }
+
   const editRow = (row: ProductBundleItem) => {
     setEditingId(row.id)
     setForm({
@@ -396,6 +438,7 @@ export function ProductBundleItemsPage() {
       quantity: String(row.quantity),
       sortOrder: String(row.sortOrder),
     })
+    setFormOpen(true)
   }
 
   const saveItem = async () => {
@@ -410,6 +453,7 @@ export function ProductBundleItemsPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const payload = {
         productId: form.productId,
@@ -424,6 +468,8 @@ export function ProductBundleItemsPage() {
       }
 
       resetForm()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Bundle item updated successfully.' : 'Bundle item created successfully.')
       await loadItems()
     } catch {
       setError('Failed to save bundle item.')
@@ -439,9 +485,11 @@ export function ProductBundleItemsPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.delete(`api/product-bundle-items/${deleteTarget.id}`)
       setDeleteTarget(null)
+      setSuccess('Bundle item deleted successfully.')
       await loadItems()
     } catch {
       setError('Failed to delete bundle item.')
@@ -480,8 +528,59 @@ export function ProductBundleItemsPage() {
       />
       <CommandBar actions={[{ key: 'back', label: 'Back to Product Bundles', onClick: () => navigate('/sales/product-bundles') }]} />
 
-      {canUpdate ? (
-        <FormSectionCard title={editingId ? 'Edit Bundle Item' : 'Add Bundle Item'}>
+      {success ? <MessageBar intent="success" style={{ marginBottom: 10 }}><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
+      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
+
+      <RelatedRecordsSubgrid
+        title="Bundle Items"
+        addLabel={canUpdate ? 'Add Item' : undefined}
+        onAdd={canUpdate ? openAddForm : undefined}
+        onRefresh={() => void loadItems()}
+        loading={loading}
+        error={error}
+        hasRows={rows.length > 0}
+        emptyMessage="No bundle items match the current filters."
+        emptyActionLabel={canUpdate ? 'Add Item' : undefined}
+        onEmptyAction={canUpdate ? openAddForm : undefined}
+      >
+        <DenseDataGrid
+          rows={rows}
+          columns={columns}
+          loading={loading}
+          totalCount={totalCount}
+          page={query.page}
+          pageSize={query.pageSize}
+          search={query.search}
+          sort={query.sortBy ? ({ key: query.sortBy as keyof ProductBundleItem, dir: query.sortDir }) : null}
+          onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
+          onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
+          onSortChange={(sort: DenseSort<ProductBundleItem> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'asc', page: 1 }))}
+          onEdit={canUpdate ? (row) => editRow(row) : undefined}
+          onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
+          emptyMessage="No bundle items match the current filters."
+          activeFilterCount={0}
+          filterPanel={<FilterField label="Bundle Status"><Input size="small" value="All" readOnly /></FilterField>}
+          onApplyFilters={() => undefined}
+          onCancelFilters={() => undefined}
+          onClearFilters={() => undefined}
+        />
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Bundle Item' : 'Add Bundle Item'}
+        submitLabel={editingId ? 'Update Item' : 'Add Item'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            resetForm()
+          }
+        }}
+        onSubmit={() => void saveItem()}
+      >
+        <FormSectionCard title="Item Details">
           <Field label="Product" required>
             <LookupCombobox fieldKey="productId" value={form.productId} disabled={loading} onChange={(value) => setForm((current) => ({ ...current, productId: value }))} />
           </Field>
@@ -491,40 +590,10 @@ export function ProductBundleItemsPage() {
           <Field label="Sort Order">
             <Input size="small" type="number" value={form.sortOrder} onChange={(_, data) => setForm((current) => ({ ...current, sortOrder: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" disabled={loading} onClick={() => void saveItem()}>{editingId ? 'Update Item' : 'Add Item'}</Button>
-            <Button size="small" appearance="subtle" disabled={loading} onClick={resetForm}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      {loading ? <Spinner size="small" label="Loading bundle items..." style={{ margin: '8px 0' }} /> : null}
-      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-
-      <DenseDataGrid
-        rows={rows}
-        columns={columns}
-        loading={loading}
-        totalCount={totalCount}
-        page={query.page}
-        pageSize={query.pageSize}
-        search={query.search}
-        sort={query.sortBy ? ({ key: query.sortBy as keyof ProductBundleItem, dir: query.sortDir }) : null}
-        onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
-        onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
-        onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
-        onSortChange={(sort: DenseSort<ProductBundleItem> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'asc', page: 1 }))}
-        onEdit={canUpdate ? (row) => editRow(row) : undefined}
-        onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
-        emptyMessage="No bundle items match the current filters."
-        activeFilterCount={0}
-        filterPanel={<FilterField label="Bundle Status"><Input size="small" value="All" readOnly /></FilterField>}
-        onApplyFilters={() => undefined}
-        onCancelFilters={() => undefined}
-        onClearFilters={() => undefined}
-      />
-
-      <DeleteConfirmDialog
+      <SubgridDeleteConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete Bundle Item"
         message={`Delete ${deleteTarget?.productName ?? 'this item'} from the bundle?`}

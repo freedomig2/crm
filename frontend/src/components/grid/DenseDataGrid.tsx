@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Button,
   Checkbox,
@@ -14,12 +14,12 @@ import {
   ArrowDownloadRegular,
   ArrowSortRegular,
   MoreHorizontalRegular,
-  SettingsRegular,
 } from '@fluentui/react-icons'
 import styles from './DenseDataGrid.module.css'
 import { StatusBadge } from '../common/StatusBadge'
 import { FilterDrawer } from '../filters/FilterDrawer'
 import { FilterPopover } from '../filters/FilterPopover'
+import { ColumnChooserPopover } from './ColumnChooserPopover'
 import { ListCommandBar } from './ListCommandBar'
 
 export type DenseColumn<T> = {
@@ -57,6 +57,9 @@ export function DenseDataGrid<T extends { id: string }>({
   onApplyFilters,
   onCancelFilters,
   onClearFilters,
+  entityKey,
+  defaultVisibleColumnKeys,
+  requiredColumnKeys = [],
 }: {
   rows: T[]
   columns: DenseColumn<T>[]
@@ -80,6 +83,9 @@ export function DenseDataGrid<T extends { id: string }>({
   onApplyFilters?: () => void
   onCancelFilters?: () => void
   onClearFilters?: () => void
+  entityKey?: string
+  defaultVisibleColumnKeys?: string[]
+  requiredColumnKeys?: string[]
 }) {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<DenseSort<T> | null>(null)
@@ -88,9 +94,45 @@ export function DenseDataGrid<T extends { id: string }>({
   const [selected, setSelected] = useState<Record<string, boolean>>({})
   const [searchDraft, setSearchDraft] = useState(controlledSearch ?? '')
   const [filterOpen, setFilterOpen] = useState(false)
-  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
-    Object.fromEntries(columns.map((column) => [String(column.key), true])),
-  )
+  const storageKey = useMemo(() => (entityKey ? `crm.grid.columns.${entityKey}` : ''), [entityKey])
+
+  const resolveDefaultVisibility = useCallback(() => {
+    const columnKeys = columns.map((column) => String(column.key))
+
+    const defaults = defaultVisibleColumnKeys && defaultVisibleColumnKeys.length > 0
+      ? Object.fromEntries(columnKeys.map((key) => [key, defaultVisibleColumnKeys.includes(key)]))
+      : Object.fromEntries(columnKeys.map((key) => [key, true]))
+
+    if (!storageKey) {
+      return defaults
+    }
+
+    const raw = localStorage.getItem(storageKey)
+    if (!raw) {
+      return defaults
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Record<string, boolean>
+      const next = Object.fromEntries(
+        columnKeys.map((key) => [
+          key,
+          requiredColumnKeys.includes(key)
+            ? true
+            : key in parsed
+              ? Boolean(parsed[key])
+              : Boolean(defaults[key]),
+        ]),
+      )
+
+      const hasAny = Object.values(next).some(Boolean)
+      return hasAny ? next : defaults
+    } catch {
+      return defaults
+    }
+  }, [columns, defaultVisibleColumnKeys, requiredColumnKeys, storageKey])
+
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(resolveDefaultVisibility)
 
   const effectiveVisibleColumns = useMemo(() => {
     const next = Object.fromEntries(
@@ -155,6 +197,19 @@ export function DenseDataGrid<T extends { id: string }>({
   const pages = Math.max(1, Math.ceil(totalRows / effectivePageSize))
   const selectedCount = Object.values(selected).filter(Boolean).length
   const visibleDataColumns = columns.filter((column) => effectiveVisibleColumns[String(column.key)])
+  const defaultColumnVisibility = useMemo(
+    () =>
+      Object.fromEntries(
+        columns.map((column) => {
+          const key = String(column.key)
+          const isDefault = defaultVisibleColumnKeys && defaultVisibleColumnKeys.length > 0
+            ? defaultVisibleColumnKeys.includes(key)
+            : true
+          return [key, requiredColumnKeys.includes(key) ? true : isDefault]
+        }),
+      ) as Record<string, boolean>,
+    [columns, defaultVisibleColumnKeys, requiredColumnKeys],
+  )
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 900)
   const appliedFilterCount = activeFilterCount ?? 0
 
@@ -181,6 +236,14 @@ export function DenseDataGrid<T extends { id: string }>({
 
     return () => window.clearTimeout(timeout)
   }, [effectiveSearch, isControlled, onPageChange, onSearchChange, searchDraft])
+
+  useEffect(() => {
+    if (!storageKey) {
+      return
+    }
+
+    localStorage.setItem(storageKey, JSON.stringify(visibleColumns))
+  }, [storageKey, visibleColumns])
 
   const toggleSort = (key: keyof T) => {
     const next = !effectiveSort || effectiveSort.key !== key
@@ -247,7 +310,10 @@ export function DenseDataGrid<T extends { id: string }>({
       {filterActions}
     </>
   ) : (
-    <div className={styles.filterBody}>No additional filters are configured for this list.</div>
+    <>
+      <div className={styles.filterBody}>No additional filters are configured for this list.</div>
+      {filterActions}
+    </>
   )
 
   return (
@@ -271,31 +337,34 @@ export function DenseDataGrid<T extends { id: string }>({
                 {filterContent}
               </FilterPopover>
             )}
-          <Menu>
-            <MenuTrigger disableButtonEnhancement>
-              <Button size="small" appearance="subtle" icon={<SettingsRegular />}>
-                Columns
-              </Button>
-            </MenuTrigger>
-            <MenuPopover>
-              <MenuList>
-                {columns.map((column) => (
-                  <MenuItem key={String(column.key)}>
-                    <Checkbox
-                      label={column.label}
-                      checked={effectiveVisibleColumns[String(column.key)]}
-                      onChange={(_, data) =>
-                        setVisibleColumns((current) => ({
-                          ...current,
-                          [String(column.key)]: Boolean(data.checked),
-                        }))
-                      }
-                    />
-                  </MenuItem>
-                ))}
-              </MenuList>
-            </MenuPopover>
-          </Menu>
+          <ColumnChooserPopover
+            options={columns.map((column) => {
+              const key = String(column.key)
+              return {
+                key,
+                label: column.label,
+                checked: effectiveVisibleColumns[key],
+                disabled: requiredColumnKeys.includes(key),
+              }
+            })}
+            onToggle={(key, nextChecked) => {
+              if (requiredColumnKeys.includes(key)) {
+                return
+              }
+
+              setVisibleColumns((current) => ({
+                ...current,
+                [key]: nextChecked,
+              }))
+            }}
+            onReset={() => {
+              setVisibleColumns(defaultColumnVisibility)
+
+              if (storageKey) {
+                localStorage.removeItem(storageKey)
+              }
+            }}
+          />
           <Button size="small" appearance="subtle" icon={<ArrowDownloadRegular />} onClick={exportCsv}>
             Export to Excel
           </Button>

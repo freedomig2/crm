@@ -2,28 +2,45 @@ import { describe, expect, it } from 'vitest'
 import { navGroups } from '../layout/navigation'
 
 describe('navigation defaults', () => {
-  it('includes required implemented groups in canonical order', () => {
+  it('follows canonical sidebar group order', () => {
     const keys = navGroups.map((x) => x.key)
-
-    const required = [
+    expect(keys).toEqual([
+      'dashboard',
+      'customers',
       'sales',
+      'marketing',
       'service',
-      'activities',
+      'projects',
       'documents',
-      'configuration',
+      'activities',
+      'finance',
       'reporting',
+      'administration',
+      'security',
+      'configuration',
+      'data-management',
+      'audit',
       'integrations',
       'ai-copilot',
-    ]
+      'personal',
+    ])
+  })
 
-    for (const key of required) {
-      expect(keys).toContain(key)
-    }
-
-    const positions = required.map((key) => keys.indexOf(key))
-    for (let index = 1; index < positions.length; index += 1) {
-      expect(positions[index]).toBeGreaterThan(positions[index - 1])
-    }
+  it('shows implemented groups and hides future groups by default', () => {
+    const enabledGroups = navGroups.filter((group) => group.enabled !== false).map((group) => group.key)
+    expect(enabledGroups).toEqual([
+      'dashboard',
+      'customers',
+      'sales',
+      'service',
+      'reporting',
+      'administration',
+      'security',
+      'configuration',
+      'audit',
+      'integrations',
+      'ai-copilot',
+    ])
   })
 
   it('exposes implemented AI menu items and hides future placeholders by default', () => {

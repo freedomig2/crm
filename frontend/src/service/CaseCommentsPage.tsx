@@ -1,12 +1,14 @@
-import { Button, Dropdown, Field, Input, MessageBar, MessageBarBody, Option, Spinner, Switch } from '@fluentui/react-components'
+import { Dropdown, Field, Input, MessageBar, MessageBarBody, Option, Switch } from '@fluentui/react-components'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { DeleteConfirmDialog } from '../components/crud/DeleteConfirmDialog'
 import { FormSectionCard } from '../components/entity-ui/EntityComponents'
 import { FilterField } from '../components/filters/FilterField'
 import { DenseDataGrid, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { RelatedRecordsSubgrid } from '../components/subgrid/RelatedRecordsSubgrid'
+import { SubgridDeleteConfirmDialog } from '../components/subgrid/SubgridDeleteConfirmDialog'
+import { SubgridModalForm } from '../components/subgrid/SubgridModalForm'
 import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
@@ -49,6 +51,8 @@ export function CaseCommentsPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [formOpen, setFormOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<CaseComment | null>(null)
   const [form, setForm] = useState<CaseCommentForm>(emptyForm)
 
@@ -133,6 +137,7 @@ export function CaseCommentsPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.post(`api/cases/${caseId}/comments`, {
         commentText: form.commentText.trim(),
@@ -140,6 +145,8 @@ export function CaseCommentsPage() {
       })
 
       setForm(emptyForm)
+      setFormOpen(false)
+      setSuccess('Case comment added successfully.')
       await loadComments()
     } catch {
       setError('Failed to add case comment.')
@@ -155,9 +162,11 @@ export function CaseCommentsPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.delete(`api/cases/comments/${deleteTarget.id}`)
       setDeleteTarget(null)
+      setSuccess('Case comment deleted successfully.')
       await loadComments()
     } catch {
       setError('Failed to delete case comment.')
@@ -243,62 +252,83 @@ export function CaseCommentsPage() {
         </div>
       ) : null}
 
-      {canCreate ? (
-        <FormSectionCard title="Add Case Comment">
+      {success ? <MessageBar intent="success" style={{ marginBottom: 10 }}><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
+      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
+
+      <RelatedRecordsSubgrid
+        title="Case Comments"
+        addLabel={canCreate ? 'Add Comment' : undefined}
+        onAdd={canCreate ? () => setFormOpen(true) : undefined}
+        onRefresh={() => void loadComments()}
+        loading={loading}
+        error={error}
+        hasRows={rows.length > 0}
+        emptyMessage="No case comments match the current filters."
+        emptyActionLabel={canCreate ? 'Add Comment' : undefined}
+        onEmptyAction={canCreate ? () => setFormOpen(true) : undefined}
+      >
+        <DenseDataGrid
+          rows={rows}
+          columns={columns}
+          loading={loading}
+          totalCount={totalCount}
+          page={query.page}
+          pageSize={query.pageSize}
+          search={query.search}
+          sort={query.sortBy ? ({ key: query.sortBy as keyof CaseComment, dir: query.sortDir }) : null}
+          onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
+          onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
+          onSortChange={(sort: DenseSort<CaseComment> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'desc', page: 1 }))}
+          onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
+          emptyMessage="No case comments match the current filters."
+          activeFilterCount={activeFilterCount}
+          filterPanel={
+            <>
+              <FilterField label="Internal">
+                <Dropdown
+                  size="small"
+                  selectedOptions={[draftFilters.isInternal]}
+                  value={draftFilters.isInternal === '' ? 'All' : draftFilters.isInternal === 'true' ? 'Internal' : 'External'}
+                  onOptionSelect={(_, data) => setDraftFilters({ isInternal: data.optionValue ?? '' })}
+                >
+                  <Option value="">All</Option>
+                  <Option value="true">Internal</Option>
+                  <Option value="false">External</Option>
+                </Dropdown>
+              </FilterField>
+            </>
+          }
+          onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+          onCancelFilters={() => setDraftFilters({ isInternal: query.isInternal })}
+          onClearFilters={() => setDraftFilters({ isInternal: '' })}
+        />
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title="Add Case Comment"
+        submitLabel="Add Comment"
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            setForm(emptyForm)
+          }
+        }}
+        onSubmit={() => void saveComment()}
+      >
+        <FormSectionCard title="Comment Details">
           <Field label="Comment" required>
             <Input size="small" value={form.commentText} onChange={(_, data) => setForm((current) => ({ ...current, commentText: data.value }))} />
           </Field>
           <Field label="Internal Note">
             <Switch checked={form.isInternal} onChange={(_, data) => setForm((current) => ({ ...current, isInternal: Boolean(data.checked) }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" disabled={loading} onClick={() => void saveComment()}>Add Comment</Button>
-            <Button size="small" appearance="subtle" disabled={loading} onClick={() => setForm(emptyForm)}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      {loading ? <Spinner size="small" label="Loading case comments..." style={{ margin: '8px 0' }} /> : null}
-      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-
-      <DenseDataGrid
-        rows={rows}
-        columns={columns}
-        loading={loading}
-        totalCount={totalCount}
-        page={query.page}
-        pageSize={query.pageSize}
-        search={query.search}
-        sort={query.sortBy ? ({ key: query.sortBy as keyof CaseComment, dir: query.sortDir }) : null}
-        onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
-        onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
-        onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
-        onSortChange={(sort: DenseSort<CaseComment> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'desc', page: 1 }))}
-        onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
-        emptyMessage="No case comments match the current filters."
-        activeFilterCount={activeFilterCount}
-        filterPanel={
-          <>
-            <FilterField label="Internal">
-              <Dropdown
-                size="small"
-                selectedOptions={[draftFilters.isInternal]}
-                value={draftFilters.isInternal === '' ? 'All' : draftFilters.isInternal === 'true' ? 'Internal' : 'External'}
-                onOptionSelect={(_, data) => setDraftFilters({ isInternal: data.optionValue ?? '' })}
-              >
-                <Option value="">All</Option>
-                <Option value="true">Internal</Option>
-                <Option value="false">External</Option>
-              </Dropdown>
-            </FilterField>
-          </>
-        }
-        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
-        onCancelFilters={() => setDraftFilters({ isInternal: query.isInternal })}
-        onClearFilters={() => setDraftFilters({ isInternal: '' })}
-      />
-
-      <DeleteConfirmDialog
+      <SubgridDeleteConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete Case Comment"
         message="Delete this case comment?"

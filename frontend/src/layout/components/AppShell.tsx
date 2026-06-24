@@ -4,18 +4,11 @@ import { navGroups } from '../navigation'
 import { useAuth } from '../../auth/AuthContext'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { readMenuState, writeSidebarCollapsed } from '../menuState'
 import styles from './AppShell.module.css'
 
 export function AppShell({ darkMode, onToggleDarkMode }: { darkMode: boolean; onToggleDarkMode: (value: boolean) => void }) {
-  const [collapsed, setCollapsed] = useState<boolean>(() => {
-    const stored = localStorage.getItem('crm.sidebar.collapsed')
-    return stored === null ? true : stored === '1'
-  })
   const { hasPermission, user } = useAuth()
-
-  useEffect(() => {
-    localStorage.setItem('crm.sidebar.collapsed', collapsed ? '1' : '0')
-  }, [collapsed])
 
   const permissionAliases: Record<string, string[]> = {
     'Dashboard.View': ['Users.View'],
@@ -35,6 +28,16 @@ export function AppShell({ darkMode, onToggleDarkMode }: { darkMode: boolean; on
 
     return (permissionAliases[permission] ?? []).some((alias) => hasPermission(alias))
   }
+
+  const visibleGroupKeys = navGroups
+    .filter((group) => group.enabled !== false)
+    .map((group) => group.key)
+
+  const [collapsed, setCollapsed] = useState<boolean>(() => readMenuState(visibleGroupKeys).sidebarCollapsed)
+
+  useEffect(() => {
+    writeSidebarCollapsed(collapsed)
+  }, [collapsed])
 
   return (
     <div className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ''}`} data-testid="app-shell" data-collapsed={collapsed ? 'true' : 'false'}>

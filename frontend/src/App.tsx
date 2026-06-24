@@ -6,6 +6,9 @@ import { ForgotPasswordPage } from './pages/ForgotPasswordPage'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './dashboard/DashboardPage'
+import { MyWorkPage } from './dashboard/MyWorkPage'
+import { MyActivitiesPage } from './dashboard/MyActivitiesPage'
+import { MyOpenTasksPage } from './dashboard/MyOpenTasksPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { SimpleStatePage } from './pages/SimpleStatePage'
@@ -127,6 +130,9 @@ function App() {
             <Route element={<AppShell darkMode={darkMode} onToggleDarkMode={setDarkMode} />}>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/dashboard/my-work" element={<MyWorkPage />} />
+              <Route path="/dashboard/my-activities" element={<MyActivitiesPage />} />
+              <Route path="/dashboard/my-open-tasks" element={<MyOpenTasksPage />} />
               <Route path="/admin/users" element={<EntityListPage config={usersConfig} title={usersConfig.title} subtitle={usersConfig.subtitle} endpoint={usersConfig.endpoint} columns={usersConfig.columns} listPath={usersConfig.listPath} createPath={usersConfig.createPath} detailsPath={usersConfig.detailsPath} editPath={usersConfig.editPath} permissions={usersConfig.permissions} />} />
               <Route path="/admin/users/create" element={<EntityCreatePage config={usersConfig} />} />
               <Route path="/admin/users/:id/edit" element={<EntityEditPage config={usersConfig} />} />

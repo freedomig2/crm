@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Button, Field, Input, MessageBar, MessageBarBody, Switch, Textarea } from '@fluentui/react-components'
+import { Field, Input, MessageBar, MessageBarBody, Switch, Textarea } from '@fluentui/react-components'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { FormSectionCard, LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { RelatedRecordsSubgrid } from '../components/subgrid/RelatedRecordsSubgrid'
+import { SubgridDeleteConfirmDialog } from '../components/subgrid/SubgridDeleteConfirmDialog'
+import { SubgridModalForm } from '../components/subgrid/SubgridModalForm'
+import { SubgridRowActions } from '../components/subgrid/SubgridRowActions'
 import type { Account, AuditLog, ContactCommunication, ContactInteraction, PagedResult } from '../types/models'
 import { formatDateTime, nullIfBlank, toDateInput } from './contactUtils'
 import styles from './Contacts.module.css'
@@ -68,6 +72,9 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
   const [rows, setRows] = useState<ContactCommunication[]>([])
   const [form, setForm] = useState<CommunicationForm>(emptyCommunication)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<ContactCommunication | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -99,6 +106,11 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
     setForm(emptyCommunication)
   }
 
+  const openAdd = () => {
+    reset()
+    setFormOpen(true)
+  }
+
   const edit = (row: ContactCommunication) => {
     setEditingId(row.id)
     setForm({
@@ -109,6 +121,7 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
       verificationDate: toDateInput(row.verificationDate),
       notes: row.notes ?? '',
     })
+    setFormOpen(true)
   }
 
   const save = async () => {
@@ -129,6 +142,7 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       if (editingId) {
         await api.put(`api/contact-communications/${editingId}`, payload)
@@ -136,6 +150,8 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
         await api.post('api/contact-communications', payload)
       }
       reset()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Communication updated successfully.' : 'Communication created successfully.')
       await load()
     } catch {
       setError('Failed to save communication record.')
@@ -144,11 +160,17 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
     }
   }
 
-  const remove = async (id: string) => {
+  const remove = async () => {
+    if (!deleteTarget) {
+      return
+    }
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
-      await api.delete(`api/contact-communications/${id}`)
+      await api.delete(`api/contact-communications/${deleteTarget.id}`)
+      setDeleteTarget(null)
+      setSuccess('Communication deleted successfully.')
       await load()
     } catch {
       setError('Failed to delete communication record.')
@@ -169,8 +191,70 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
         </MessageBar>
       ) : null}
 
-      {canCreate || (editingId && canUpdate) ? (
-        <FormSectionCard title={editingId ? 'Edit Communication' : 'Add Communication'}>
+      {success ? (
+        <MessageBar intent="success">
+          <MessageBarBody>{success}</MessageBarBody>
+        </MessageBar>
+      ) : null}
+
+      <RelatedRecordsSubgrid
+        title="Communications"
+        addLabel={canCreate ? 'Add Communication' : undefined}
+        onAdd={canCreate ? openAdd : undefined}
+        onRefresh={() => void load()}
+        loading={loading}
+        error={error}
+        hasRows={rows.length > 0}
+        emptyMessage="No communication records."
+        emptyActionLabel={canCreate ? 'Add Communication' : undefined}
+        onEmptyAction={canCreate ? openAdd : undefined}
+      >
+        <table className={styles.recordTable}>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Value</th>
+              <th>Primary</th>
+              <th>Verified</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id}>
+                <td>{row.communicationTypeName || 'Not set'}</td>
+                <td>{row.value}</td>
+                <td>{row.isPrimary ? 'Yes' : 'No'}</td>
+                <td>{row.isVerified ? 'Yes' : 'No'}</td>
+                <td>
+                  <SubgridRowActions
+                    onView={() => edit(row)}
+                    onEdit={canUpdate ? () => edit(row) : undefined}
+                    onDelete={canDelete ? () => setDeleteTarget(row) : undefined}
+                    disableEdit={!canUpdate}
+                    disableDelete={!canDelete}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Communication' : 'Add Communication'}
+        submitLabel={editingId ? 'Update' : 'Add'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            reset()
+          }
+        }}
+        onSubmit={() => void save()}
+      >
+        <FormSectionCard title="Communication Details">
           <Field label="Communication Type">
             <LookupCombobox fieldKey="communicationTypeId" value={form.communicationTypeId} onChange={(value) => setForm((current) => ({ ...current, communicationTypeId: value }))} />
           </Field>
@@ -189,44 +273,16 @@ export function ContactCommunicationsPanel({ contactId, editable }: { contactId:
           <Field label="Notes">
             <Textarea value={form.notes} onChange={(_, data) => setForm((current) => ({ ...current, notes: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" onClick={() => void save()} disabled={loading || Boolean(editingId && !canUpdate)}>
-              {editingId ? 'Update' : 'Add'}
-            </Button>
-            <Button size="small" appearance="subtle" onClick={reset}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      <FormSectionCard title="Communications">
-        {rows.length === 0 ? <div className={styles.emptyState}>No communication records.</div> : (
-          <table className={styles.recordTable}>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Value</th>
-                <th>Primary</th>
-                <th>Verified</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.communicationTypeName || 'Not set'}</td>
-                  <td>{row.value}</td>
-                  <td>{row.isPrimary ? 'Yes' : 'No'}</td>
-                  <td>{row.isVerified ? 'Yes' : 'No'}</td>
-                  <td>
-                    <Button size="small" appearance="subtle" onClick={() => edit(row)} disabled={!canUpdate}>Edit</Button>
-                    <Button size="small" appearance="subtle" onClick={() => void remove(row.id)} disabled={!canDelete}>Delete</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </FormSectionCard>
+      <SubgridDeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Communication"
+        message="Delete this communication record?"
+        onConfirm={() => void remove()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
@@ -240,6 +296,9 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
   const [rows, setRows] = useState<ContactInteraction[]>([])
   const [form, setForm] = useState<InteractionForm>(emptyInteraction)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<ContactInteraction | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -276,6 +335,11 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
     setForm(emptyInteraction)
   }
 
+  const openAdd = () => {
+    reset()
+    setFormOpen(true)
+  }
+
   const edit = (row: ContactInteraction) => {
     setEditingId(row.id)
     setForm({
@@ -287,6 +351,7 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
       followUpDate: toDateInput(row.followUpDate),
       assignedToUserId: row.assignedToUserId ?? '',
     })
+    setFormOpen(true)
   }
 
   const save = async () => {
@@ -309,6 +374,7 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       if (editingId) {
         await api.put(`api/contact-interactions/${editingId}`, payload)
@@ -316,6 +382,8 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
         await api.post('api/contact-interactions', payload)
       }
       reset()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Interaction updated successfully.' : 'Interaction created successfully.')
       await load()
     } catch {
       setError('Failed to save interaction.')
@@ -324,11 +392,17 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
     }
   }
 
-  const remove = async (id: string) => {
+  const remove = async () => {
+    if (!deleteTarget) {
+      return
+    }
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
-      await api.delete(`api/contact-interactions/${id}`)
+      await api.delete(`api/contact-interactions/${deleteTarget.id}`)
+      setDeleteTarget(null)
+      setSuccess('Interaction deleted successfully.')
       await load()
     } catch {
       setError('Failed to delete interaction.')
@@ -349,8 +423,63 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
         </MessageBar>
       ) : null}
 
-      {canCreate || (editingId && canUpdate) ? (
-        <FormSectionCard title={editingId ? 'Edit Interaction' : 'Add Interaction'}>
+      {success ? (
+        <MessageBar intent="success">
+          <MessageBarBody>{success}</MessageBarBody>
+        </MessageBar>
+      ) : null}
+
+      <RelatedRecordsSubgrid
+        title="Interaction History"
+        addLabel={canCreate ? 'Add Interaction' : undefined}
+        onAdd={canCreate ? openAdd : undefined}
+        onRefresh={() => void load()}
+        loading={loading}
+        error={error}
+        hasRows={sortedRows.length > 0}
+        emptyMessage="No interaction history."
+        emptyActionLabel={canCreate ? 'Add Interaction' : undefined}
+        onEmptyAction={canCreate ? openAdd : undefined}
+      >
+        <div className={styles.timeline}>
+          {sortedRows.map((row) => (
+            <article className={styles.timelineItem} key={row.id}>
+              <div className={styles.timelineTop}>
+                <div>
+                  <p className={styles.timelineTitle}>{row.subject}</p>
+                  <p className={styles.timelineMeta}>
+                    {[row.interactionTypeName, formatDateTime(row.interactionDate), row.assignedToUserName].filter(Boolean).join(' | ')}
+                  </p>
+                </div>
+                <SubgridRowActions
+                  onView={() => edit(row)}
+                  onEdit={canUpdate ? () => edit(row) : undefined}
+                  onDelete={canDelete ? () => setDeleteTarget(row) : undefined}
+                  disableEdit={!canUpdate}
+                  disableDelete={!canDelete}
+                />
+              </div>
+              {row.outcome ? <p className={styles.timelineMeta}>Outcome: {row.outcome}</p> : null}
+              {row.description ? <p className={styles.timelineBody}>{row.description}</p> : null}
+            </article>
+          ))}
+        </div>
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Interaction' : 'Add Interaction'}
+        submitLabel={editingId ? 'Update' : 'Add'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            reset()
+          }
+        }}
+        onSubmit={() => void save()}
+      >
+        <FormSectionCard title="Interaction Details">
           <Field label="Interaction Type">
             <LookupCombobox fieldKey="interactionTypeId" value={form.interactionTypeId} onChange={(value) => setForm((current) => ({ ...current, interactionTypeId: value }))} />
           </Field>
@@ -372,35 +501,17 @@ export function ContactInteractionsPanel({ contactId, accountId, editable }: { c
           <Field label="Description">
             <Textarea value={form.description} onChange={(_, data) => setForm((current) => ({ ...current, description: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" onClick={() => void save()} disabled={loading || Boolean(editingId && !canUpdate)}>
-              {editingId ? 'Update' : 'Add'}
-            </Button>
-            <Button size="small" appearance="subtle" onClick={reset}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      <div className={styles.timeline}>
-        {sortedRows.length === 0 ? <div className={styles.emptyState}>No interaction history.</div> : sortedRows.map((row) => (
-          <article className={styles.timelineItem} key={row.id}>
-            <div className={styles.timelineTop}>
-              <div>
-                <p className={styles.timelineTitle}>{row.subject}</p>
-                <p className={styles.timelineMeta}>
-                  {[row.interactionTypeName, formatDateTime(row.interactionDate), row.assignedToUserName].filter(Boolean).join(' | ')}
-                </p>
-              </div>
-              <div className={styles.inlineActions}>
-                <Button size="small" appearance="subtle" onClick={() => edit(row)} disabled={!canUpdate}>Edit</Button>
-                <Button size="small" appearance="subtle" onClick={() => void remove(row.id)} disabled={!canDelete}>Delete</Button>
-              </div>
-            </div>
-            {row.outcome ? <p className={styles.timelineMeta}>Outcome: {row.outcome}</p> : null}
-            {row.description ? <p className={styles.timelineBody}>{row.description}</p> : null}
-          </article>
-        ))}
-      </div>
+      <SubgridDeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Interaction"
+        message="Delete this interaction?"
+        onConfirm={() => void remove()}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
     </div>
   )
 }

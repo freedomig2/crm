@@ -3,6 +3,10 @@ import { Button, Field, Input, MessageBar, MessageBarBody, Textarea } from '@flu
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { FormSectionCard, LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { RelatedRecordsSubgrid } from '../components/subgrid/RelatedRecordsSubgrid'
+import { SubgridDeleteConfirmDialog } from '../components/subgrid/SubgridDeleteConfirmDialog'
+import { SubgridModalForm } from '../components/subgrid/SubgridModalForm'
+import { SubgridRowActions } from '../components/subgrid/SubgridRowActions'
 import type { Account, Contact, LeadActivity, LeadTimelineItem, PagedResult } from '../types/models'
 import { formatDateTime, nullIfBlank, toDateInput, toDateTimeInput } from './leadUtils'
 import styles from '../contacts/Contacts.module.css'
@@ -41,6 +45,9 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
   const [rows, setRows] = useState<LeadActivity[]>([])
   const [form, setForm] = useState<ActivityForm>(emptyActivity)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<LeadActivity | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -77,6 +84,11 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
     setForm(emptyActivity)
   }
 
+  const openAdd = () => {
+    reset()
+    setFormOpen(true)
+  }
+
   const edit = (row: LeadActivity) => {
     setEditingId(row.id)
     setForm({
@@ -90,6 +102,7 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
       priorityId: row.priorityId ?? '',
       assignedToUserId: row.assignedToUserId ?? '',
     })
+    setFormOpen(true)
   }
 
   const save = async () => {
@@ -113,6 +126,7 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       if (editingId) {
         await api.put(`api/lead-activities/${editingId}`, payload)
@@ -120,6 +134,8 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
         await api.post(`api/leads/${leadId}/activities`, payload)
       }
       reset()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Lead activity updated successfully.' : 'Lead activity created successfully.')
       await load()
     } catch {
       setError('Failed to save lead activity.')
@@ -128,11 +144,17 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
     }
   }
 
-  const remove = async (id: string) => {
+  const remove = async () => {
+    if (!deleteTarget) {
+      return
+    }
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
-      await api.delete(`api/lead-activities/${id}`)
+      await api.delete(`api/lead-activities/${deleteTarget.id}`)
+      setDeleteTarget(null)
+      setSuccess('Lead activity deleted successfully.')
       await load()
     } catch {
       setError('Failed to delete lead activity.')
@@ -144,8 +166,10 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
   const complete = async (id: string) => {
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.post(`api/lead-activities/${id}/complete`, {})
+      setSuccess('Lead activity marked as complete.')
       await load()
     } catch {
       setError('Failed to complete lead activity.')
@@ -166,8 +190,66 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
         </MessageBar>
       ) : null}
 
-      {canCreate || (editingId && canUpdate) ? (
-        <FormSectionCard title={editingId ? 'Edit Activity' : 'Add Activity'}>
+      {success ? (
+        <MessageBar intent="success">
+          <MessageBarBody>{success}</MessageBarBody>
+        </MessageBar>
+      ) : null}
+
+      <RelatedRecordsSubgrid
+        title="Lead Activities"
+        addLabel={canCreate ? 'Add Activity' : undefined}
+        onAdd={canCreate ? openAdd : undefined}
+        onRefresh={() => void load()}
+        loading={loading}
+        error={error}
+        hasRows={sortedRows.length > 0}
+        emptyMessage="No lead activities."
+        emptyActionLabel={canCreate ? 'Add Activity' : undefined}
+        onEmptyAction={canCreate ? openAdd : undefined}
+      >
+        <div className={styles.timeline}>
+          {sortedRows.map((row) => (
+            <article className={styles.timelineItem} key={row.id}>
+              <div className={styles.timelineTop}>
+                <div>
+                  <p className={styles.timelineTitle}>{row.subject}</p>
+                  <p className={styles.timelineMeta}>
+                    {[row.activityTypeName, row.statusName, formatDateTime(row.activityDate), row.assignedToUserName].filter(Boolean).join(' | ')}
+                  </p>
+                </div>
+                <div className={styles.inlineActions}>
+                  {canComplete ? <Button size="small" appearance="subtle" onClick={() => void complete(row.id)} disabled={!canComplete || Boolean(row.completedDate)}>Complete</Button> : null}
+                  <SubgridRowActions
+                    onView={() => edit(row)}
+                    onEdit={canUpdate ? () => edit(row) : undefined}
+                    onDelete={canDelete ? () => setDeleteTarget(row) : undefined}
+                    disableEdit={!canUpdate}
+                    disableDelete={!canDelete}
+                  />
+                </div>
+              </div>
+              {row.completedDate ? <p className={styles.timelineMeta}>Completed: {formatDateTime(row.completedDate)}</p> : null}
+              {row.description ? <p className={styles.timelineBody}>{row.description}</p> : null}
+            </article>
+          ))}
+        </div>
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Activity' : 'Add Activity'}
+        submitLabel={editingId ? 'Update' : 'Add'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            reset()
+          }
+        }}
+        onSubmit={() => void save()}
+      >
+        <FormSectionCard title="Activity Details">
           <Field label="Activity Type" required>
             <LookupCombobox fieldKey="activityTypeId" value={form.activityTypeId} onChange={(value) => setForm((current) => ({ ...current, activityTypeId: value }))} />
           </Field>
@@ -195,36 +277,16 @@ export function LeadActivitiesPanel({ leadId, editable }: { leadId: string; edit
           <Field label="Description">
             <Textarea value={form.description} onChange={(_, data) => setForm((current) => ({ ...current, description: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" onClick={() => void save()} disabled={loading || Boolean(editingId && !canUpdate)}>
-              {editingId ? 'Update' : 'Add'}
-            </Button>
-            <Button size="small" appearance="subtle" onClick={reset}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      <div className={styles.timeline}>
-        {sortedRows.length === 0 ? <div className={styles.emptyState}>No lead activities.</div> : sortedRows.map((row) => (
-          <article className={styles.timelineItem} key={row.id}>
-            <div className={styles.timelineTop}>
-              <div>
-                <p className={styles.timelineTitle}>{row.subject}</p>
-                <p className={styles.timelineMeta}>
-                  {[row.activityTypeName, row.statusName, formatDateTime(row.activityDate), row.assignedToUserName].filter(Boolean).join(' | ')}
-                </p>
-              </div>
-              <div className={styles.inlineActions}>
-                <Button size="small" appearance="subtle" onClick={() => edit(row)} disabled={!canUpdate}>Edit</Button>
-                <Button size="small" appearance="subtle" onClick={() => void complete(row.id)} disabled={!canComplete || Boolean(row.completedDate)}>Complete</Button>
-                <Button size="small" appearance="subtle" onClick={() => void remove(row.id)} disabled={!canDelete}>Delete</Button>
-              </div>
-            </div>
-            {row.completedDate ? <p className={styles.timelineMeta}>Completed: {formatDateTime(row.completedDate)}</p> : null}
-            {row.description ? <p className={styles.timelineBody}>{row.description}</p> : null}
-          </article>
-        ))}
-      </div>
+      <SubgridDeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Activity"
+        message="Delete this lead activity?"
+        onConfirm={() => void remove()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

@@ -1,0 +1,126 @@
+# Frontend Route Inventory
+
+| Group | Menu Item | Menu Config Route | React Router Route | Page Component | Permission | Implemented |
+|---|---|---|---|---|---|---|
+| activities | Appointments | /activities/appointments | - | - | Activities.View | No |
+| activities | Emails | /activities/emails | - | - | Activities.View | No |
+| activities | Meetings | /activities/meetings | - | - | Activities.View | No |
+| activities | Notes | /activities/notes | - | - | Activities.View | No |
+| activities | Phone Calls | /activities/phone-calls | - | - | Activities.View | No |
+| activities | Tasks | /activities/tasks | /activities/tasks | EntityListPage config={activitiesConfig} title={activitiesConfig.title} subtitle={activitiesConfig.subtitle} endpoint={activitiesConfig.endpoint} columns={activitiesConfig.columns} listPath={activitiesConfig.listPath} createPath={activitiesConfig.createPath} detailsPath={activitiesConfig.detailsPath} editPath={activitiesConfig.editPath} permissions={activitiesConfig.permissions} / | Activities.View | Yes |
+| administration | Departments | /admin/departments | /admin/departments | EntityListPage config={departmentsConfig} title={departmentsConfig.title} subtitle={departmentsConfig.subtitle} endpoint={departmentsConfig.endpoint} columns={departmentsConfig.columns} listPath={departmentsConfig.listPath} createPath={departmentsConfig.createPath} detailsPath={departmentsConfig.detailsPath} editPath={departmentsConfig.editPath} permissions={departmentsConfig.permissions} / | Departments.View | Yes |
+| administration | Permissions | /admin/permissions | /admin/permissions | EntityListPage config={permissionsConfig} title={permissionsConfig.title} subtitle={permissionsConfig.subtitle} endpoint={permissionsConfig.endpoint} columns={permissionsConfig.columns} listPath={permissionsConfig.listPath} createPath={permissionsConfig.createPath} detailsPath={permissionsConfig.detailsPath} editPath={permissionsConfig.editPath} permissions={permissionsConfig.permissions} / | Permissions.View | Yes |
+| administration | Roles | /admin/roles | /admin/roles | EntityListPage config={rolesConfig} title={rolesConfig.title} subtitle={rolesConfig.subtitle} endpoint={rolesConfig.endpoint} columns={rolesConfig.columns} listPath={rolesConfig.listPath} createPath={rolesConfig.createPath} detailsPath={rolesConfig.detailsPath} editPath={rolesConfig.editPath} permissions={rolesConfig.permissions} / | Roles.View | Yes |
+| administration | Teams | /admin/teams | /admin/teams | EntityListPage config={teamsConfig} title={teamsConfig.title} subtitle={teamsConfig.subtitle} endpoint={teamsConfig.endpoint} columns={teamsConfig.columns} listPath={teamsConfig.listPath} createPath={teamsConfig.createPath} detailsPath={teamsConfig.detailsPath} editPath={teamsConfig.editPath} permissions={teamsConfig.permissions} / | Teams.View | Yes |
+| administration | Users | /admin/users | /admin/users | EntityListPage config={usersConfig} title={usersConfig.title} subtitle={usersConfig.subtitle} endpoint={usersConfig.endpoint} columns={usersConfig.columns} listPath={usersConfig.listPath} createPath={usersConfig.createPath} detailsPath={usersConfig.detailsPath} editPath={usersConfig.editPath} permissions={usersConfig.permissions} / | Users.View | Yes |
+| ai-copilot | AI Dashboard | /ai/dashboard | /ai/dashboard | AiDashboardPage / | AI.View | Yes |
+| ai-copilot | Case Recommendations | /ai/case-recommendations | - | - | AI.View | Yes |
+| ai-copilot | Customer Insights | /ai/customer-insights | - | - | AI.View | Yes |
+| ai-copilot | Email Generation | /ai/email-generation | - | - | AI.View | Yes |
+| ai-copilot | Lead Insights | /ai/lead-insights | - | - | AI.View | Yes |
+| ai-copilot | Meeting Summaries | /ai/meeting-summaries | - | - | AI.View | Yes |
+| ai-copilot | Next Best Actions | /ai/next-best-actions | /ai/next-best-actions | NextBestActionsPage / | AI.View | Yes |
+| ai-copilot | Opportunity Insights | /ai/opportunity-insights | - | - | AI.View | Yes |
+| ai-copilot | Predictive Analytics | /ai/predictive-analytics | - | - | AI.View | Yes |
+| ai-copilot | Prompt Templates | /ai/prompt-templates | /ai/prompt-templates | EntityListPage config={aiPromptTemplatesConfig} title={aiPromptTemplatesConfig.title} subtitle={aiPromptTemplatesConfig.subtitle} endpoint={aiPromptTemplatesConfig.endpoint} columns={aiPromptTemplatesConfig.columns} listPath={aiPromptTemplatesConfig.listPath} createPath={aiPromptTemplatesConfig.createPath} detailsPath={aiPromptTemplatesConfig.detailsPath} editPath={aiPromptTemplatesConfig.editPath} permissions={aiPromptTemplatesConfig.permissions} / | AITemplates.View | Yes |
+| audit | Audit Logs | /admin/audit-logs | /admin/audit-logs | EntityListPage config={auditLogsConfig} title={auditLogsConfig.title} subtitle={auditLogsConfig.subtitle} endpoint={auditLogsConfig.endpoint} columns={auditLogsConfig.columns} listPath={auditLogsConfig.listPath} createPath={auditLogsConfig.createPath} detailsPath={auditLogsConfig.detailsPath} editPath={auditLogsConfig.editPath} permissions={auditLogsConfig.permissions} / | AuditLogs.View | Yes |
+| audit | Data Changes | /audit/data-changes | /audit/data-changes | SimpleStatePage title="Data Changes" subtitle="Track field-level data modifications across entities." / | AuditLogs.View | Yes |
+| audit | Integration Logs | /audit/integration-logs | - | - | AuditLogs.View | Yes |
+| audit | Security Events | /audit/security-events | /audit/security-events | SimpleStatePage title="Security Events" subtitle="Review high-risk events and policy violations." / | AuditLogs.View | Yes |
+| audit | User Activity | /audit/user-activity | - | - | AuditLogs.View | Yes |
+| configuration | Business Rules | /configuration/business-rules | - | - | Configuration.View | Yes |
+| configuration | Custom Fields | /configuration/custom-fields | /configuration/custom-fields | EntityListPage config={customFieldsConfig} title={customFieldsConfig.title} subtitle={customFieldsConfig.subtitle} endpoint={customFieldsConfig.endpoint} columns={customFieldsConfig.columns} listPath={customFieldsConfig.listPath} createPath={customFieldsConfig.createPath} detailsPath={customFieldsConfig.detailsPath} editPath={customFieldsConfig.editPath} permissions={customFieldsConfig.permissions} / | CustomFields.View | Yes |
+| configuration | Email Templates | /configuration/email-templates | - | - | Configuration.View | Yes |
+| configuration | Lookup Categories | /admin/lookup-categories | /admin/lookup-categories | EntityListPage config={lookupCategoriesConfig} title={lookupCategoriesConfig.title} subtitle={lookupCategoriesConfig.subtitle} endpoint={lookupCategoriesConfig.endpoint} columns={lookupCategoriesConfig.columns} listPath={lookupCategoriesConfig.listPath} createPath={lookupCategoriesConfig.createPath} detailsPath={lookupCategoriesConfig.detailsPath} editPath={lookupCategoriesConfig.editPath} permissions={lookupCategoriesConfig.permissions} / | Configuration.View | Yes |
+| configuration | Lookup Values | /admin/lookup-values | /admin/lookup-values | EntityListPage config={lookupValuesConfig} title={lookupValuesConfig.title} subtitle={lookupValuesConfig.subtitle} endpoint={lookupValuesConfig.endpoint} columns={lookupValuesConfig.columns} listPath={lookupValuesConfig.listPath} createPath={lookupValuesConfig.createPath} detailsPath={lookupValuesConfig.detailsPath} editPath={lookupValuesConfig.editPath} permissions={lookupValuesConfig.permissions} / | Configuration.View | Yes |
+| configuration | Notification Templates | /configuration/notification-templates | /configuration/notification-templates | EntityListPage config={notificationTemplatesConfig} title={notificationTemplatesConfig.title} subtitle={notificationTemplatesConfig.subtitle} endpoint={notificationTemplatesConfig.endpoint} columns={notificationTemplatesConfig.columns} listPath={notificationTemplatesConfig.listPath} createPath={notificationTemplatesConfig.createPath} detailsPath={notificationTemplatesConfig.detailsPath} editPath={notificationTemplatesConfig.editPath} permissions={notificationTemplatesConfig.permissions} / | NotificationTemplates.View | Yes |
+| configuration | Number Sequences | /configuration/number-sequences | /configuration/number-sequences | NumberSequencesListPage / | NumberSequences.View | Yes |
+| configuration | Record Statuses | /configuration/record-statuses | /configuration/record-statuses | EntityListPage config={recordStatusesConfig} title={recordStatusesConfig.title} subtitle={recordStatusesConfig.subtitle} endpoint={recordStatusesConfig.endpoint} columns={recordStatusesConfig.columns} listPath={recordStatusesConfig.listPath} createPath={recordStatusesConfig.createPath} detailsPath={recordStatusesConfig.detailsPath} editPath={recordStatusesConfig.editPath} permissions={recordStatusesConfig.permissions} / | RecordStatuses.View | Yes |
+| configuration | System Settings | /admin/system-settings | /admin/system-settings | EntityListPage config={settingsConfig} title={settingsConfig.title} subtitle={settingsConfig.subtitle} endpoint={settingsConfig.endpoint} columns={settingsConfig.columns} listPath={settingsConfig.listPath} createPath={settingsConfig.createPath} detailsPath={settingsConfig.detailsPath} editPath={settingsConfig.editPath} permissions={settingsConfig.permissions} / | Configuration.View | Yes |
+| configuration | Workflows | /configuration/workflows | /configuration/workflows | EntityListPage config={workflowsConfig} title={workflowsConfig.title} subtitle={workflowsConfig.subtitle} endpoint={workflowsConfig.endpoint} columns={workflowsConfig.columns} listPath={workflowsConfig.listPath} createPath={workflowsConfig.createPath} detailsPath={workflowsConfig.detailsPath} editPath={workflowsConfig.editPath} permissions={workflowsConfig.permissions} / | Workflows.View | Yes |
+| customers | Account Activities | /crm/account-activities | /crm/account-activities | EntityListPage config={accountActivitiesConfig} title={accountActivitiesConfig.title} subtitle={accountActivitiesConfig.subtitle} endpoint={accountActivitiesConfig.endpoint} columns={accountActivitiesConfig.columns} listPath={accountActivitiesConfig.listPath} createPath={accountActivitiesConfig.createPath} detailsPath={accountActivitiesConfig.detailsPath} editPath={accountActivitiesConfig.editPath} permissions={accountActivitiesConfig.permissions} / | AccountActivities.View | Yes |
+| customers | Accounts | /crm/accounts | /crm/accounts | EntityListPage config={accountsConfig} title={accountsConfig.title} subtitle={accountsConfig.subtitle} endpoint={accountsConfig.endpoint} columns={accountsConfig.columns} listPath={accountsConfig.listPath} createPath={accountsConfig.createPath} detailsPath={accountsConfig.detailsPath} editPath={accountsConfig.editPath} permissions={accountsConfig.permissions} / | Accounts.View | Yes |
+| customers | Contacts | /contacts | /contacts | ContactsListPage / | Contacts.View | Yes |
+| customers | Relationships | /crm/account-relationships | /crm/account-relationships | EntityListPage config={accountRelationshipsConfig} title={accountRelationshipsConfig.title} subtitle={accountRelationshipsConfig.subtitle} endpoint={accountRelationshipsConfig.endpoint} columns={accountRelationshipsConfig.columns} listPath={accountRelationshipsConfig.listPath} createPath={accountRelationshipsConfig.createPath} detailsPath={accountRelationshipsConfig.detailsPath} editPath={accountRelationshipsConfig.editPath} permissions={accountRelationshipsConfig.permissions} / | AccountRelationships.View | Yes |
+| dashboard | Dashboard | /dashboard | /dashboard | DashboardPage / | Dashboard.View | Yes |
+| dashboard | My Activities | /dashboard/my-activities | - | - | Activities.View | Yes |
+| dashboard | My Open Tasks | /dashboard/my-open-tasks | - | - | Activities.View | Yes |
+| dashboard | My Work | /dashboard/my-work | - | - | Dashboard.View | Yes |
+| data-management | Bulk Operations | /data-management/bulk-operations | - | - | DataManagement.View | Yes |
+| data-management | Data Cleanup | /data-management/data-cleanup | - | - | DataManagement.View | Yes |
+| data-management | Data Quality Rules | /data-management/data-quality-rules | - | - | DataManagement.View | Yes |
+| data-management | Duplicate Detection | /data-management/duplicate-detection | - | - | DataManagement.View | Yes |
+| data-management | Exports | /data-management/exports | - | - | DataManagement.View | Yes |
+| data-management | Imports | /data-management/imports | - | - | DataManagement.View | Yes |
+| documents | Document Categories | /documents/categories | - | - | Documents.View | No |
+| documents | Documents | /documents | /documents | EntityListPage config={documentsConfig} title={documentsConfig.title} subtitle={documentsConfig.subtitle} endpoint={documentsConfig.endpoint} columns={documentsConfig.columns} listPath={documentsConfig.listPath} createPath={documentsConfig.createPath} detailsPath={documentsConfig.detailsPath} editPath={documentsConfig.editPath} permissions={documentsConfig.permissions} / | Documents.View | Yes |
+| documents | Shared Files | /documents/shared-files | - | - | Documents.View | No |
+| documents | Templates | /documents/templates | - | - | Documents.View | No |
+| finance | Credit Notes | /finance/credit-notes | - | - | Finance.View | Yes |
+| finance | Currencies | /finance/currencies | - | - | Finance.View | Yes |
+| finance | Invoices | /finance/invoices | - | - | Finance.View | Yes |
+| finance | Payment Terms | /finance/payment-terms | - | - | Finance.View | Yes |
+| finance | Payments | /finance/payments | - | - | Finance.View | Yes |
+| finance | Revenue Reports | /finance/revenue-reports | - | - | Finance.View | Yes |
+| integrations | Connections | /integrations/connections | /integrations/connections | EntityListPage config={integrationConnectionsConfig} title={integrationConnectionsConfig.title} subtitle={integrationConnectionsConfig.subtitle} endpoint={integrationConnectionsConfig.endpoint} columns={integrationConnectionsConfig.columns} listPath={integrationConnectionsConfig.listPath} createPath={integrationConnectionsConfig.createPath} detailsPath={integrationConnectionsConfig.detailsPath} editPath={integrationConnectionsConfig.editPath} permissions={integrationConnectionsConfig.permissions} / | Integrations.View | Yes |
+| integrations | Sync Runs | /integrations/sync-runs | /integrations/sync-runs | EntityListPage config={integrationSyncRunsConfig} title={integrationSyncRunsConfig.title} subtitle={integrationSyncRunsConfig.subtitle} endpoint={integrationSyncRunsConfig.endpoint} columns={integrationSyncRunsConfig.columns} listPath={integrationSyncRunsConfig.listPath} createPath={integrationSyncRunsConfig.createPath} detailsPath={integrationSyncRunsConfig.detailsPath} editPath={integrationSyncRunsConfig.editPath} permissions={integrationSyncRunsConfig.permissions} / | IntegrationSyncRuns.View | Yes |
+| marketing | Campaign Activities | /marketing/campaign-activities | - | - | Marketing.View | Yes |
+| marketing | Campaigns | /marketing/campaigns | - | - | Campaigns.View | Yes |
+| marketing | Customer Journeys | /marketing/customer-journeys | - | - | Marketing.View | Yes |
+| marketing | Email Campaigns | /marketing/email-campaigns | - | - | Marketing.View | Yes |
+| marketing | Event Management | /marketing/events | - | - | Marketing.View | Yes |
+| marketing | Landing Pages | /marketing/landing-pages | - | - | Marketing.View | Yes |
+| marketing | Lead Scoring | /marketing/lead-scoring | - | - | Marketing.View | Yes |
+| marketing | Marketing Lists | /marketing/lists | - | - | Marketing.View | Yes |
+| personal | My Notifications | /personal/notifications | /personal/notifications | MyNotificationsPage / | Notifications.View | Yes |
+| personal | My Preferences | /personal/preferences | - | - | - | Yes |
+| personal | My Profile | /personal/profile | - | - | - | Yes |
+| personal | My Saved Views | /personal/saved-views | - | - | - | Yes |
+| projects | Milestones | /projects/milestones | - | - | Projects.View | Yes |
+| projects | Project Billing | /projects/billing | - | - | Projects.View | Yes |
+| projects | Project Tasks | /projects/tasks | - | - | Projects.View | Yes |
+| projects | Projects | /projects | - | - | Projects.View | Yes |
+| projects | Resource Allocation | /projects/resources | - | - | Projects.View | Yes |
+| projects | Timesheets | /projects/timesheets | - | - | Projects.View | Yes |
+| reporting | Activity Analytics | /reporting/activity-analytics | - | - | Reports.View | Yes |
+| reporting | Customer Analytics | /reporting/customer-analytics | - | - | Reports.View | Yes |
+| reporting | Dashboards | /reporting/dashboards | /reporting/dashboards | ReportingDashboardsPage / | Reports.View | Yes |
+| reporting | KPI Monitoring | /reporting/kpi-monitoring | /reporting/kpi-monitoring | KpiMonitoringPage / | Reports.View | Yes |
+| reporting | Reports | /reporting/reports | /reporting/reports | ReportsLibraryPage / | Reports.View | Yes |
+| reporting | Sales Analytics | /reporting/sales-analytics | /reporting/sales-analytics | SalesPerformancePage / | Reports.View | Yes |
+| reporting | Scheduled Reports | /reporting/scheduled-reports | - | - | Reports.View | Yes |
+| reporting | Service Analytics | /reporting/service-analytics | - | - | Reports.View | Yes |
+| sales | Competitors | /sales/competitors | - | - | Products.View | Yes |
+| sales | Discounts | /sales/discounts | /sales/discounts | EntityListPage config={discountsConfig} title={discountsConfig.title} subtitle={discountsConfig.subtitle} endpoint={discountsConfig.endpoint} columns={discountsConfig.columns} listPath={discountsConfig.listPath} createPath={discountsConfig.createPath} detailsPath={discountsConfig.detailsPath} editPath={discountsConfig.editPath} permissions={discountsConfig.permissions} / | Discounts.View | Yes |
+| sales | Forecasts | /sales/forecasts | /sales/forecasts | ForecastsPage / | Forecasts.View | Yes |
+| sales | Invoices | /sales/invoices | /sales/invoices | EntityListPage config={invoicesConfig} title={invoicesConfig.title} subtitle={invoicesConfig.subtitle} endpoint={invoicesConfig.endpoint} columns={invoicesConfig.columns} listPath={invoicesConfig.listPath} createPath={invoicesConfig.createPath} detailsPath={invoicesConfig.detailsPath} editPath={invoicesConfig.editPath} permissions={invoicesConfig.permissions} / | Invoices.View | Yes |
+| sales | Lead Score Rules | /lead-score-rules | /lead-score-rules | LeadScoreRulesListPage / | LeadScoreRules.View | Yes |
+| sales | Leads | /leads | /leads | LeadsListPage / | Leads.View | Yes |
+| sales | Opportunities | /opportunities | /opportunities | OpportunitiesListPage / | Opportunities.View | Yes |
+| sales | Orders | /sales/orders | /sales/orders | EntityListPage config={ordersConfig} title={ordersConfig.title} subtitle={ordersConfig.subtitle} endpoint={ordersConfig.endpoint} columns={ordersConfig.columns} listPath={ordersConfig.listPath} createPath={ordersConfig.createPath} detailsPath={ordersConfig.detailsPath} editPath={ordersConfig.editPath} permissions={ordersConfig.permissions} / | Orders.View | Yes |
+| sales | Pipeline | /sales/pipeline | /sales/pipeline | SalesPipelinePage / | Pipeline.View | Yes |
+| sales | Price Lists | /sales/price-lists | /sales/price-lists | EntityListPage config={priceListsConfig} title={priceListsConfig.title} subtitle={priceListsConfig.subtitle} endpoint={priceListsConfig.endpoint} columns={priceListsConfig.columns} listPath={priceListsConfig.listPath} createPath={priceListsConfig.createPath} detailsPath={priceListsConfig.detailsPath} editPath={priceListsConfig.editPath} permissions={priceListsConfig.permissions} / | PriceLists.View | Yes |
+| sales | Product Bundles | /sales/product-bundles | /sales/product-bundles | EntityListPage config={productBundlesConfig} title={productBundlesConfig.title} subtitle={productBundlesConfig.subtitle} endpoint={productBundlesConfig.endpoint} columns={productBundlesConfig.columns} listPath={productBundlesConfig.listPath} createPath={productBundlesConfig.createPath} detailsPath={productBundlesConfig.detailsPath} editPath={productBundlesConfig.editPath} permissions={productBundlesConfig.permissions} / | ProductBundles.View | Yes |
+| sales | Product Categories | /sales/product-categories | /sales/product-categories | EntityListPage config={productCategoriesConfig} title={productCategoriesConfig.title} subtitle={productCategoriesConfig.subtitle} endpoint={productCategoriesConfig.endpoint} columns={productCategoriesConfig.columns} listPath={productCategoriesConfig.listPath} createPath={productCategoriesConfig.createPath} detailsPath={productCategoriesConfig.detailsPath} editPath={productCategoriesConfig.editPath} permissions={productCategoriesConfig.permissions} / | ProductCategories.View | Yes |
+| sales | Products | /sales/products | /sales/products | EntityListPage config={productsConfig} title={productsConfig.title} subtitle={productsConfig.subtitle} endpoint={productsConfig.endpoint} columns={productsConfig.columns} listPath={productsConfig.listPath} createPath={productsConfig.createPath} detailsPath={productsConfig.detailsPath} editPath={productsConfig.editPath} permissions={productsConfig.permissions} / | Products.View | Yes |
+| sales | Quotes | /sales/quotes | /sales/quotes | EntityListPage config={quotesConfig} title={quotesConfig.title} subtitle={quotesConfig.subtitle} endpoint={quotesConfig.endpoint} columns={quotesConfig.columns} listPath={quotesConfig.listPath} createPath={quotesConfig.createPath} detailsPath={quotesConfig.detailsPath} editPath={quotesConfig.editPath} permissions={quotesConfig.permissions} / | Quotes.View | Yes |
+| sales | Sales Targets | /sales/targets | /sales/targets | SalesTargetsListPage / | SalesTargets.View | Yes |
+| sales | Sales Territories | /sales/territories | - | - | Opportunities.View | Yes |
+| sales | Units Of Measure | /sales/unit-of-measures | /sales/unit-of-measures | EntityListPage config={unitOfMeasuresConfig} title={unitOfMeasuresConfig.title} subtitle={unitOfMeasuresConfig.subtitle} endpoint={unitOfMeasuresConfig.endpoint} columns={unitOfMeasuresConfig.columns} listPath={unitOfMeasuresConfig.listPath} createPath={unitOfMeasuresConfig.createPath} detailsPath={unitOfMeasuresConfig.detailsPath} editPath={unitOfMeasuresConfig.editPath} permissions={unitOfMeasuresConfig.permissions} / | UnitOfMeasures.View | Yes |
+| security | Active Sessions | /security/active-sessions | /security/active-sessions | SimpleStatePage title="Active Sessions" subtitle="Monitor active sessions and terminate risky sessions quickly." / | Security.View | Yes |
+| security | API Keys | /security/api-keys | - | - | Security.View | Yes |
+| security | Failed Login Attempts | /security/failed-logins | /security/failed-logins | SimpleStatePage title="Failed Login Attempts" subtitle="Analyze failed sign-in patterns and suspicious accounts." / | Security.View | Yes |
+| security | Login History | /security/login-history | /security/login-history | SimpleStatePage title="Login History" subtitle="Review login timeline, devices, and geolocation details." / | Security.View | Yes |
+| security | MFA Settings | /security/mfa-settings | /security/mfa-settings | SimpleStatePage title="MFA Settings" subtitle="Enforce multi-factor authentication and authentication methods." / | Security.View | Yes |
+| security | OAuth Clients | /security/oauth-clients | - | - | Security.View | Yes |
+| security | Password Policies | /security/password-policies | /security/password-policies | SimpleStatePage title="Password Policies" subtitle="Configure enterprise-grade password complexity and expiry rules." / | Security.View | Yes |
+| security | Security Alerts | /security/security-alerts | - | - | Security.View | Yes |
+| security | Security Policies | /security/policies | /security/policies | EntityListPage config={securityPoliciesConfig} title={securityPoliciesConfig.title} subtitle={securityPoliciesConfig.subtitle} endpoint={securityPoliciesConfig.endpoint} columns={securityPoliciesConfig.columns} listPath={securityPoliciesConfig.listPath} createPath={securityPoliciesConfig.createPath} detailsPath={securityPoliciesConfig.detailsPath} editPath={securityPoliciesConfig.editPath} permissions={securityPoliciesConfig.permissions} / | SecurityPolicies.View | Yes |
+| service | Cases | /service/cases | /service/cases | EntityListPage config={casesConfig} title={casesConfig.title} subtitle={casesConfig.subtitle} endpoint={casesConfig.endpoint} columns={casesConfig.columns} listPath={casesConfig.listPath} createPath={casesConfig.createPath} detailsPath={casesConfig.detailsPath} editPath={casesConfig.editPath} permissions={casesConfig.permissions} / | Cases.View | Yes |
+| service | Customer Feedback | /service/customer-feedback | - | - | Service.View | Yes |
+| service | Entitlements | /service/entitlements | - | - | Service.View | Yes |
+| service | Escalations | /service/escalations | - | - | Service.View | Yes |
+| service | Knowledge Base | /service/knowledge-base | - | - | Service.View | Yes |
+| service | Queues | /service/queues | - | - | Service.View | Yes |
+| service | Service Activities | /service/activities | - | - | Service.View | Yes |
+| service | SLAs | /service/slas | - | - | Service.View | Yes |

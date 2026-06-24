@@ -1,4 +1,4 @@
-import { Button, Field, Input, MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
+import { Field, Input, MessageBar, MessageBarBody } from '@fluentui/react-components'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
@@ -7,6 +7,8 @@ import { FormSectionCard } from '../components/entity-ui/EntityComponents'
 import { DateRangeFilterField } from '../components/filters/DateRangeFilterField'
 import { FilterField } from '../components/filters/FilterField'
 import { DenseDataGrid, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { RelatedRecordsSubgrid } from '../components/subgrid/RelatedRecordsSubgrid'
+import { SubgridModalForm } from '../components/subgrid/SubgridModalForm'
 import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
@@ -77,6 +79,8 @@ export function DocumentVersionsPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [formOpen, setFormOpen] = useState(false)
   const [form, setForm] = useState<AddVersionForm>(emptyForm)
 
   const { query, setQuery } = useListQueryState<VersionQuery>({
@@ -118,6 +122,7 @@ export function DocumentVersionsPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const { data } = await api.get<PagedResult<DocumentVersion>>(`api/documents/${documentId}/versions`, {
         params: {
@@ -222,8 +227,10 @@ export function DocumentVersionsPage() {
         fileSizeBytes: current.fileSizeBytes,
         storagePath: current.storagePath,
       }))
+      setFormOpen(false)
+      setSuccess('Document version added successfully.')
 
-      await Promise.all([loadDocument(), loadVersions()])
+      await loadVersions()
     } catch {
       setError('Failed to add document version.')
     } finally {
@@ -279,8 +286,79 @@ export function DocumentVersionsPage() {
         </div>
       ) : null}
 
-      {canCreateVersions ? (
-        <FormSectionCard title="Add Document Version">
+      {success ? <MessageBar intent="success" style={{ marginBottom: 10 }}><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
+      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
+
+      <RelatedRecordsSubgrid
+        title="Document Versions"
+        addLabel={canCreateVersions ? 'Add Version' : undefined}
+        onAdd={canCreateVersions ? () => setFormOpen(true) : undefined}
+        onRefresh={() => void loadVersions()}
+        loading={loading}
+        error={error}
+        hasRows={rows.length > 0}
+        emptyMessage="No document versions match the current filters."
+        emptyActionLabel={canCreateVersions ? 'Add Version' : undefined}
+        onEmptyAction={canCreateVersions ? () => setFormOpen(true) : undefined}
+      >
+        <DenseDataGrid
+          rows={rows}
+          columns={columns}
+          loading={loading}
+          totalCount={totalCount}
+          page={query.page}
+          pageSize={query.pageSize}
+          search={query.search}
+          sort={query.sortBy ? ({ key: query.sortBy as keyof DocumentVersion, dir: query.sortDir }) : null}
+          onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
+          onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
+          onSortChange={(sort: DenseSort<DocumentVersion> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'desc', page: 1 }))}
+          emptyMessage="No document versions match the current filters."
+          activeFilterCount={activeFilterCount}
+          filterPanel={
+            <>
+              <DateRangeFilterField
+                fromLabel="Created From"
+                toLabel="Created To"
+                fromValue={draftFilters.createdFrom}
+                toValue={draftFilters.createdTo}
+                onFromChange={(value) => setDraftFilters((current) => ({ ...current, createdFrom: value }))}
+                onToChange={(value) => setDraftFilters((current) => ({ ...current, createdTo: value }))}
+              />
+              <FilterField label="Version From">
+                <Input size="small" value={draftFilters.versionFrom} onChange={(_, data) => setDraftFilters((current) => ({ ...current, versionFrom: data.value }))} />
+              </FilterField>
+              <FilterField label="Version To">
+                <Input size="small" value={draftFilters.versionTo} onChange={(_, data) => setDraftFilters((current) => ({ ...current, versionTo: data.value }))} />
+              </FilterField>
+            </>
+          }
+          onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+          onCancelFilters={() => setDraftFilters({
+            createdFrom: query.createdFrom,
+            createdTo: query.createdTo,
+            versionFrom: query.versionFrom,
+            versionTo: query.versionTo,
+          })}
+          onClearFilters={() => setDraftFilters({ createdFrom: '', createdTo: '', versionFrom: '', versionTo: '' })}
+        />
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title="Add Document Version"
+        submitLabel="Add Version"
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            setForm(emptyForm)
+          }
+        }}
+        onSubmit={() => void addVersion()}
+      >
+        <FormSectionCard title="Version Details">
           <Field label="Version Number (optional)">
             <Input size="small" value={form.versionNumber} onChange={(_, data) => setForm((current) => ({ ...current, versionNumber: data.value }))} />
           </Field>
@@ -299,58 +377,8 @@ export function DocumentVersionsPage() {
           <Field label="Change Summary">
             <Input size="small" value={form.changeSummary} onChange={(_, data) => setForm((current) => ({ ...current, changeSummary: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" disabled={loading} onClick={() => void addVersion()}>Add Version</Button>
-            <Button size="small" appearance="subtle" disabled={loading} onClick={() => setForm(emptyForm)}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
-
-      {loading ? <Spinner size="small" label="Loading document versions..." style={{ margin: '8px 0' }} /> : null}
-      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-
-      <DenseDataGrid
-        rows={rows}
-        columns={columns}
-        loading={loading}
-        totalCount={totalCount}
-        page={query.page}
-        pageSize={query.pageSize}
-        search={query.search}
-        sort={query.sortBy ? ({ key: query.sortBy as keyof DocumentVersion, dir: query.sortDir }) : null}
-        onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
-        onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
-        onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
-        onSortChange={(sort: DenseSort<DocumentVersion> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'desc', page: 1 }))}
-        emptyMessage="No document versions match the current filters."
-        activeFilterCount={activeFilterCount}
-        filterPanel={
-          <>
-            <DateRangeFilterField
-              fromLabel="Created From"
-              toLabel="Created To"
-              fromValue={draftFilters.createdFrom}
-              toValue={draftFilters.createdTo}
-              onFromChange={(value) => setDraftFilters((current) => ({ ...current, createdFrom: value }))}
-              onToChange={(value) => setDraftFilters((current) => ({ ...current, createdTo: value }))}
-            />
-            <FilterField label="Version From">
-              <Input size="small" value={draftFilters.versionFrom} onChange={(_, data) => setDraftFilters((current) => ({ ...current, versionFrom: data.value }))} />
-            </FilterField>
-            <FilterField label="Version To">
-              <Input size="small" value={draftFilters.versionTo} onChange={(_, data) => setDraftFilters((current) => ({ ...current, versionTo: data.value }))} />
-            </FilterField>
-          </>
-        }
-        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
-        onCancelFilters={() => setDraftFilters({
-          createdFrom: query.createdFrom,
-          createdTo: query.createdTo,
-          versionFrom: query.versionFrom,
-          versionTo: query.versionTo,
-        })}
-        onClearFilters={() => setDraftFilters({ createdFrom: '', createdTo: '', versionFrom: '', versionTo: '' })}
-      />
+      </SubgridModalForm>
     </div>
   )
 }

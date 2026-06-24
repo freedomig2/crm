@@ -1,335 +1,315 @@
-import { Button } from '@fluentui/react-components'
+import { Badge, Button, Spinner } from '@fluentui/react-components'
 import { useEffect, useState } from 'react'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
-import { DashboardCard } from '../components/common/DashboardCard'
+import { useAuth } from '../auth/AuthContext'
+import type { CommandAction } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import { CommandBar } from '../layout/components/CommandBar'
-import type { LeadDashboardSummary, OpportunityDashboardSummary, SalesPerformanceDashboard } from '../types/models'
-import styles from './DashboardPage.module.css'
-
-const userGrowth = [
-  { month: 'Jan', users: 92 },
-  { month: 'Feb', users: 108 },
-  { month: 'Mar', users: 126 },
-  { month: 'Apr', users: 132 },
-  { month: 'May', users: 141 },
-  { month: 'Jun', users: 158 },
-]
-
-const loginActivity = [
-  { day: 'Mon', success: 88, failed: 6 },
-  { day: 'Tue', success: 92, failed: 5 },
-  { day: 'Wed', success: 97, failed: 8 },
-  { day: 'Thu', success: 102, failed: 3 },
-  { day: 'Fri', success: 95, failed: 7 },
-]
-
-const roleDistribution = [
-  { name: 'Admin', value: 12 },
-  { name: 'Sales', value: 54 },
-  { name: 'Support', value: 31 },
-  { name: 'Read Only', value: 24 },
-]
-
-const departmentCounts = [
-  { dept: 'Sales', count: 48 },
-  { dept: 'Service', count: 37 },
-  { dept: 'Operations', count: 22 },
-  { dept: 'Finance', count: 14 },
-]
+import type { DashboardChartPoint, DashboardSummary } from '../types/models'
+import styles from './DashboardWorkspace.module.css'
 
 const formatMoney = (value?: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value ?? 0)
+const formatDate = (value?: string) => (value ? new Date(value).toLocaleDateString() : 'Not set')
+const asChartPoints = (value: unknown): DashboardChartPoint[] => (Array.isArray(value) ? (value as DashboardChartPoint[]) : [])
+
+const emptySummary: DashboardSummary = {
+  totalLeads: 0,
+  newLeads: 0,
+  qualifiedLeads: 0,
+  convertedLeads: 0,
+  openOpportunities: 0,
+  pipelineValue: 0,
+  weightedPipeline: 0,
+  winRate: 0,
+  openCases: 0,
+  overdueTasks: 0,
+  revenueThisMonth: 0,
+  slaBreaches: 0,
+  recentLeads: [],
+  opportunitiesClosingSoon: [],
+  upcomingFollowUps: [],
+  slaAlerts: [],
+}
 
 export function DashboardPage() {
-  const [leadSummary, setLeadSummary] = useState<LeadDashboardSummary | null>(null)
-  const [opportunitySummary, setOpportunitySummary] = useState<OpportunityDashboardSummary | null>(null)
-  const [salesPerformance, setSalesPerformance] = useState<SalesPerformanceDashboard | null>(null)
-  const [productMetrics, setProductMetrics] = useState({
-    totalProducts: 0,
-    activeProducts: 0,
-    totalPriceLists: 0,
-    activePriceLists: 0,
-    defaultPriceLists: 0,
-  })
+  const navigate = useNavigate()
+  const { hasPermission } = useAuth()
+  const [summary, setSummary] = useState<DashboardSummary | null>(null)
+  const [leadsByStatus, setLeadsByStatus] = useState<DashboardChartPoint[]>([])
+  const [opportunitiesByStage, setOpportunitiesByStage] = useState<DashboardChartPoint[]>([])
+  const [revenueForecast, setRevenueForecast] = useState<DashboardChartPoint[]>([])
+  const [casesByPriority, setCasesByPriority] = useState<DashboardChartPoint[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchDashboardData = async () => {
+    const [summaryRes, leadsRes, opportunitiesRes, revenueRes, casesRes] = await Promise.all([
+      api.get<DashboardSummary>('api/dashboard/summary'),
+      api.get<DashboardChartPoint[]>('api/dashboard/charts/leads-by-status'),
+      api.get<DashboardChartPoint[]>('api/dashboard/charts/opportunities-by-stage'),
+      api.get<DashboardChartPoint[]>('api/dashboard/charts/revenue-forecast'),
+      api.get<DashboardChartPoint[]>('api/dashboard/charts/cases-by-priority'),
+    ])
+
+    return {
+      summary: (summaryRes.data && typeof summaryRes.data === 'object') ? summaryRes.data : emptySummary,
+      leadsByStatus: asChartPoints(leadsRes.data),
+      opportunitiesByStage: asChartPoints(opportunitiesRes.data),
+      revenueForecast: asChartPoints(revenueRes.data),
+      casesByPriority: asChartPoints(casesRes.data),
+    }
+  }
+
+  const loadDashboard = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const payload = await fetchDashboardData()
+      setSummary(payload.summary)
+      setLeadsByStatus(payload.leadsByStatus)
+      setOpportunitiesByStage(payload.opportunitiesByStage)
+      setRevenueForecast(payload.revenueForecast)
+      setCasesByPriority(payload.casesByPriority)
+    } catch {
+      setError('Dashboard data could not be loaded. Please retry.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     void (async () => {
-      const [leads, opportunities, performance, products, activeProducts, priceLists] = await Promise.allSettled([
-        api.get<LeadDashboardSummary>('api/leads/dashboard-summary'),
-        api.get<OpportunityDashboardSummary>('api/opportunities/dashboard-summary'),
-        api.get<SalesPerformanceDashboard>('api/sales/performance'),
-        api.get<{ totalCount: number }>('api/products', { params: { page: 1, pageSize: 1 } }),
-        api.get<{ totalCount: number }>('api/products', { params: { page: 1, pageSize: 1, isActive: true } }),
-        api.get<{ items: Array<{ isDefault: boolean; isActive: boolean }>; totalCount: number }>('api/price-lists', { params: { page: 1, pageSize: 200 } }),
-      ])
-
-      setLeadSummary(leads.status === 'fulfilled' ? leads.value.data : null)
-      setOpportunitySummary(opportunities.status === 'fulfilled' ? opportunities.value.data : null)
-      setSalesPerformance(performance.status === 'fulfilled' ? performance.value.data : null)
-
-      const totalProducts = products.status === 'fulfilled' ? products.value.data.totalCount : 0
-      const activeProductsCount = activeProducts.status === 'fulfilled' ? activeProducts.value.data.totalCount : 0
-      const totalPriceLists = priceLists.status === 'fulfilled' ? priceLists.value.data.totalCount : 0
-      const activePriceListsCount =
-        priceLists.status === 'fulfilled'
-          ? priceLists.value.data.items.filter((item) => item.isActive).length
-          : 0
-      const defaultPriceListsCount =
-        priceLists.status === 'fulfilled'
-          ? priceLists.value.data.items.filter((item) => item.isDefault).length
-          : 0
-
-      setProductMetrics({
-        totalProducts,
-        activeProducts: activeProductsCount,
-        totalPriceLists,
-        activePriceLists: activePriceListsCount,
-        defaultPriceLists: defaultPriceListsCount,
-      })
+      setLoading(true)
+      setError(null)
+      try {
+        const payload = await fetchDashboardData()
+        setSummary(payload.summary)
+        setLeadsByStatus(payload.leadsByStatus)
+        setOpportunitiesByStage(payload.opportunitiesByStage)
+        setRevenueForecast(payload.revenueForecast)
+        setCasesByPriority(payload.casesByPriority)
+      } catch {
+        setError('Dashboard data could not be loaded. Please retry.')
+      } finally {
+        setLoading(false)
+      }
     })()
   }, [])
 
+  const actions: CommandAction[] = [{ key: 'refresh', label: 'Refresh', onClick: () => void loadDashboard() }]
+
+  if (hasPermission('Dashboard.View')) {
+    actions.push({ key: 'my-work', label: 'My Work', onClick: () => { navigate('/dashboard/my-work') } })
+  }
+
+  if (hasPermission('Activities.View')) {
+    actions.push({ key: 'my-activities', label: 'My Activities', onClick: () => { navigate('/dashboard/my-activities') } })
+    actions.push({ key: 'my-open-tasks', label: 'My Open Tasks', onClick: () => { navigate('/dashboard/my-open-tasks') } })
+  }
+
   return (
-    <div>
+    <div className={styles.layout}>
       <PageHeader
         title="Dashboard"
-        subtitle="Enterprise CRM administration overview"
+        subtitle="Enterprise command center with live CRM operational metrics"
       />
 
-      <CommandBar
-        actions={[
-          { key: 'refresh', label: 'Refresh' },
-          { key: 'alerts', label: 'View Security Alerts' },
-          { key: 'export', label: 'Export Dashboard' },
-        ]}
-      />
+      <CommandBar actions={actions} />
 
-      <section className={styles.kpiGrid}>
-        <DashboardCard label="Total Leads" value={leadSummary?.totalLeads ?? 0} />
-        <DashboardCard label="New Leads" value={leadSummary?.newLeads ?? 0} />
-        <DashboardCard label="Qualified Leads" value={leadSummary?.qualifiedLeads ?? 0} />
-        <DashboardCard label="Converted Leads" value={leadSummary?.convertedLeads ?? 0} />
-        <DashboardCard label="Disqualified Leads" value={leadSummary?.disqualifiedLeads ?? 0} />
-        <DashboardCard label="Average Lead Score" value={leadSummary?.averageLeadScore ?? 0} />
-        <DashboardCard label="Hot Leads" value={leadSummary?.hotLeads ?? 0} />
-        <DashboardCard label="Open Opportunities" value={opportunitySummary?.openOpportunities ?? 0} />
-        <DashboardCard label="Pipeline Value" value={formatMoney(opportunitySummary?.pipelineValue)} />
-        <DashboardCard label="Weighted Pipeline" value={formatMoney(opportunitySummary?.weightedPipelineValue)} />
-        <DashboardCard label="Closing This Month" value={opportunitySummary?.closingThisMonth ?? 0} />
-        <DashboardCard label="Win Rate" value={`${salesPerformance?.winRate ?? 0}%`} />
-        <DashboardCard label="Revenue This Month" value={formatMoney(salesPerformance?.revenueThisMonth)} />
-        <DashboardCard label="Forecast Revenue" value={formatMoney(salesPerformance?.forecastRevenue)} />
-        <DashboardCard label="Forecast Accuracy" value={`${salesPerformance?.forecastAccuracy ?? 0}%`} />
-        <DashboardCard label="Total Products" value={productMetrics.totalProducts} />
-        <DashboardCard label="Active Products" value={productMetrics.activeProducts} />
-        <DashboardCard label="Price Lists" value={productMetrics.totalPriceLists} />
-        <DashboardCard label="Active Price Lists" value={productMetrics.activePriceLists} />
-        <DashboardCard label="Default Price Lists" value={productMetrics.defaultPriceLists} />
+      <section className={styles.hero}>
+        <h2 className={styles.heroTitle}>Operations pulse for Sales and Service</h2>
+        <p className={styles.heroSubtitle}>Monitor conversion momentum, pipeline pressure, customer service exposure, and team follow-up velocity in one place.</p>
       </section>
 
-      <section className={styles.chartGrid}>
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>Leads by Source</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <BarChart data={leadSummary?.leadsBySource ?? []}>
+      {error ? <div className={styles.error}>{error}</div> : null}
+
+      {loading ? <Spinner label="Loading dashboard" /> : null}
+
+      <section className={styles.statsGrid}>
+        <article className={styles.statCard}>
+          <p className={styles.statLabel}>Total Leads</p>
+          <p className={styles.statValue}>{summary?.totalLeads ?? 0}</p>
+          <p className={styles.statSubtle}>New: {summary?.newLeads ?? 0} • Qualified: {summary?.qualifiedLeads ?? 0}</p>
+        </article>
+        <article className={styles.statCard}>
+          <p className={styles.statLabel}>Open Opportunities</p>
+          <p className={styles.statValue}>{summary?.openOpportunities ?? 0}</p>
+          <p className={styles.statSubtle}>Win rate <span className={styles.kpiAccent}>{summary?.winRate ?? 0}%</span></p>
+        </article>
+        <article className={styles.statCard}>
+          <p className={styles.statLabel}>Pipeline Value</p>
+          <p className={styles.statValue}>{formatMoney(summary?.pipelineValue)}</p>
+          <p className={styles.statSubtle}>Weighted {formatMoney(summary?.weightedPipeline)}</p>
+        </article>
+        <article className={styles.statCard}>
+          <p className={styles.statLabel}>Revenue This Month</p>
+          <p className={styles.statValue}>{formatMoney(summary?.revenueThisMonth)}</p>
+          <p className={styles.statSubtle}>Converted leads {summary?.convertedLeads ?? 0}</p>
+        </article>
+        <article className={styles.statCard}>
+          <p className={styles.statLabel}>Open Cases</p>
+          <p className={styles.statValue}>{summary?.openCases ?? 0}</p>
+          <p className={styles.statSubtle}>SLA breaches <span className={styles.warning}>{summary?.slaBreaches ?? 0}</span></p>
+        </article>
+        <article className={styles.statCard}>
+          <p className={styles.statLabel}>Overdue Tasks</p>
+          <p className={styles.statValue}>{summary?.overdueTasks ?? 0}</p>
+          <p className={styles.statSubtle}>Action required today</p>
+        </article>
+      </section>
+
+      <section className={styles.contentGrid}>
+        <div className={styles.leftColumn}>
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>Leads by Status</h3>
+              <Badge appearance="outline">Live</Badge>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={leadsByStatus}>
               <CartesianGrid strokeDasharray="2 2" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
-              <Bar dataKey="count" fill="#0d9488" />
-            </BarChart>
-          </ResponsiveContainer>
-        </article>
+                <Bar dataKey="count" fill="#0b5cab" />
+              </BarChart>
+            </ResponsiveContainer>
+          </article>
 
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>Leads by Status</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <PieChart>
-              <Pie data={leadSummary?.leadsByStatus ?? []} dataKey="count" nameKey="name" outerRadius={70} fill="#7c3aed" />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </article>
-
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>Opportunities by Stage</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <BarChart data={opportunitySummary?.opportunitiesByStage ?? []}>
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>Opportunities by Stage</h3>
+              <Badge appearance="tint">Revenue weighted</Badge>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={opportunitiesByStage}>
               <CartesianGrid strokeDasharray="2 2" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#c2410c" />
-            </BarChart>
-          </ResponsiveContainer>
-        </article>
+                <Tooltip formatter={(value) => formatMoney(Number(value))} />
+                <Bar dataKey="value" fill="#0f766e" />
+              </BarChart>
+            </ResponsiveContainer>
+          </article>
 
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>Pipeline Revenue by Stage</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <BarChart data={salesPerformance?.pipelineByStage ?? []}>
-              <CartesianGrid strokeDasharray="2 2" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(value) => formatMoney(Number(value))} />
-              <Bar dataKey="value" fill="#0f6cbd" />
-            </BarChart>
-          </ResponsiveContainer>
-        </article>
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>Forecast Trend</h3>
+              <Badge appearance="ghost">12 periods</Badge>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={revenueForecast}>
+                <CartesianGrid strokeDasharray="2 2" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} />
+                <Tooltip formatter={(value) => formatMoney(Number(value))} />
+                <Bar dataKey="value" fill="#7c3aed" />
+              </BarChart>
+            </ResponsiveContainer>
+          </article>
+
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>Cases by Priority</h3>
+              <Badge appearance="outline">Service load</Badge>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie data={casesByPriority} dataKey="count" nameKey="name" outerRadius={82} fill="#d97706" />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </article>
+        </div>
+
+        <div className={styles.rightColumn}>
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>Recent Leads</h3>
+              <Button size="small" appearance="subtle" onClick={() => navigate('/leads')}>Open Leads</Button>
+            </div>
+            <ul className={styles.rowList}>
+              {(summary?.recentLeads ?? []).map((item) => (
+                <li className={styles.rowItem} key={item.id}>
+                  <p className={styles.rowTitle}>{item.leadNumber} - {item.topic}</p>
+                  <p className={styles.rowMeta}>
+                    <span>{item.statusName ?? 'Status not set'}</span>
+                    <span>Score {item.score}</span>
+                    <span>{item.ownerName ?? 'Unassigned'}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {(summary?.recentLeads ?? []).length === 0 ? <p className={styles.empty}>No recent leads</p> : null}
+          </article>
+
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>Opportunities Closing Soon</h3>
+              <Button size="small" appearance="subtle" onClick={() => navigate('/opportunities')}>Open Opportunities</Button>
+            </div>
+            <ul className={styles.rowList}>
+              {(summary?.opportunitiesClosingSoon ?? []).map((item) => (
+                <li className={styles.rowItem} key={item.id}>
+                  <p className={styles.rowTitle}>{item.opportunityNumber} - {item.topic}</p>
+                  <p className={styles.rowMeta}>
+                    <span>{item.stageName ?? 'Stage not set'}</span>
+                    <span>{formatMoney(item.estimatedRevenue)}</span>
+                    <span>{formatDate(item.estimatedCloseDate)}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {(summary?.opportunitiesClosingSoon ?? []).length === 0 ? <p className={styles.empty}>No opportunities closing in the next 14 days</p> : null}
+          </article>
+
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>Upcoming Follow Ups</h3>
+              <Button size="small" appearance="subtle" onClick={() => navigate('/dashboard/my-open-tasks')}>View Task Board</Button>
+            </div>
+            <ul className={styles.rowList}>
+              {(summary?.upcomingFollowUps ?? []).map((item) => (
+                <li className={styles.rowItem} key={item.id}>
+                  <p className={styles.rowTitle}>{item.subject}</p>
+                  <p className={styles.rowMeta}>
+                    <span>{item.priorityName ?? 'Normal'}</span>
+                    <span>{item.relatedRecord}</span>
+                    <span>{formatDate(item.dueDate)}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {(summary?.upcomingFollowUps ?? []).length === 0 ? <p className={styles.empty}>No follow-up tasks in the next 7 days</p> : null}
+          </article>
+
+          <article className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h3 className={styles.panelTitle}>SLA Alerts</h3>
+              <Button size="small" appearance="subtle" onClick={() => navigate('/service/cases')}>Open Cases</Button>
+            </div>
+            <ul className={styles.rowList}>
+              {(summary?.slaAlerts ?? []).map((item) => (
+                <li className={styles.rowItem} key={item.id}>
+                  <p className={styles.rowTitle}>{item.caseNumber} - {item.title}</p>
+                  <p className={styles.rowMeta}>
+                    <span>{item.priorityName ?? 'Not set'}</span>
+                    <span>{item.assignedToName ?? 'Unassigned'}</span>
+                    <span className={styles.warning}>{formatDate(item.dueAt)}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {(summary?.slaAlerts ?? []).length === 0 ? <p className={styles.empty}>No active SLA breaches</p> : null}
+          </article>
+        </div>
       </section>
 
-      <section className={styles.widgetGrid}>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Recent Leads</p>
-          <ul className={styles.widgetList}>
-            {(leadSummary?.recentLeads ?? []).length === 0 ? <li>No recent leads</li> : null}
-            {(leadSummary?.recentLeads ?? []).map((lead) => (
-              <li key={lead.id}>{lead.leadNumber} - {lead.topic}</li>
-            ))}
-          </ul>
-        </article>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Recently Converted Leads</p>
-          <ul className={styles.widgetList}>
-            {(leadSummary?.recentlyConvertedLeads ?? []).length === 0 ? <li>No recently converted leads</li> : null}
-            {(leadSummary?.recentlyConvertedLeads ?? []).map((lead) => (
-              <li key={lead.id}>{lead.leadNumber} - {lead.topic}</li>
-            ))}
-          </ul>
-        </article>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Recent Opportunities</p>
-          <ul className={styles.widgetList}>
-            {(opportunitySummary?.recentOpportunities ?? []).length === 0 ? <li>No recent opportunities</li> : null}
-            {(opportunitySummary?.recentOpportunities ?? []).map((opportunity) => (
-              <li key={opportunity.id}>{opportunity.opportunityNumber} - {opportunity.topic}</li>
-            ))}
-          </ul>
-        </article>
-      </section>
-
-      <section className={styles.kpiGrid}>
-        <DashboardCard label="Total Users" value={158} delta="+8.3% this month" />
-        <DashboardCard label="Active Users" value={149} delta="94.3% active ratio" />
-        <DashboardCard label="Locked Users" value={5} delta="-2 from yesterday" />
-        <DashboardCard label="Roles" value={6} />
-        <DashboardCard label="Teams" value={14} />
-        <DashboardCard label="Departments" value={9} />
-        <DashboardCard label="Open Audit Events" value={23} delta="5 critical" />
-        <DashboardCard label="System Settings Changed" value={11} delta="24h window" />
-      </section>
-
-      <section className={styles.chartGrid}>
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>User Growth</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <AreaChart data={userGrowth}>
-              <CartesianGrid strokeDasharray="2 2" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Area type="monotone" dataKey="users" stroke="#0f6cbd" fill="#dbeafe" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </article>
-
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>Login Activity</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <BarChart data={loginActivity}>
-              <CartesianGrid strokeDasharray="2 2" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="success" fill="#0d9488" />
-              <Bar dataKey="failed" fill="#dc2626" />
-            </BarChart>
-          </ResponsiveContainer>
-        </article>
-
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>Role Distribution</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <PieChart>
-              <Pie data={roleDistribution} dataKey="value" nameKey="name" outerRadius={70} fill="#0f6cbd" />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </article>
-
-        <article className={styles.chartCard}>
-          <p className={styles.sectionTitle}>Department User Count</p>
-          <ResponsiveContainer width="100%" height={190}>
-            <BarChart data={departmentCounts}>
-              <CartesianGrid strokeDasharray="2 2" />
-              <XAxis dataKey="dept" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#2563eb" />
-            </BarChart>
-          </ResponsiveContainer>
-        </article>
-      </section>
-
-      <section className={styles.widgetGrid}>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Recent Audit Logs</p>
-          <ul className={styles.widgetList}>
-            <li>Role permissions updated for Sales Manager</li>
-            <li>System setting "PasswordExpiryDays" changed</li>
-            <li>Department hierarchy updated for Service</li>
-          </ul>
-        </article>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Recent Logins</p>
-          <ul className={styles.widgetList}>
-            <li>alex.smith - 2 min ago</li>
-            <li>rachel.owens - 7 min ago</li>
-            <li>admin@crm.local - 11 min ago</li>
-          </ul>
-        </article>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Failed Login Attempts</p>
-          <ul className={styles.widgetList}>
-            <li>5 attempts for support.temp</li>
-            <li>3 attempts from IP 10.10.3.41</li>
-            <li>2 attempts for sales.contractor</li>
-          </ul>
-        </article>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Users Pending Activation</p>
-          <ul className={styles.widgetList}>
-            <li>luna.bishop</li>
-            <li>omar.khan</li>
-            <li>mia.carter</li>
-          </ul>
-        </article>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Recently Updated Settings</p>
-          <ul className={styles.widgetList}>
-            <li>PasswordExpiryDays</li>
-            <li>SessionTimeoutMinutes</li>
-            <li>CaseAutoAssignment</li>
-          </ul>
-        </article>
-        <article className={styles.widgetCard}>
-          <p className={styles.sectionTitle}>Security Alerts / Top Active Users</p>
-          <ul className={styles.widgetList}>
-            <li>2 high-risk geolocation sign-ins detected</li>
-            <li>Top users: alex.smith, rachel.owens, eva.kim</li>
-          </ul>
-        </article>
-      </section>
-
-      <div className={styles.quickActions}>
-        <Button size="small" appearance="secondary">Create User</Button>
-        <Button size="small" appearance="secondary">Create Role</Button>
-        <Button size="small" appearance="secondary">Create Team</Button>
-        <Button size="small" appearance="secondary">Add Department</Button>
-        <Button size="small" appearance="secondary">Manage Permissions</Button>
-        <Button size="small" appearance="secondary">View Audit Logs</Button>
-        <Button size="small" appearance="secondary">Open System Settings</Button>
+      <div>
+        <Button appearance="secondary" onClick={() => navigate('/dashboard/my-work')}>Go To My Work</Button>
       </div>
     </div>
   )

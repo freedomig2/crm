@@ -1,0 +1,44 @@
+.container {
+  border: 1px solid var(--colorNeutralStroke2);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--colorNeutralBackground1);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.emptyState {
+  min-height: 92px;
+  border: 1px dashed var(--colorNeutralStroke2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  color: var(--colorNeutralForeground3);
+}
+
+.modalFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  min-width: min(860px, 92vw);
+}

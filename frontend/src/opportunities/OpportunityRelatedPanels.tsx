@@ -3,6 +3,10 @@ import { Button, Field, Input, MessageBar, MessageBarBody, Switch, Textarea } fr
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { FormSectionCard, LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { RelatedRecordsSubgrid } from '../components/subgrid/RelatedRecordsSubgrid'
+import { SubgridDeleteConfirmDialog } from '../components/subgrid/SubgridDeleteConfirmDialog'
+import { SubgridModalForm } from '../components/subgrid/SubgridModalForm'
+import { SubgridRowActions } from '../components/subgrid/SubgridRowActions'
 import { loadLookupOptionsByCategoryCode } from '../components/entity-ui/referenceData'
 import type { OpportunityActivity, OpportunityCompetitor, OpportunityProduct, OpportunityTimelineItem, PagedResult } from '../types/models'
 import { formatCurrency, formatDateTime, nullIfBlank } from './opportunityUtils'
@@ -10,6 +14,7 @@ import { toDateInput, toDateTimeInput } from '../leads/leadUtils'
 import styles from '../contacts/Contacts.module.css'
 
 type ProductForm = {
+  productId: string
   productName: string
   description: string
   quantity: string
@@ -43,6 +48,7 @@ type ActivityForm = {
 }
 
 const emptyProduct: ProductForm = {
+  productId: '',
   productName: '',
   description: '',
   quantity: '1',
@@ -84,6 +90,9 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
   const [rows, setRows] = useState<OpportunityProduct[]>([])
   const [form, setForm] = useState<ProductForm>(emptyProduct)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<OpportunityProduct | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -112,9 +121,15 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
     setForm(emptyProduct)
   }
 
+  const openAdd = () => {
+    reset()
+    setFormOpen(true)
+  }
+
   const edit = (row: OpportunityProduct) => {
     setEditingId(row.id)
     setForm({
+      productId: row.productId ?? '',
       productName: row.productName,
       description: row.description ?? '',
       quantity: String(row.quantity),
@@ -124,15 +139,17 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
       taxAmount: row.taxAmount === undefined || row.taxAmount === null ? '' : String(row.taxAmount),
       sortOrder: String(row.sortOrder),
     })
+    setFormOpen(true)
   }
 
   const save = async () => {
-    if (!form.productName.trim()) {
-      setError('Product name is required.')
+    if (!form.productId && !form.productName.trim()) {
+      setError('Product lookup or product name is required.')
       return
     }
 
     const payload = {
+      productId: nullIfBlank(form.productId),
       productName: form.productName.trim(),
       description: nullIfBlank(form.description),
       quantity: Number(form.quantity || 0),
@@ -145,6 +162,7 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       if (editingId) {
         await api.put(`api/opportunity-products/${editingId}`, payload)
@@ -152,6 +170,8 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
         await api.post(`api/opportunities/${opportunityId}/products`, payload)
       }
       reset()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Opportunity product updated successfully.' : 'Opportunity product created successfully.')
       await load()
     } catch {
       setError('Failed to save product.')
@@ -160,11 +180,17 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
     }
   }
 
-  const remove = async (id: string) => {
+  const remove = async () => {
+    if (!deleteTarget) {
+      return
+    }
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
-      await api.delete(`api/opportunity-products/${id}`)
+      await api.delete(`api/opportunity-products/${deleteTarget.id}`)
+      setDeleteTarget(null)
+      setSuccess('Opportunity product deleted successfully.')
       await load()
     } catch {
       setError('Failed to delete product.')
@@ -177,10 +203,67 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
 
   return (
     <div className={styles.sectionStack}>
+      {success ? <MessageBar intent="success"><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
       {error ? <MessageBar intent="error"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-      {canCreate || (editingId && canUpdate) ? (
-        <FormSectionCard title={editingId ? 'Edit Product' : 'Add Product'}>
-          <Field label="Product Name" required>
+
+      <RelatedRecordsSubgrid
+        title="Products"
+        addLabel={canCreate ? 'Add Product' : undefined}
+        onAdd={canCreate ? openAdd : undefined}
+        onRefresh={() => void load()}
+        loading={loading}
+        error={error}
+        hasRows={rows.length > 0}
+        emptyMessage="No products."
+        emptyActionLabel={canCreate ? 'Add Product' : undefined}
+        onEmptyAction={canCreate ? openAdd : undefined}
+      >
+        <table className={styles.recordTable}>
+          <thead>
+            <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Discount</th><th>Tax</th><th>Total</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? <tr><td colSpan={7}>No products.</td></tr> : rows.map((row) => (
+              <tr key={row.id}>
+                <td>{row.productName}</td>
+                <td>{row.quantity}</td>
+                <td>{formatCurrency(row.unitPrice)}</td>
+                <td>{formatCurrency(row.discountAmount)}</td>
+                <td>{formatCurrency(row.taxAmount)}</td>
+                <td>{formatCurrency(row.lineTotal)}</td>
+                <td>
+                  <SubgridRowActions
+                    onView={() => edit(row)}
+                    onEdit={canUpdate ? () => edit(row) : undefined}
+                    onDelete={canDelete ? () => setDeleteTarget(row) : undefined}
+                    disableEdit={!canUpdate}
+                    disableDelete={!canDelete}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Product' : 'Add Product'}
+        submitLabel={editingId ? 'Update' : 'Add'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            reset()
+          }
+        }}
+        onSubmit={() => void save()}
+      >
+        <FormSectionCard title="Product Details">
+          <Field label="Product Lookup">
+            <LookupCombobox fieldKey="productId" value={form.productId} onChange={(value) => setForm((current) => ({ ...current, productId: value }))} />
+          </Field>
+          <Field label="Product Name (fallback)">
             <Input size="small" value={form.productName} onChange={(_, data) => setForm((current) => ({ ...current, productName: data.value }))} />
           </Field>
           <Field label="Quantity" required>
@@ -198,44 +281,22 @@ export function OpportunityProductsPanel({ opportunityId, editable }: { opportun
           <Field label="Tax Amount">
             <Input size="small" type="number" value={form.taxAmount} onChange={(_, data) => setForm((current) => ({ ...current, taxAmount: data.value }))} />
           </Field>
-          <Field label="Sort Order">
-            <Input size="small" type="number" value={form.sortOrder} onChange={(_, data) => setForm((current) => ({ ...current, sortOrder: data.value }))} />
-          </Field>
           <Field label="Description">
             <Textarea value={form.description} onChange={(_, data) => setForm((current) => ({ ...current, description: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" disabled={loading || Boolean(editingId && !canUpdate)} onClick={() => void save()}>{editingId ? 'Update' : 'Add'}</Button>
-            <Button size="small" appearance="subtle" onClick={reset}>Reset</Button>
-          </div>
+          <Field label="Sort Order">
+            <Input size="small" type="number" value={form.sortOrder} onChange={(_, data) => setForm((current) => ({ ...current, sortOrder: data.value }))} />
+          </Field>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      <FormSectionCard title="Products">
-        <table className={styles.recordTable}>
-          <thead>
-            <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Discount</th><th>Tax</th><th>Total</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? <tr><td colSpan={7}>No products.</td></tr> : rows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.productName}</td>
-                <td>{row.quantity}</td>
-                <td>{formatCurrency(row.unitPrice)}</td>
-                <td>{formatCurrency(row.discountAmount)}</td>
-                <td>{formatCurrency(row.taxAmount)}</td>
-                <td>{formatCurrency(row.lineTotal)}</td>
-                <td>
-                  <div className={styles.inlineActions}>
-                    <Button size="small" appearance="subtle" onClick={() => edit(row)} disabled={!canUpdate}>Edit</Button>
-                    <Button size="small" appearance="subtle" onClick={() => void remove(row.id)} disabled={!canDelete}>Delete</Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </FormSectionCard>
+      <SubgridDeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Product"
+        message="Delete this opportunity product?"
+        onConfirm={() => void remove()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
@@ -250,6 +311,9 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
   const [rows, setRows] = useState<OpportunityCompetitor[]>([])
   const [form, setForm] = useState<CompetitorForm>(emptyCompetitor)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<OpportunityCompetitor | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -280,6 +344,11 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
     setForm(emptyCompetitor)
   }
 
+  const openAdd = () => {
+    reset()
+    setFormOpen(true)
+  }
+
   const edit = (row: OpportunityCompetitor) => {
     setEditingId(row.id)
     setForm({
@@ -290,6 +359,7 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
       isPrimaryCompetitor: row.isPrimaryCompetitor,
       notes: row.notes ?? '',
     })
+    setFormOpen(true)
   }
 
   const save = async () => {
@@ -309,6 +379,7 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       if (editingId) {
         await api.put(`api/opportunity-competitors/${editingId}`, payload)
@@ -316,6 +387,8 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
         await api.post(`api/opportunities/${opportunityId}/competitors`, payload)
       }
       reset()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Competitor updated successfully.' : 'Competitor created successfully.')
       await load()
     } catch {
       setError('Failed to save competitor.')
@@ -327,8 +400,10 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
   const setPrimary = async (id: string) => {
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.post(`api/opportunity-competitors/${id}/set-primary`)
+      setSuccess('Primary competitor updated successfully.')
       await load()
     } catch {
       setError('Failed to set primary competitor.')
@@ -337,11 +412,17 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
     }
   }
 
-  const remove = async (id: string) => {
+  const remove = async () => {
+    if (!deleteTarget) {
+      return
+    }
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
-      await api.delete(`api/opportunity-competitors/${id}`)
+      await api.delete(`api/opportunity-competitors/${deleteTarget.id}`)
+      setDeleteTarget(null)
+      setSuccess('Competitor deleted successfully.')
       await load()
     } catch {
       setError('Failed to delete competitor.')
@@ -354,9 +435,62 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
 
   return (
     <div className={styles.sectionStack}>
+      {success ? <MessageBar intent="success"><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
       {error ? <MessageBar intent="error"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-      {canCreate || (editingId && canUpdate) ? (
-        <FormSectionCard title={editingId ? 'Edit Competitor' : 'Add Competitor'}>
+
+      <RelatedRecordsSubgrid
+        title="Competitors"
+        addLabel={canCreate ? 'Add Competitor' : undefined}
+        onAdd={canCreate ? openAdd : undefined}
+        onRefresh={() => void load()}
+        loading={loading}
+        error={error}
+        hasRows={sortedRows.length > 0}
+        emptyMessage="No competitors."
+        emptyActionLabel={canCreate ? 'Add Competitor' : undefined}
+        onEmptyAction={canCreate ? openAdd : undefined}
+      >
+        <div className={styles.timeline}>
+          {sortedRows.map((row) => (
+            <article className={styles.timelineItem} key={row.id}>
+              <div className={styles.timelineTop}>
+                <div>
+                  <p className={styles.timelineTitle}>{row.competitorName}{row.isPrimaryCompetitor ? ' - Primary' : ''}</p>
+                  <p className={styles.timelineMeta}>{row.threatLevelName ?? 'Threat not set'}</p>
+                </div>
+                <div className={styles.inlineActions}>
+                  <Button size="small" appearance="subtle" onClick={() => void setPrimary(row.id)} disabled={!canSetPrimary || row.isPrimaryCompetitor}>Set Primary</Button>
+                  <SubgridRowActions
+                    onView={() => edit(row)}
+                    onEdit={canUpdate ? () => edit(row) : undefined}
+                    onDelete={canDelete ? () => setDeleteTarget(row) : undefined}
+                    disableEdit={!canUpdate}
+                    disableDelete={!canDelete}
+                  />
+                </div>
+              </div>
+              {row.strengths ? <p className={styles.timelineBody}>Strengths: {row.strengths}</p> : null}
+              {row.weaknesses ? <p className={styles.timelineBody}>Weaknesses: {row.weaknesses}</p> : null}
+              {row.notes ? <p className={styles.timelineBody}>{row.notes}</p> : null}
+            </article>
+          ))}
+        </div>
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Competitor' : 'Add Competitor'}
+        submitLabel={editingId ? 'Update' : 'Add'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            reset()
+          }
+        }}
+        onSubmit={() => void save()}
+      >
+        <FormSectionCard title="Competitor Details">
           <Field label="Competitor Name" required>
             <Input size="small" value={form.competitorName} onChange={(_, data) => setForm((current) => ({ ...current, competitorName: data.value }))} />
           </Field>
@@ -375,33 +509,16 @@ export function OpportunityCompetitorsPanel({ opportunityId, editable }: { oppor
           <Field label="Notes">
             <Textarea value={form.notes} onChange={(_, data) => setForm((current) => ({ ...current, notes: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" disabled={loading || Boolean(editingId && !canUpdate)} onClick={() => void save()}>{editingId ? 'Update' : 'Add'}</Button>
-            <Button size="small" appearance="subtle" onClick={reset}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      <div className={styles.timeline}>
-        {sortedRows.length === 0 ? <div className={styles.emptyState}>No competitors.</div> : sortedRows.map((row) => (
-          <article className={styles.timelineItem} key={row.id}>
-            <div className={styles.timelineTop}>
-              <div>
-                <p className={styles.timelineTitle}>{row.competitorName}{row.isPrimaryCompetitor ? ' - Primary' : ''}</p>
-                <p className={styles.timelineMeta}>{row.threatLevelName ?? 'Threat not set'}</p>
-              </div>
-              <div className={styles.inlineActions}>
-                <Button size="small" appearance="subtle" onClick={() => edit(row)} disabled={!canUpdate}>Edit</Button>
-                <Button size="small" appearance="subtle" onClick={() => void setPrimary(row.id)} disabled={!canSetPrimary || row.isPrimaryCompetitor}>Set Primary</Button>
-                <Button size="small" appearance="subtle" onClick={() => void remove(row.id)} disabled={!canDelete}>Delete</Button>
-              </div>
-            </div>
-            {row.strengths ? <p className={styles.timelineBody}>Strengths: {row.strengths}</p> : null}
-            {row.weaknesses ? <p className={styles.timelineBody}>Weaknesses: {row.weaknesses}</p> : null}
-            {row.notes ? <p className={styles.timelineBody}>{row.notes}</p> : null}
-          </article>
-        ))}
-      </div>
+      <SubgridDeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Competitor"
+        message="Delete this competitor?"
+        onConfirm={() => void remove()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
@@ -416,6 +533,9 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
   const [rows, setRows] = useState<OpportunityActivity[]>([])
   const [form, setForm] = useState<ActivityForm>(emptyActivity)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<OpportunityActivity | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -456,6 +576,11 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
     setForm((current) => ({ ...emptyActivity, statusId: current.statusId }))
   }
 
+  const openAdd = () => {
+    reset()
+    setFormOpen(true)
+  }
+
   const edit = (row: OpportunityActivity) => {
     setEditingId(row.id)
     setForm({
@@ -470,6 +595,7 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
       priorityId: row.priorityId ?? '',
       assignedToUserId: row.assignedToUserId ?? '',
     })
+    setFormOpen(true)
   }
 
   const save = async () => {
@@ -493,6 +619,7 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       if (editingId) {
         await api.put(`api/opportunity-activities/${editingId}`, payload)
@@ -500,6 +627,8 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
         await api.post(`api/opportunities/${opportunityId}/activities`, payload)
       }
       reset()
+      setFormOpen(false)
+      setSuccess(editingId ? 'Activity updated successfully.' : 'Activity created successfully.')
       await load()
     } catch {
       setError('Failed to save activity.')
@@ -511,8 +640,10 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
   const complete = async (id: string) => {
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.post(`api/opportunity-activities/${id}/complete`, {})
+      setSuccess('Activity marked as complete.')
       await load()
     } catch {
       setError('Failed to complete activity.')
@@ -521,11 +652,17 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
     }
   }
 
-  const remove = async (id: string) => {
+  const remove = async () => {
+    if (!deleteTarget) {
+      return
+    }
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
-      await api.delete(`api/opportunity-activities/${id}`)
+      await api.delete(`api/opportunity-activities/${deleteTarget.id}`)
+      setDeleteTarget(null)
+      setSuccess('Activity deleted successfully.')
       await load()
     } catch {
       setError('Failed to delete activity.')
@@ -538,9 +675,63 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
 
   return (
     <div className={styles.sectionStack}>
+      {success ? <MessageBar intent="success"><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
       {error ? <MessageBar intent="error"><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-      {canCreate || (editingId && canUpdate) ? (
-        <FormSectionCard title={editingId ? 'Edit Activity' : 'Add Activity'}>
+
+      <RelatedRecordsSubgrid
+        title="Activities"
+        addLabel={canCreate ? 'Add Activity' : undefined}
+        onAdd={canCreate ? openAdd : undefined}
+        onRefresh={() => void load()}
+        loading={loading}
+        error={error}
+        hasRows={sortedRows.length > 0}
+        emptyMessage="No activities."
+        emptyActionLabel={canCreate ? 'Add Activity' : undefined}
+        onEmptyAction={canCreate ? openAdd : undefined}
+      >
+        <div className={styles.timeline}>
+          {sortedRows.map((row) => (
+            <article className={styles.timelineItem} key={row.id}>
+              <div className={styles.timelineTop}>
+                <div>
+                  <p className={styles.timelineTitle}>{row.subject}</p>
+                  <p className={styles.timelineMeta}>
+                    {[row.activityTypeName, row.statusName, row.priorityName, row.contactName, formatDateTime(row.activityDate)].filter(Boolean).join(' | ')}
+                  </p>
+                </div>
+                <div className={styles.inlineActions}>
+                  {canComplete ? <Button size="small" appearance="subtle" onClick={() => void complete(row.id)} disabled={!canComplete || Boolean(row.completedDate)}>Complete</Button> : null}
+                  <SubgridRowActions
+                    onView={() => edit(row)}
+                    onEdit={canUpdate ? () => edit(row) : undefined}
+                    onDelete={canDelete ? () => setDeleteTarget(row) : undefined}
+                    disableEdit={!canUpdate}
+                    disableDelete={!canDelete}
+                  />
+                </div>
+              </div>
+              {row.completedDate ? <p className={styles.timelineMeta}>Completed: {formatDateTime(row.completedDate)}</p> : null}
+              {row.description ? <p className={styles.timelineBody}>{row.description}</p> : null}
+            </article>
+          ))}
+        </div>
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Activity' : 'Add Activity'}
+        submitLabel={editingId ? 'Update' : 'Add'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            reset()
+          }
+        }}
+        onSubmit={() => void save()}
+      >
+        <FormSectionCard title="Activity Details">
           <Field label="Activity Type" required>
             <LookupCombobox fieldKey="activityTypeId" value={form.activityTypeId} onChange={(value) => setForm((current) => ({ ...current, activityTypeId: value }))} />
           </Field>
@@ -571,34 +762,16 @@ export function OpportunityActivitiesPanel({ opportunityId, editable }: { opport
           <Field label="Description">
             <Textarea value={form.description} onChange={(_, data) => setForm((current) => ({ ...current, description: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" onClick={() => void save()} disabled={loading || Boolean(editingId && !canUpdate)}>{editingId ? 'Update' : 'Add'}</Button>
-            <Button size="small" appearance="subtle" onClick={reset}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      <div className={styles.timeline}>
-        {sortedRows.length === 0 ? <div className={styles.emptyState}>No activities.</div> : sortedRows.map((row) => (
-          <article className={styles.timelineItem} key={row.id}>
-            <div className={styles.timelineTop}>
-              <div>
-                <p className={styles.timelineTitle}>{row.subject}</p>
-                <p className={styles.timelineMeta}>
-                  {[row.activityTypeName, row.statusName, row.priorityName, row.contactName, formatDateTime(row.activityDate)].filter(Boolean).join(' | ')}
-                </p>
-              </div>
-              <div className={styles.inlineActions}>
-                <Button size="small" appearance="subtle" onClick={() => edit(row)} disabled={!canUpdate}>Edit</Button>
-                <Button size="small" appearance="subtle" onClick={() => void complete(row.id)} disabled={!canComplete || Boolean(row.completedDate)}>Complete</Button>
-                <Button size="small" appearance="subtle" onClick={() => void remove(row.id)} disabled={!canDelete}>Delete</Button>
-              </div>
-            </div>
-            {row.completedDate ? <p className={styles.timelineMeta}>Completed: {formatDateTime(row.completedDate)}</p> : null}
-            {row.description ? <p className={styles.timelineBody}>{row.description}</p> : null}
-          </article>
-        ))}
-      </div>
+      <SubgridDeleteConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Activity"
+        message="Delete this opportunity activity?"
+        onConfirm={() => void remove()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

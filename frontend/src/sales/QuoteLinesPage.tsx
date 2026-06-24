@@ -1,12 +1,14 @@
-import { Button, Field, Input, MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
+import { Field, Input, MessageBar, MessageBarBody } from '@fluentui/react-components'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { DeleteConfirmDialog } from '../components/crud/DeleteConfirmDialog'
 import { FormSectionCard, LookupCombobox } from '../components/entity-ui/EntityComponents'
 import { FilterField } from '../components/filters/FilterField'
 import { DenseDataGrid, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { RelatedRecordsSubgrid } from '../components/subgrid/RelatedRecordsSubgrid'
+import { SubgridDeleteConfirmDialog } from '../components/subgrid/SubgridDeleteConfirmDialog'
+import { SubgridModalForm } from '../components/subgrid/SubgridModalForm'
 import { useListQueryState } from '../hooks/useListQueryState'
 import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
@@ -62,7 +64,9 @@ export function QuoteLinesPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<QuoteLine | null>(null)
   const [form, setForm] = useState<QuoteLineForm>(emptyForm)
 
@@ -135,6 +139,11 @@ export function QuoteLinesPage() {
     setForm(emptyForm)
   }
 
+  const openAddForm = () => {
+    resetForm()
+    setFormOpen(true)
+  }
+
   const editRow = (row: QuoteLine) => {
     setEditingId(row.id)
     setForm({
@@ -149,6 +158,7 @@ export function QuoteLinesPage() {
       taxRate: String(row.taxRate),
       sortOrder: String(row.sortOrder),
     })
+    setFormOpen(true)
   }
 
   const saveLine = async () => {
@@ -163,6 +173,7 @@ export function QuoteLinesPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       const payload = {
         productId: form.productId || null,
@@ -184,7 +195,9 @@ export function QuoteLinesPage() {
       }
 
       resetForm()
-      await Promise.all([loadLines(), loadQuote()])
+      setFormOpen(false)
+      setSuccess(editingId ? 'Quote line updated successfully.' : 'Quote line created successfully.')
+      await loadLines()
     } catch {
       setError('Failed to save quote line.')
     } finally {
@@ -199,10 +212,12 @@ export function QuoteLinesPage() {
 
     setLoading(true)
     setError('')
+    setSuccess('')
     try {
       await api.delete(`api/quotes/lines/${deleteTarget.id}`)
       setDeleteTarget(null)
-      await Promise.all([loadLines(), loadQuote()])
+      setSuccess('Quote line deleted successfully.')
+      await loadLines()
     } catch {
       setError('Failed to delete quote line.')
     } finally {
@@ -256,8 +271,68 @@ export function QuoteLinesPage() {
         </div>
       ) : null}
 
-      {(canCreate || canUpdate) ? (
-        <FormSectionCard title={editingId ? 'Edit Quote Line' : 'Add Quote Line'}>
+      {success ? <MessageBar intent="success" style={{ marginBottom: 10 }}><MessageBarBody>{success}</MessageBarBody></MessageBar> : null}
+      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
+
+      <RelatedRecordsSubgrid
+        title="Quote Lines"
+        addLabel={canCreate ? 'Add Line' : undefined}
+        onAdd={canCreate ? openAddForm : undefined}
+        onRefresh={() => void loadLines()}
+        loading={loading}
+        error={error}
+        hasRows={rows.length > 0}
+        emptyMessage="No quote lines match the current filters."
+        emptyActionLabel={canCreate ? 'Add Line' : undefined}
+        onEmptyAction={canCreate ? openAddForm : undefined}
+      >
+        <DenseDataGrid
+          rows={rows}
+          columns={columns}
+          loading={loading}
+          totalCount={totalCount}
+          page={query.page}
+          pageSize={query.pageSize}
+          search={query.search}
+          sort={query.sortBy ? ({ key: query.sortBy as keyof QuoteLine, dir: query.sortDir }) : null}
+          onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
+          onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
+          onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
+          onSortChange={(sort: DenseSort<QuoteLine> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'asc', page: 1 }))}
+          onEdit={canUpdate ? (row) => editRow(row) : undefined}
+          onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
+          emptyMessage="No quote lines match the current filters."
+          activeFilterCount={activeFilterCount}
+          filterPanel={
+            <>
+              <FilterField label="Product">
+                <LookupCombobox fieldKey="productId" value={draftFilters.productId} onChange={(value) => setDraftFilters((current) => ({ ...current, productId: value }))} />
+              </FilterField>
+              <FilterField label="Product Bundle">
+                <LookupCombobox fieldKey="productBundleId" value={draftFilters.productBundleId} onChange={(value) => setDraftFilters((current) => ({ ...current, productBundleId: value }))} />
+              </FilterField>
+            </>
+          }
+          onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
+          onCancelFilters={() => setDraftFilters({ productId: query.productId, productBundleId: query.productBundleId })}
+          onClearFilters={() => setDraftFilters({ productId: '', productBundleId: '' })}
+        />
+      </RelatedRecordsSubgrid>
+
+      <SubgridModalForm
+        open={formOpen}
+        title={editingId ? 'Edit Quote Line' : 'Add Quote Line'}
+        submitLabel={editingId ? 'Update Line' : 'Add Line'}
+        loading={loading}
+        onOpenChange={(open) => {
+          setFormOpen(open)
+          if (!open) {
+            resetForm()
+          }
+        }}
+        onSubmit={() => void saveLine()}
+      >
+        <FormSectionCard title="Line Details">
           <Field label="Product">
             <LookupCombobox fieldKey="productId" value={form.productId} disabled={loading} onChange={(value) => setForm((current) => ({ ...current, productId: value }))} />
           </Field>
@@ -288,49 +363,10 @@ export function QuoteLinesPage() {
           <Field label="Sort Order">
             <Input size="small" type="number" value={form.sortOrder} onChange={(_, data) => setForm((current) => ({ ...current, sortOrder: data.value }))} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" disabled={loading} onClick={() => void saveLine()}>{editingId ? 'Update Line' : 'Add Line'}</Button>
-            <Button size="small" appearance="subtle" disabled={loading} onClick={resetForm}>Reset</Button>
-          </div>
         </FormSectionCard>
-      ) : null}
+      </SubgridModalForm>
 
-      {loading ? <Spinner size="small" label="Loading quote lines..." style={{ margin: '8px 0' }} /> : null}
-      {error ? <MessageBar intent="error" style={{ marginBottom: 10 }}><MessageBarBody>{error}</MessageBarBody></MessageBar> : null}
-
-      <DenseDataGrid
-        rows={rows}
-        columns={columns}
-        loading={loading}
-        totalCount={totalCount}
-        page={query.page}
-        pageSize={query.pageSize}
-        search={query.search}
-        sort={query.sortBy ? ({ key: query.sortBy as keyof QuoteLine, dir: query.sortDir }) : null}
-        onPageChange={(page) => setQuery((current) => ({ ...current, page }))}
-        onPageSizeChange={(pageSize) => setQuery((current) => ({ ...current, pageSize, page: 1 }))}
-        onSearchChange={(search) => setQuery((current) => ({ ...current, search, page: 1 }))}
-        onSortChange={(sort: DenseSort<QuoteLine> | null) => setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'asc', page: 1 }))}
-        onEdit={canUpdate ? (row) => editRow(row) : undefined}
-        onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
-        emptyMessage="No quote lines match the current filters."
-        activeFilterCount={activeFilterCount}
-        filterPanel={
-          <>
-            <FilterField label="Product">
-              <LookupCombobox fieldKey="productId" value={draftFilters.productId} onChange={(value) => setDraftFilters((current) => ({ ...current, productId: value }))} />
-            </FilterField>
-            <FilterField label="Product Bundle">
-              <LookupCombobox fieldKey="productBundleId" value={draftFilters.productBundleId} onChange={(value) => setDraftFilters((current) => ({ ...current, productBundleId: value }))} />
-            </FilterField>
-          </>
-        }
-        onApplyFilters={() => setQuery((current) => ({ ...current, ...draftFilters, page: 1 }))}
-        onCancelFilters={() => setDraftFilters({ productId: query.productId, productBundleId: query.productBundleId })}
-        onClearFilters={() => setDraftFilters({ productId: '', productBundleId: '' })}
-      />
-
-      <DeleteConfirmDialog
+      <SubgridDeleteConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete Quote Line"
         message={`Delete ${deleteTarget?.productName ?? 'this line'} from the quote?`}

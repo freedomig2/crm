@@ -75,6 +75,7 @@ export type EntityConfig<TItem extends { id: string }> = {
   listRowActions?: Array<{ key: string; label: string; to: (item: TItem) => string }>
   readOnly?: boolean
   generatedNumber?: { fieldKey: string; sequenceCode: string }
+  listFilterKeys?: string[]
 }
 
 export const settingDataTypeOptions = [
@@ -129,6 +130,7 @@ export const usersConfig: EntityConfig<User> = {
     { label: 'Locked', value: item.isLocked ? 'Yes' : 'No' },
     { label: 'Roles', value: item.roles.join(', ') },
   ],
+  listFilterKeys: ['isEnabled', 'isLocked', 'createdFrom', 'createdTo'],
 }
 
 export const rolesConfig: EntityConfig<Role> = {
@@ -157,6 +159,7 @@ export const rolesConfig: EntityConfig<Role> = {
     { label: 'Name', value: item.name },
     { label: 'Description', value: item.description ?? '' },
   ],
+  listFilterKeys: ['name'],
 }
 
 export const permissionsConfig: EntityConfig<Permission> = {
@@ -1094,6 +1097,7 @@ export const auditLogsConfig: EntityConfig<AuditLog> = {
     { label: 'New Values', value: item.newValues ?? '' },
   ],
   readOnly: true,
+  listFilterKeys: ['entityName', 'action', 'createdFrom', 'createdTo'],
 }
 
 export const accountsConfig: EntityConfig<Account> = {
@@ -1213,6 +1217,7 @@ export const accountsConfig: EntityConfig<Account> = {
     { label: 'Main Phone', value: item.mainPhone ?? '' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
+  listFilterKeys: ['accountTypeId', 'industryId', 'customerStatusId', 'customerSegmentId', 'ownerUserId', 'isActive', 'createdFrom', 'createdTo'],
 }
 
 export const contactsConfig: EntityConfig<Contact> = {
@@ -1800,6 +1805,7 @@ export const productCategoriesConfig: EntityConfig<ProductCategory> = {
     { label: 'Products', value: String(item.productCount) },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
+  listFilterKeys: ['productCategoryId', 'productTypeId', 'productStatusId', 'unitOfMeasureId', 'isActive', 'createdFrom', 'createdTo'],
 }
 
 export const priceListsConfig: EntityConfig<PriceList> = {
@@ -2211,6 +2217,7 @@ export const quotesConfig: EntityConfig<Quote> = {
     { key: 'manage-lines', label: 'Manage Lines', to: (item) => `/sales/quotes/${item.id}/lines` },
   ],
   generatedNumber: { fieldKey: 'quoteNumber', sequenceCode: 'QUOTE' },
+  listFilterKeys: ['accountId', 'quoteStatusId', 'approvalStatusId', 'validFrom', 'validTo', 'createdFrom', 'createdTo'],
 }
 
 export const ordersConfig: EntityConfig<Order> = {
@@ -2330,6 +2337,7 @@ export const ordersConfig: EntityConfig<Order> = {
     { key: 'manage-lines', label: 'Manage Lines', to: (item) => `/sales/orders/${item.id}/lines` },
   ],
   generatedNumber: { fieldKey: 'orderNumber', sequenceCode: 'ORDER' },
+  listFilterKeys: ['accountId', 'orderStatusId', 'deliveryStatusId', 'orderDateFrom', 'orderDateTo', 'createdFrom', 'createdTo'],
 }
 
 export const invoicesConfig: EntityConfig<Invoice> = {
@@ -2445,6 +2453,7 @@ export const invoicesConfig: EntityConfig<Invoice> = {
     { key: 'manage-lines', label: 'Manage Lines', to: (item) => `/sales/invoices/${item.id}/lines` },
   ],
   generatedNumber: { fieldKey: 'invoiceNumber', sequenceCode: 'INVOICE' },
+  listFilterKeys: ['accountId', 'invoiceStatusId', 'paymentStatusId', 'dueDateFrom', 'dueDateTo', 'createdFrom', 'createdTo'],
 }
 
 export const casesConfig: EntityConfig<Case> = {
@@ -2577,6 +2586,7 @@ export const casesConfig: EntityConfig<Case> = {
     { key: 'manage-comments', label: 'Manage Comments', to: (item) => `/service/cases/${item.id}/comments` },
   ],
   generatedNumber: { fieldKey: 'caseNumber', sequenceCode: 'CASE' },
+  listFilterKeys: ['accountId', 'categoryId', 'caseStatusId', 'priorityId', 'assignedToUserId', 'slaId', 'isActive', 'createdFrom', 'createdTo'],
 }
 
 export const caseCommentsConfig: EntityConfig<CaseComment> = {
@@ -2894,6 +2904,7 @@ export const documentsConfig: EntityConfig<Document> = {
     { key: 'manage-versions', label: 'Manage Versions', to: (item) => `/documents/${item.id}/versions` },
   ],
   generatedNumber: { fieldKey: 'documentNumber', sequenceCode: 'DOCUMENT' },
+  listFilterKeys: ['documentCategoryId', 'documentStatusId', 'accountId', 'isConfidential', 'isActive', 'createdFrom', 'createdTo'],
 }
 
 export const documentVersionsConfig: EntityConfig<DocumentVersion> = {

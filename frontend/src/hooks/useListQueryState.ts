@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 type UseListQueryOptions<T extends Record<string, string | number>> = {
@@ -19,18 +19,29 @@ export function useListQueryState<T extends Record<string, string | number>>({
   numberKeys = [],
 }: UseListQueryOptions<T>) {
   const [searchParams, setSearchParams] = useSearchParams()
+  const defaultsRef = useRef(defaults)
+  const numberKeysRef = useRef(new Set<number | string>(numberKeys as Array<string | number>))
+
+  useEffect(() => {
+    defaultsRef.current = defaults
+  }, [defaults])
+
+  useEffect(() => {
+    numberKeysRef.current = new Set<number | string>(numberKeys as Array<string | number>)
+  }, [numberKeys])
 
   const parse = useCallback(
     (raw: URLSearchParams): T => {
-      const next = { ...defaults }
+      const currentDefaults = defaultsRef.current
+      const next = { ...currentDefaults }
 
-      Object.keys(defaults).forEach((key) => {
+      Object.keys(currentDefaults).forEach((key) => {
         const value = raw.get(key)
         if (value === null) {
           return
         }
 
-        if (numberKeys.includes(key as keyof T)) {
+        if (numberKeysRef.current.has(key)) {
           const parsed = Number(value)
           if (!Number.isNaN(parsed)) {
             ;(next[key as keyof T] as number) = parsed
@@ -43,13 +54,17 @@ export function useListQueryState<T extends Record<string, string | number>>({
 
       return next
     },
-    [defaults, numberKeys],
+    [],
   )
 
   const [query, setQueryState] = useState<T>(() => parse(searchParams))
 
   useEffect(() => {
-    setQueryState(parse(searchParams))
+    const next = parse(searchParams)
+    setQueryState((current) => {
+      const same = Object.keys(next).every((key) => current[key as keyof T] === next[key as keyof T])
+      return same ? current : next
+    })
   }, [parse, searchParams])
 
   const setQuery = useCallback(
@@ -60,7 +75,7 @@ export function useListQueryState<T extends Record<string, string | number>>({
 
         Object.keys(next).forEach((key) => {
           const value = next[key as keyof T]
-          const defaultValue = defaults[key as keyof T]
+          const defaultValue = defaultsRef.current[key as keyof T]
 
           if (value === '' || value === defaultValue) {
             return
@@ -73,13 +88,13 @@ export function useListQueryState<T extends Record<string, string | number>>({
         return next
       })
     },
-    [defaults, setSearchParams],
+    [setSearchParams],
   )
 
   const resetQuery = useCallback(() => {
-    setQueryState(defaults)
+    setQueryState(defaultsRef.current)
     setSearchParams({}, { replace: true })
-  }, [defaults, setSearchParams])
+  }, [setSearchParams])
 
   return useMemo(
     () => ({ query, setQuery, resetQuery }),

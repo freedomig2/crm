@@ -35,7 +35,7 @@ export function Breadcrumbs() {
   const location = useLocation()
   const navigate = useNavigate()
   const parts = location.pathname.split('/').filter(Boolean)
-  const crumbs = [
+  const rawCrumbs = [
     { path: '/dashboard', label: 'Home' },
     ...parts.map((part, index) => {
       const path = `/${parts.slice(0, index + 1).join('/')}`
@@ -44,6 +44,16 @@ export function Breadcrumbs() {
       return { path, label }
     }),
   ]
+
+  const seen = new Set<string>()
+  const crumbs = rawCrumbs.filter((crumb) => {
+    if (seen.has(crumb.path)) {
+      return false
+    }
+
+    seen.add(crumb.path)
+    return true
+  })
 
   return (
     <Breadcrumb className={styles.breadcrumbs} aria-label="Breadcrumb">

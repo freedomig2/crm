@@ -14,6 +14,8 @@ export type User = {
   isLocked: boolean
   roles: string[]
   permissions: string[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type AuthResponse = {
@@ -268,10 +270,15 @@ export type Account = {
   legalName?: string
   tradingName?: string
   accountTypeId?: string
+  accountTypeName?: string
   industryId?: string
+  industryName?: string
   ownershipTypeId?: string
+  ownershipTypeName?: string
   customerStatusId?: string
+  customerStatusName?: string
   customerSegmentId?: string
+  customerSegmentName?: string
   website?: string
   mainPhone?: string
   alternatePhone?: string
@@ -286,7 +293,11 @@ export type Account = {
   primaryContactId?: string
   isActive: boolean
   ownerUserId?: string
+  ownerUserName?: string
   ownerTeamId?: string
+  ownerTeamName?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type Contact = {
@@ -567,6 +578,127 @@ export type LeadDashboardSummary = {
   recentlyConvertedLeads: LeadDashboardItem[]
 }
 
+export type DashboardChartPoint = {
+  name: string
+  count: number
+  value: number
+}
+
+export type DashboardLeadListItem = {
+  id: string
+  leadNumber: string
+  topic: string
+  companyName?: string
+  statusName?: string
+  score: number
+  ownerName?: string
+}
+
+export type DashboardOpportunityListItem = {
+  id: string
+  opportunityNumber: string
+  topic: string
+  accountName?: string
+  estimatedRevenue?: number
+  probability: number
+  estimatedCloseDate?: string
+  stageName?: string
+}
+
+export type DashboardCaseListItem = {
+  id: string
+  caseNumber: string
+  subject: string
+  priorityName?: string
+  statusName?: string
+  dueAt?: string
+  assignedToName?: string
+}
+
+export type DashboardActivityItem = {
+  id: string
+  activityNumber: string
+  subject: string
+  activityTypeName?: string
+  statusName?: string
+  priorityName?: string
+  dueDate?: string
+  activityDate: string
+  relatedRecord: string
+}
+
+export type DashboardTaskItem = {
+  id: string
+  subject: string
+  priorityName?: string
+  dueDate?: string
+  relatedRecord: string
+  statusName?: string
+  isOverdue: boolean
+}
+
+export type DashboardApprovalItem = {
+  id: string
+  referenceNumber: string
+  type: string
+  accountName?: string
+  totalAmount: number
+  approvalStatusName?: string
+}
+
+export type DashboardSlaAlertItem = {
+  id: string
+  caseNumber: string
+  title: string
+  priorityName?: string
+  dueAt?: string
+  assignedToName?: string
+}
+
+export type DashboardSummary = {
+  totalLeads: number
+  newLeads: number
+  qualifiedLeads: number
+  convertedLeads: number
+  openOpportunities: number
+  pipelineValue: number
+  weightedPipeline: number
+  winRate: number
+  openCases: number
+  overdueTasks: number
+  revenueThisMonth: number
+  slaBreaches: number
+  recentLeads: DashboardLeadListItem[]
+  opportunitiesClosingSoon: DashboardOpportunityListItem[]
+  upcomingFollowUps: DashboardTaskItem[]
+  slaAlerts: DashboardSlaAlertItem[]
+}
+
+export type DashboardMyWork = {
+  assignedLeads: DashboardLeadListItem[]
+  assignedOpportunities: DashboardOpportunityListItem[]
+  assignedCases: DashboardCaseListItem[]
+  assignedActivities: DashboardActivityItem[]
+  pendingApprovals: DashboardApprovalItem[]
+  overdueTasks: DashboardTaskItem[]
+}
+
+export type DashboardMyActivities = {
+  items: DashboardActivityItem[]
+  totalCount: number
+  page: number
+  pageSize: number
+  activitiesByStatus: DashboardChartPoint[]
+}
+
+export type DashboardMyOpenTasks = {
+  items: DashboardTaskItem[]
+  totalCount: number
+  overdueCount: number
+  page: number
+  pageSize: number
+}
+
 export type Opportunity = {
   id: string
   opportunityNumber: string
@@ -659,7 +791,9 @@ export type Product = {
   effectiveTo?: string
   isActive: boolean
   ownerUserId?: string
+  ownerUserName?: string
   ownerTeamId?: string
+  ownerTeamName?: string
   createdAt: string
   updatedAt?: string
 }
@@ -795,7 +929,9 @@ export type Quote = {
   convertedAt?: string
   isActive: boolean
   ownerUserId?: string
+  ownerUserName?: string
   ownerTeamId?: string
+  ownerTeamName?: string
   createdAt: string
   updatedAt?: string
 }
@@ -857,7 +993,9 @@ export type Order = {
   convertedInvoiceAt?: string
   isActive: boolean
   ownerUserId?: string
+  ownerUserName?: string
   ownerTeamId?: string
+  ownerTeamName?: string
   createdAt: string
   updatedAt?: string
 }
@@ -913,7 +1051,9 @@ export type Invoice = {
   notes?: string
   isActive: boolean
   ownerUserId?: string
+  ownerUserName?: string
   ownerTeamId?: string
+  ownerTeamName?: string
   createdAt: string
   updatedAt?: string
 }
@@ -972,7 +1112,9 @@ export type Case = {
   resolutionSummary?: string
   isActive: boolean
   ownerUserId?: string
+  ownerUserName?: string
   ownerTeamId?: string
+  ownerTeamName?: string
   createdAt: string
   updatedAt?: string
 }
@@ -1067,7 +1209,9 @@ export type Document = {
   currentVersion: number
   isActive: boolean
   ownerUserId?: string
+  ownerUserName?: string
   ownerTeamId?: string
+  ownerTeamName?: string
   createdAt: string
   updatedAt?: string
 }
