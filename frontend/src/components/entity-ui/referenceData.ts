@@ -8,18 +8,19 @@ export type LookupOption = {
 }
 
 const cache = new Map<string, LookupOption[]>()
-const categoryIdCache = new Map<string, string | null>()
 
 const guidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
   const map: Record<string, string> = {
     salutationid: 'SALUTATION',
+    contacttitleid: 'SALUTATION',
     salutationlookupid: 'SALUTATION',
     genderlookupid: 'GENDER',
     contactroleid: 'CONTACT_ROLE',
     preferredcommunicationid: 'CONTACT_METHOD',
     preferredcontactmethodid: 'CONTACT_METHOD',
+    preferredcommunicationmethodid: 'CONTACT_METHOD',
     preferredlanguageid: 'LANGUAGE',
     preferredtimezoneid: 'TIME_ZONE',
     communicationtypeid: 'COMMUNICATION_TYPE',
@@ -27,7 +28,10 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     leadsourceid: 'LEAD_SOURCE',
     leadstatusid: 'LEAD_STATUS',
     qualificationstatusid: 'LEAD_QUALIFICATION_STATUS',
-    ratingid: 'LEAD_RATING',
+    accounttypeid: 'ACCOUNT_TYPE',
+    ownershiptypeid: 'OWNERSHIP_TYPE',
+    customerstatusid: 'CUSTOMER_STATUS',
+    customersegmentid: 'CUSTOMER_SEGMENT',
     opportunitystageid: 'OPPORTUNITY_STAGE',
     opportunitystatusid: 'OPPORTUNITY_STATUS',
     salesprocessstageid: 'SALES_PROCESS_STAGE',
@@ -46,14 +50,13 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     casepriorityid: 'CASE_PRIORITY',
     severityid: 'CASE_SEVERITY',
     categoryid: 'CASE_CATEGORY',
-    sourceid: 'CASE_SOURCE',
     winreasonid: 'WIN_REASON',
     lossreasonid: 'LOSS_REASON',
     threatlevelid: 'COMPETITOR_THREAT_LEVEL',
     industryid: 'INDUSTRY',
     disqualifiedreasonid: 'LEAD_DISQUALIFICATION_REASON',
     activitytypeid: 'ACTIVITY_TYPE',
-    statusid: 'ACTIVITY_STATUS',
+    genderid: 'GENDER',
     outcomeid: 'ACTIVITY_OUTCOME',
     priorityid: 'PRIORITY',
     ruletypeid: 'LEAD_SCORE_RULE_TYPE',
@@ -66,6 +69,20 @@ const lookupCategoryCodeForFieldKey = (fieldKey: string): string | null => {
     discounttypeid: 'DISCOUNT_TYPE',
     documentcategoryid: 'DOCUMENT_CATEGORY',
     documentstatusid: 'DOCUMENT_STATUS',
+  }
+  const route = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : ''
+  if (fieldKey === 'ratingid') {
+    return route.includes('/opportunities') ? 'OPPORTUNITY_RATING' : 'LEAD_RATING'
+  }
+
+  if (fieldKey === 'sourceid') {
+    return route.includes('/opportunities') ? 'OPPORTUNITY_SOURCE' : 'CASE_SOURCE'
+  }
+
+  if (fieldKey === 'statusid') {
+    if (route.includes('/activities')) {
+      return 'ACTIVITY_STATUS'
+    }
   }
 
   return map[fieldKey.toLowerCase()] ?? null
@@ -190,7 +207,7 @@ const labelFromRecord = (record: AnyRecord): string => {
   }
 
   if (name && code) {
-    return `${name} (${code})`
+    return name
   }
 
   if (name) {
@@ -236,42 +253,17 @@ export const isForeignKeyField = (fieldKey: string): boolean => {
   return lower !== 'id' && lower.endsWith('id')
 }
 
-const loadLookupCategoryId = async (categoryCode: string): Promise<string | null> => {
-  const code = categoryCode.toUpperCase()
-  if (categoryIdCache.has(code)) {
-    return categoryIdCache.get(code) ?? null
-  }
-
-  try {
-    const { data } = await api.get('api/lookup-categories', { params: { page: 1, pageSize: 200, search: code } })
-    const category = normalizeItems(data).find((item) => asText(item.code).toUpperCase() === code)
-    const id = category ? asText(category.id) : null
-    categoryIdCache.set(code, id)
-    return id
-  } catch {
-    categoryIdCache.set(code, null)
-    return null
-  }
-}
-
 export const loadLookupOptionsByCategoryCode = async (categoryCode: string): Promise<LookupOption[]> => {
   const cacheKey = `category:${categoryCode.toUpperCase()}`
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey) ?? []
   }
 
-  const categoryId = await loadLookupCategoryId(categoryCode)
-  if (!categoryId) {
-    cache.set(cacheKey, [])
-    return []
-  }
-
   try {
-    const { data } = await api.get('api/lookup-values', {
-      params: { categoryId, page: 1, pageSize: 200, sortBy: 'sortOrder', sortDir: 'asc' },
+    const { data } = await api.get(`api/lookups/${encodeURIComponent(categoryCode.toUpperCase())}/values`, {
+      params: { limit: 500 },
     })
     const items = normalizeItems(data)
-      .filter((record) => record.isActive !== false)
       .map((record) => ({
         value: asText(record.id),
         label: labelFromRecord(record),

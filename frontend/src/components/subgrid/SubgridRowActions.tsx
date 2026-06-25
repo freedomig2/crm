@@ -1,5 +1,6 @@
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components'
 import { MoreHorizontalRegular } from '@fluentui/react-icons'
+import { getActionIcon } from '../actions/actionIcons'
 
 export function SubgridRowActions({
   onView,
@@ -21,9 +22,9 @@ export function SubgridRowActions({
       </MenuTrigger>
       <MenuPopover>
         <MenuList>
-          {onView ? <MenuItem onClick={onView}>View</MenuItem> : null}
-          {onEdit ? <MenuItem onClick={onEdit} disabled={disableEdit}>Edit</MenuItem> : null}
-          {onDelete ? <MenuItem onClick={onDelete} disabled={disableDelete}>Delete</MenuItem> : null}
+          {onView ? <MenuItem icon={getActionIcon('view', 'View')} onClick={onView}>View</MenuItem> : null}
+          {onEdit ? <MenuItem icon={getActionIcon('edit', 'Edit')} onClick={onEdit} disabled={disableEdit}>Edit</MenuItem> : null}
+          {onDelete ? <MenuItem icon={getActionIcon('delete', 'Delete')} onClick={onDelete} disabled={disableDelete}>Delete</MenuItem> : null}
         </MenuList>
       </MenuPopover>
     </Menu>

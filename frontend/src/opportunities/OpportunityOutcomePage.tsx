@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Dropdown, Field, Input, MessageBar, MessageBarBody, Option, Textarea } from '@fluentui/react-components'
+import { Dropdown, Field, Input, MessageBar, MessageBarBody, Option, Textarea } from '@fluentui/react-components'
 import { BranchRequestRegular } from '@fluentui/react-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { EntityDetailsGrid, EntityHeader, EntityPageLayout, FormSectionCard, LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { EntityDetailsGrid, EntityHeader, EntityPageLayout, FormSectionCard, LookupCombobox, StickyActionBar } from '../components/entity-ui/EntityComponents'
 import type { Opportunity, OpportunityCompetitor, PagedResult } from '../types/models'
 import { formatCurrency, formatDate, nullIfBlank } from './opportunityUtils'
-import styles from '../contacts/Contacts.module.css'
 
 export function OpportunityOutcomePage({ mode }: { mode: 'won' | 'lost' }) {
   const { id } = useParams()
@@ -106,11 +105,28 @@ export function OpportunityOutcomePage({ mode }: { mode: 'won' | 'lost' }) {
   }
 
   const title = mode === 'won' ? 'Mark Opportunity Won' : 'Mark Opportunity Lost'
+  const primaryLabel = mode === 'won' ? 'Mark Won' : 'Mark Lost'
+  const actionBarActions = [
+    {
+      key: 'cancel',
+      label: 'Cancel',
+      onClick: () => navigate(id ? `/opportunities/${id}` : '/opportunities'),
+      appearance: 'subtle' as const,
+    },
+    {
+      key: 'submit',
+      label: primaryLabel,
+      onClick: () => { void submit() },
+      appearance: 'primary' as const,
+      disabled: saving || !canSubmit,
+    },
+  ]
 
   return (
     <EntityPageLayout
       header={<EntityHeader icon={<BranchRequestRegular />} title={title} subtitle={opportunity?.opportunityNumber} status={opportunity?.opportunityStatusName} actions={[{ key: 'back', label: 'Back to Opportunity', onClick: () => navigate(id ? `/opportunities/${id}` : '/opportunities'), appearance: 'subtle' }]} />}
       alerts={error ? [{ intent: 'error', text: error }] : undefined}
+      stickyBar={<StickyActionBar actions={actionBarActions} message={`Complete required fields to ${primaryLabel.toLowerCase()}.`} />}
     >
       {!canSubmit ? <MessageBar intent="error"><MessageBarBody>You do not have permission to update this opportunity outcome.</MessageBarBody></MessageBar> : null}
       {loading ? <MessageBar><MessageBarBody>Loading opportunity...</MessageBarBody></MessageBar> : null}
@@ -154,10 +170,6 @@ export function OpportunityOutcomePage({ mode }: { mode: 'won' | 'lost' }) {
           <Field label="Notes">
             <Textarea value={notes} onChange={(_, data) => setNotes(data.value)} disabled={!canSubmit} />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="primary" onClick={() => void submit()} disabled={saving || !canSubmit}>{mode === 'won' ? 'Mark Won' : 'Mark Lost'}</Button>
-            <Button size="small" appearance="subtle" onClick={() => navigate(id ? `/opportunities/${id}` : '/opportunities')}>Cancel</Button>
-          </div>
         </FormSectionCard>
       ) : null}
     </EntityPageLayout>

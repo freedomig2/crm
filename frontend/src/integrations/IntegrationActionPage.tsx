@@ -1,8 +1,8 @@
-import { Button, MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
+import { MessageBar, MessageBarBody, Spinner } from '@fluentui/react-components'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
-import { PageHeader } from '../layout/components/PageHeader'
+import { EntityHeader, EntityPageLayout, StickyActionBar } from '../components/entity-ui/EntityComponents'
 
 type IntegrationActionPageProps = {
   action: 'test' | 'sync'
@@ -39,21 +39,32 @@ export function IntegrationActionPage({ action }: IntegrationActionPageProps) {
     }
   }
 
-  return (
-    <div>
-      <PageHeader
-        title={action === 'test' ? 'Test Integration Connection' : 'Run Integration Sync'}
-        subtitle={action === 'test' ? 'Validate external endpoint reachability for this connection.' : 'Execute a manual integration sync and write run history.'}
-      />
+  const title = action === 'test' ? 'Test Integration Connection' : 'Run Integration Sync'
+  const subtitle = action === 'test'
+    ? 'Validate external endpoint reachability for this connection.'
+    : 'Execute a manual integration sync and write run history.'
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-        <Button appearance="primary" onClick={runAction} disabled={running}>
-          {action === 'test' ? 'Run Connection Test' : 'Run Sync'}
-        </Button>
-        <Button appearance="secondary" onClick={() => navigate('/integrations/connections')}>
-          Back To Connections
-        </Button>
-      </div>
+  const actionBarActions = [
+    {
+      key: 'cancel',
+      label: 'Cancel',
+      onClick: () => navigate('/integrations/connections'),
+      appearance: 'subtle' as const,
+    },
+    {
+      key: 'submit',
+      label: action === 'test' ? 'Run Connection Test' : 'Run Sync',
+      onClick: () => { void runAction() },
+      appearance: 'primary' as const,
+      disabled: running,
+    },
+  ]
+
+  return (
+    <EntityPageLayout
+      header={<EntityHeader title={title} subtitle={subtitle} actions={[{ key: 'back', label: 'Back to Connections', onClick: () => navigate('/integrations/connections') }]} />}
+      stickyBar={<StickyActionBar actions={actionBarActions} message={running ? 'Processing integration action...' : undefined} />}
+    >
 
       {running ? <Spinner size="small" label="Processing integration action..." style={{ marginBottom: 10 }} /> : null}
 
@@ -62,6 +73,6 @@ export function IntegrationActionPage({ action }: IntegrationActionPageProps) {
           <MessageBarBody>{message.message}</MessageBarBody>
         </MessageBar>
       ) : null}
-    </div>
+    </EntityPageLayout>
   )
 }

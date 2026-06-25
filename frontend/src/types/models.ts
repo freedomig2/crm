@@ -656,6 +656,8 @@ export type DashboardSlaAlertItem = {
 }
 
 export type DashboardSummary = {
+  welcome: DashboardWelcome
+  kpis: DashboardKpi[]
   totalLeads: number
   newLeads: number
   qualifiedLeads: number
@@ -672,6 +674,120 @@ export type DashboardSummary = {
   opportunitiesClosingSoon: DashboardOpportunityListItem[]
   upcomingFollowUps: DashboardTaskItem[]
   slaAlerts: DashboardSlaAlertItem[]
+}
+
+export type DashboardWelcome = {
+  userName: string
+  dateLabel: string
+  currentRole: string
+  businessUnit: string
+  team: string
+  openTasks: number
+  overdueActivities: number
+  opportunitiesClosingThisWeek: number
+  slaBreaches: number
+  hasManagementAccess: boolean
+}
+
+export type DashboardKpi = {
+  key: string
+  icon: string
+  title: string
+  currentValue: number
+  previousValue: number
+  trendPercent: number
+  comparisonLabel: string
+  actionPath: string
+  positiveTrendIsGood: boolean
+}
+
+export type DashboardPipeline = {
+  funnelStages: DashboardChartPoint[]
+  opportunityStageDistribution: DashboardChartPoint[]
+  forecastAccuracyPercent: number
+}
+
+export type DashboardRevenueTrendPoint = {
+  month: string
+  actualRevenue: number
+  forecastRevenue: number
+}
+
+export type DashboardRevenue = {
+  revenueThisMonth: number
+  revenueThisQuarter: number
+  monthlyTrend: DashboardRevenueTrendPoint[]
+}
+
+export type DashboardCustomerInsightItem = {
+  accountId: string
+  accountName: string
+  revenue: number
+  openOpportunities: number
+  reason?: string
+  createdAt?: string
+}
+
+export type DashboardCustomers = {
+  topCustomers: DashboardCustomerInsightItem[]
+  atRiskCustomers: DashboardCustomerInsightItem[]
+  newCustomers: DashboardCustomerInsightItem[]
+}
+
+export type DashboardService = {
+  casesByPriority: DashboardChartPoint[]
+  casesByStatus: DashboardChartPoint[]
+  slaCompliancePercent: number
+  casesRequiringAttention: DashboardCaseListItem[]
+}
+
+export type DashboardSalespersonPerformance = {
+  userId: string
+  userName: string
+  revenue: number
+  opportunitiesWon: number
+  winRate: number
+}
+
+export type DashboardTeamPerformance = {
+  teamId: string
+  teamName: string
+  target: number
+  actual: number
+  achievementPercent: number
+}
+
+export type DashboardManagement = {
+  isVisible: boolean
+  topSalespeople: DashboardSalespersonPerformance[]
+  teamPerformance: DashboardTeamPerformance[]
+  leadConversionTrend: DashboardChartPoint[]
+  revenueByTeam: DashboardChartPoint[]
+}
+
+export type DashboardActivityFeedItem = {
+  id: string
+  userName: string
+  action: string
+  entity: string
+  timestamp: string
+  route: string
+}
+
+export type DashboardActivityFeed = {
+  items: DashboardActivityFeedItem[]
+}
+
+export type DashboardWidgetPreference = {
+  widgetId: string
+  order: number
+  isVisible: boolean
+  isPinned: boolean
+}
+
+export type DashboardLayoutPreference = {
+  layoutVersion: string
+  widgets: DashboardWidgetPreference[]
 }
 
 export type DashboardMyWork = {

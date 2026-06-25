@@ -2,13 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Dropdown, Input, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
 import { api } from '../../api/client'
-import { DenseDataGrid, type DenseColumn, type DenseSort } from '../grid/DenseDataGrid'
+import { DenseDataGrid, type DenseColumn, type DenseCommandAction, type DenseSort } from '../grid/DenseDataGrid'
 import { getEntityColumnConfig, getEntityFilters, type EntityFilterDefinition } from '../grid/EntityColumnRegistry'
 import { DateRangeFilterField } from '../filters/DateRangeFilterField'
 import { FilterField } from '../filters/FilterField'
 import { LookupFilterField } from '../filters/LookupFilterField'
 import { useListQueryState } from '../../hooks/useListQueryState'
-import { CommandBar } from '../../layout/components/CommandBar'
 import { PageHeader } from '../../layout/components/PageHeader'
 import { useAuth } from '../../auth/AuthContext'
 import type { PagedResult } from '../../types/models'
@@ -253,20 +252,60 @@ export function EntityListPage<TItem extends { id: string }>({
 
   const clearFilters = Object.fromEntries(filterKeys.map((key) => [key, ''])) as Record<string, string>
 
-  const actions = useMemo(
-    () => (canCreate ? [{ key: 'create', label: `Create ${title.replace(/s$/, '')}`, onClick: () => navigate(createPath) }] : []),
+  const createAction = useMemo(
+    () => (canCreate ? { label: `Create ${title.replace(/s$/, '')}`, onClick: () => navigate(createPath) } : undefined),
     [canCreate, createPath, navigate, title],
   )
 
-  const rowActions = useMemo(
-    () =>
-      (config?.listRowActions ?? []).map((action) => ({
-        key: action.key,
-        label: action.label,
-        onClick: (row: TItem) => navigate(action.to(row)),
-      })),
-    [config, navigate],
-  )
+  const commandActions = useMemo<DenseCommandAction<TItem>[]>(() => {
+    const actions: DenseCommandAction<TItem>[] = [
+      {
+        key: 'view',
+        label: 'View',
+        onClick: (items) => navigate(detailsPath(items[0].id)),
+        requiresSelection: 'single',
+      },
+    ]
+
+    if (canEdit) {
+      actions.push({
+        key: 'edit',
+        label: 'Edit',
+        onClick: (items) => navigate(editPath(items[0].id)),
+        requiresSelection: 'single',
+      })
+    }
+
+    if (canDelete) {
+      actions.push({
+        key: 'delete',
+        label: 'Delete',
+        onClick: (items) => navigate(editPath(items[0].id)),
+        requiresSelection: 'single',
+      })
+    }
+
+    ;(config?.listSelectionActions ?? [])
+      .filter((action) => !action.permission || hasPermission(action.permission))
+      .forEach((action) => {
+        actions.push({
+          key: action.key,
+          label: action.label,
+          onClick: (items) => {
+            if (action.allowBulk) {
+              items.forEach((item) => navigate(action.to(item)))
+              return
+            }
+
+            navigate(action.to(items[0]))
+          },
+          requiresSelection: action.requiresSelection ?? (action.allowBulk ? 'any' : 'single'),
+          allowBulk: action.allowBulk,
+        })
+      })
+
+    return actions
+  }, [canDelete, canEdit, config, detailsPath, editPath, hasPermission, navigate])
 
   if (!hasPermission(permissions.view)) {
     return (
@@ -281,8 +320,7 @@ export function EntityListPage<TItem extends { id: string }>({
 
   return (
     <div>
-      <PageHeader title={title} subtitle={subtitle} quickAction={canCreate ? `Create ${title.replace(/s$/, '')}` : undefined} onQuickAction={canCreate ? () => navigate(createPath) : undefined} />
-      <CommandBar actions={actions} />
+      <PageHeader title={title} subtitle={subtitle} />
 
       {loading ? <Spinner size="small" label="Loading..." style={{ margin: '10px 0' }} /> : null}
       {error ? (
@@ -311,12 +349,11 @@ export function EntityListPage<TItem extends { id: string }>({
             page: 1,
           }))
         }
-        onView={(row) => navigate(detailsPath(row.id))}
-        onEdit={canEdit ? (row) => navigate(editPath(row.id)) : undefined}
-        onDelete={canDelete ? (row) => navigate(editPath(row.id)) : undefined}
-        customActions={rowActions.length > 0 ? rowActions : undefined}
+        createAction={createAction}
+        commandActions={commandActions}
         emptyMessage={emptyMessage}
         entityKey={entityKey}
+        primaryColumnKey={config?.primaryListColumnKey}
         defaultVisibleColumnKeys={columnConfig.defaultVisibleColumnKeys}
         requiredColumnKeys={columnConfig.requiredColumnKeys}
         activeFilterCount={activeFilterCount}

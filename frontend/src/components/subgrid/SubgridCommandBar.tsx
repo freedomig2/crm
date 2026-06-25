@@ -1,5 +1,6 @@
 import { Button } from '@fluentui/react-components'
 import styles from './Subgrid.module.css'
+import { getActionIcon } from '../actions/actionIcons'
 
 export function SubgridCommandBar({
   title,
@@ -19,12 +20,12 @@ export function SubgridCommandBar({
       <h3 className={styles.title}>{title}</h3>
       <div className={styles.headerActions}>
         {onRefresh ? (
-          <Button size="small" appearance="subtle" onClick={onRefresh}>
+          <Button size="small" appearance="subtle" onClick={onRefresh} icon={getActionIcon('refresh', 'Refresh')}>
             Refresh
           </Button>
         ) : null}
         {addLabel && onAdd ? (
-          <Button size="small" appearance="primary" onClick={onAdd} disabled={disableAdd}>
+          <Button size="small" appearance="primary" onClick={onAdd} disabled={disableAdd} icon={getActionIcon('create', addLabel)}>
             {addLabel}
           </Button>
         ) : null}

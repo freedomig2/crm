@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Dropdown, Input, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
@@ -7,9 +7,8 @@ import { DeleteConfirmDialog } from '../components/crud/DeleteConfirmDialog'
 import { DateRangeFilterField } from '../components/filters/DateRangeFilterField'
 import { FilterField } from '../components/filters/FilterField'
 import { LookupFilterField } from '../components/filters/LookupFilterField'
-import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { DenseDataGrid, statusCell, type DenseColumn, type DenseCommandAction, type DenseSort } from '../components/grid/DenseDataGrid'
 import { useListQueryState } from '../hooks/useListQueryState'
-import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { Opportunity, PagedResult } from '../types/models'
 import { formatCurrency, formatDate } from './opportunityUtils'
@@ -135,7 +134,9 @@ export function OpportunitiesListPage() {
     query.isActive,
   ].filter(Boolean).length
 
-  const refresh = () => setQuery((current) => ({ ...current }))
+  const refresh = useCallback(() => {
+    setQuery((current) => ({ ...current }))
+  }, [setQuery])
 
   const deleteOpportunity = async () => {
     if (!deleteTarget) return
@@ -152,7 +153,7 @@ export function OpportunitiesListPage() {
     }
   }
 
-  const assignToMe = async (opportunity: Opportunity) => {
+  const assignToMe = useCallback(async (opportunity: Opportunity) => {
     if (!user?.id) {
       setError('Current user could not be resolved.')
       return
@@ -165,7 +166,7 @@ export function OpportunitiesListPage() {
     } catch {
       setError('Failed to assign opportunity.')
     }
-  }
+  }, [refresh, user])
 
   const columns = useMemo<DenseColumn<Opportunity>[]>(
     () => [
@@ -185,6 +186,50 @@ export function OpportunitiesListPage() {
     [],
   )
 
+  const commandActions = useMemo<DenseCommandAction<Opportunity>[]>(
+    () => [
+      { key: 'view', label: 'View', onClick: (items) => navigate(`/opportunities/${items[0].id}`), requiresSelection: 'single' },
+      ...(canEdit ? [{ key: 'edit', label: 'Edit', onClick: (items: Opportunity[]) => navigate(`/opportunities/${items[0].id}/edit`), requiresSelection: 'single' as const }] : []),
+      ...(canDelete ? [{ key: 'delete', label: 'Delete', onClick: (items: Opportunity[]) => setDeleteTarget(items[0]), requiresSelection: 'single' as const }] : []),
+      {
+        key: 'assign',
+        label: 'Assign to Me',
+        onClick: (items) => {
+          items.forEach((item) => {
+            void assignToMe(item)
+          })
+        },
+        requiresSelection: 'any',
+        allowBulk: true,
+        disabled: () => !canAssign,
+      },
+      {
+        key: 'won',
+        label: 'Mark Won',
+        onClick: (items) => navigate(`/opportunities/${items[0].id}/mark-won`),
+        requiresSelection: 'single',
+        disabled: (items) => !canMarkWon || items[0]?.opportunityStatusCode === 'WON',
+      },
+      {
+        key: 'lost',
+        label: 'Mark Lost',
+        onClick: (items) => navigate(`/opportunities/${items[0].id}/mark-lost`),
+        requiresSelection: 'single',
+        disabled: (items) => !canMarkLost || items[0]?.opportunityStatusCode === 'LOST',
+      },
+      {
+        key: 'timeline',
+        label: 'Timeline',
+        onClick: (items) => navigate(`/opportunities/${items[0].id}/timeline`),
+        requiresSelection: 'single',
+      },
+      ...(canViewPipeline
+        ? [{ key: 'pipeline', label: 'Pipeline', onClick: () => navigate('/sales/pipeline'), requiresSelection: 'none' as const }]
+        : []),
+    ],
+    [assignToMe, canAssign, canDelete, canEdit, canMarkLost, canMarkWon, canViewPipeline, navigate],
+  )
+
   if (!canView) {
     return (
       <div>
@@ -199,14 +244,6 @@ export function OpportunitiesListPage() {
       <PageHeader
         title="Opportunities"
         subtitle="Manage deals, pipeline value, competitors, products, and sales activities."
-        quickAction={canCreate ? 'New Opportunity' : undefined}
-        onQuickAction={canCreate ? () => navigate('/opportunities/create') : undefined}
-      />
-      <CommandBar
-        actions={[
-          ...(canCreate ? [{ key: 'create', label: 'New Opportunity', onClick: () => navigate('/opportunities/create') }] : []),
-          ...(canViewPipeline ? [{ key: 'pipeline', label: 'Pipeline', onClick: () => navigate('/sales/pipeline') }] : []),
-        ]}
       />
 
       {loading ? <Spinner size="small" label="Loading opportunities..." style={{ margin: '8px 0' }} /> : null}
@@ -227,15 +264,8 @@ export function OpportunitiesListPage() {
         onSortChange={(sort: DenseSort<Opportunity> | null) =>
           setQuery((current) => ({ ...current, sortBy: sort ? String(sort.key) : '', sortDir: sort?.dir ?? 'asc', page: 1 }))
         }
-        onView={(row) => navigate(`/opportunities/${row.id}`)}
-        onEdit={canEdit ? (row) => navigate(`/opportunities/${row.id}/edit`) : undefined}
-        onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
-        customActions={[
-          { key: 'assign', label: 'Assign to Me', onClick: (row) => void assignToMe(row), disabled: () => !canAssign },
-          { key: 'won', label: 'Mark Won', onClick: (row) => navigate(`/opportunities/${row.id}/mark-won`), disabled: (row) => !canMarkWon || row.opportunityStatusCode === 'WON' },
-          { key: 'lost', label: 'Mark Lost', onClick: (row) => navigate(`/opportunities/${row.id}/mark-lost`), disabled: (row) => !canMarkLost || row.opportunityStatusCode === 'LOST' },
-          { key: 'timeline', label: 'Timeline', onClick: (row) => navigate(`/opportunities/${row.id}/timeline`) },
-        ]}
+        createAction={canCreate ? { label: 'New Opportunity', onClick: () => navigate('/opportunities/create') } : undefined}
+        commandActions={commandActions}
         emptyMessage="No opportunities match the current filters."
         activeFilterCount={activeFilterCount}
         filterPanel={

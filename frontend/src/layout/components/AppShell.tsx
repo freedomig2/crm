@@ -43,7 +43,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: { darkMode: boolean; on
     <div className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ''}`} data-testid="app-shell" data-collapsed={collapsed ? 'true' : 'false'}>
       <Sidebar collapsed={collapsed} groups={navGroups} hasPermission={canAccess} />
 
-      <div className={styles.mainArea}>
+      <div className={styles.mainArea} data-testid="app-main-shell">
         <div className={styles.topRow}>
           <TopBar
             collapsed={collapsed}
@@ -53,7 +53,7 @@ export function AppShell({ darkMode, onToggleDarkMode }: { darkMode: boolean; on
             userEmail={user?.email}
           />
         </div>
-        <main className={styles.contentArea}>
+        <main className={styles.contentArea} data-testid="app-page-content">
           <div className={styles.pageCard}>
             <Outlet />
           </div>

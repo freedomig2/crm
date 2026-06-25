@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Dropdown, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
+import { Dropdown, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
@@ -8,13 +8,11 @@ import { DateRangeFilterField } from '../components/filters/DateRangeFilterField
 import { FilterField } from '../components/filters/FilterField'
 import { LookupFilterField } from '../components/filters/LookupFilterField'
 import { loadLookupOptionsByCategoryCode } from '../components/entity-ui/referenceData'
-import { DenseDataGrid, statusCell, type DenseColumn, type DenseSort } from '../components/grid/DenseDataGrid'
+import { DenseDataGrid, statusCell, type DenseColumn, type DenseCommandAction, type DenseSort } from '../components/grid/DenseDataGrid'
 import { useListQueryState } from '../hooks/useListQueryState'
-import { CommandBar } from '../layout/components/CommandBar'
 import { PageHeader } from '../layout/components/PageHeader'
 import type { Lead, PagedResult } from '../types/models'
 import { formatCurrency, formatDate, formatDateTime } from './leadUtils'
-import styles from '../contacts/Contacts.module.css'
 
 type LeadQuery = {
   page: number
@@ -218,18 +216,66 @@ export function LeadsListPage() {
     { key: 'estimatedValue', label: 'Estimated Value', sortable: true, render: (row) => formatCurrency(row.estimatedValue) || 'Not set' },
     { key: 'estimatedCloseDate', label: 'Estimated Close Date', sortable: true, render: (row) => formatDate(row.estimatedCloseDate) || 'Not set' },
     { key: 'createdAt', label: 'Created At', sortable: true, render: (row) => formatDateTime(row.createdAt) },
+  ]
+
+  const commandActions: DenseCommandAction<Lead>[] = [
+    { key: 'view', label: 'View', onClick: (items) => navigate(`/leads/${items[0].id}`), requiresSelection: 'single' },
+    ...(canEdit ? [{ key: 'edit', label: 'Edit', onClick: (items: Lead[]) => navigate(`/leads/${items[0].id}/edit`), requiresSelection: 'single' as const }] : []),
+    ...(canDelete ? [{ key: 'delete', label: 'Delete', onClick: (items: Lead[]) => setDeleteTarget(items[0]), requiresSelection: 'single' as const }] : []),
     {
-      key: 'id',
-      label: 'Lead Actions',
-      render: (row) => (
-        <div className={styles.inlineActions}>
-          <Button size="small" appearance="subtle" onClick={() => void assignToMe(row)} disabled={!canAssign}>Assign</Button>
-          <Button size="small" appearance="subtle" onClick={() => void qualify(row)} disabled={!canQualify || row.leadStatusName === 'Converted'}>Qualify</Button>
-          <Button size="small" appearance="subtle" onClick={() => void disqualify(row)} disabled={!canDisqualify || row.leadStatusName === 'Converted'}>Disqualify</Button>
-          <Button size="small" appearance="subtle" onClick={() => navigate(`/leads/${row.id}/convert`)} disabled={!canConvert || row.leadStatusName !== 'Qualified'}>Convert</Button>
-          <Button size="small" appearance="subtle" onClick={() => void calculateScore(row)} disabled={!canScore}>Score</Button>
-        </div>
-      ),
+      key: 'assign',
+      label: 'Assign to Me',
+      onClick: (items) => {
+        items.forEach((item) => {
+          void assignToMe(item)
+        })
+      },
+      requiresSelection: 'any',
+      allowBulk: true,
+      disabled: () => !canAssign,
+    },
+    {
+      key: 'qualify',
+      label: 'Qualify',
+      onClick: (items) => {
+        items.forEach((item) => {
+          void qualify(item)
+        })
+      },
+      requiresSelection: 'any',
+      allowBulk: true,
+      disabled: (items) => !canQualify || items.some((item) => item.leadStatusName === 'Converted'),
+    },
+    {
+      key: 'disqualify',
+      label: 'Disqualify',
+      onClick: (items) => {
+        items.forEach((item) => {
+          void disqualify(item)
+        })
+      },
+      requiresSelection: 'any',
+      allowBulk: true,
+      disabled: (items) => !canDisqualify || items.some((item) => item.leadStatusName === 'Converted'),
+    },
+    {
+      key: 'convert',
+      label: 'Convert',
+      onClick: (items) => navigate(`/leads/${items[0].id}/convert`),
+      requiresSelection: 'single',
+      disabled: (items) => !canConvert || items[0]?.leadStatusName !== 'Qualified',
+    },
+    {
+      key: 'score',
+      label: 'Score',
+      onClick: (items) => {
+        items.forEach((item) => {
+          void calculateScore(item)
+        })
+      },
+      requiresSelection: 'any',
+      allowBulk: true,
+      disabled: () => !canScore,
     },
   ]
 
@@ -249,10 +295,7 @@ export function LeadsListPage() {
       <PageHeader
         title="Leads"
         subtitle="Capture, qualify, score, assign, and convert sales leads."
-        quickAction={canCreate ? 'New Lead' : undefined}
-        onQuickAction={canCreate ? () => navigate('/leads/create') : undefined}
       />
-      <CommandBar actions={canCreate ? [{ key: 'create', label: 'New Lead', onClick: () => navigate('/leads/create') }] : []} />
 
       {loading ? <Spinner size="small" label="Loading leads..." style={{ margin: '8px 0' }} /> : null}
       {error ? (
@@ -281,9 +324,8 @@ export function LeadsListPage() {
             page: 1,
           }))
         }
-        onView={(row) => navigate(`/leads/${row.id}`)}
-        onEdit={canEdit ? (row) => navigate(`/leads/${row.id}/edit`) : undefined}
-        onDelete={canDelete ? (row) => setDeleteTarget(row) : undefined}
+        createAction={canCreate ? { label: 'New Lead', onClick: () => navigate('/leads/create') } : undefined}
+        commandActions={commandActions}
         emptyMessage="No leads match the current filters."
         activeFilterCount={activeFilterCount}
         filterPanel={

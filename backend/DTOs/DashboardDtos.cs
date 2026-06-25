@@ -1,7 +1,36 @@
 namespace backend.DTOs;
 
+public class DashboardWelcomeDto
+{
+    public string UserName { get; set; } = string.Empty;
+    public string DateLabel { get; set; } = string.Empty;
+    public string CurrentRole { get; set; } = "Contributor";
+    public string BusinessUnit { get; set; } = "Unassigned";
+    public string Team { get; set; } = "Unassigned";
+    public int OpenTasks { get; set; }
+    public int OverdueActivities { get; set; }
+    public int OpportunitiesClosingThisWeek { get; set; }
+    public int SlaBreaches { get; set; }
+    public bool HasManagementAccess { get; set; }
+}
+
+public class DashboardKpiDto
+{
+    public string Key { get; set; } = string.Empty;
+    public string Icon { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public decimal CurrentValue { get; set; }
+    public decimal PreviousValue { get; set; }
+    public decimal TrendPercent { get; set; }
+    public string ComparisonLabel { get; set; } = string.Empty;
+    public string ActionPath { get; set; } = string.Empty;
+    public bool PositiveTrendIsGood { get; set; } = true;
+}
+
 public class DashboardSummaryDto
 {
+    public DashboardWelcomeDto Welcome { get; set; } = new();
+    public IReadOnlyCollection<DashboardKpiDto> Kpis { get; set; } = Array.Empty<DashboardKpiDto>();
     public int TotalLeads { get; set; }
     public int NewLeads { get; set; }
     public int QualifiedLeads { get; set; }
@@ -18,6 +47,108 @@ public class DashboardSummaryDto
     public IReadOnlyCollection<DashboardOpportunityListItemDto> OpportunitiesClosingSoon { get; set; } = Array.Empty<DashboardOpportunityListItemDto>();
     public IReadOnlyCollection<DashboardTaskItemDto> UpcomingFollowUps { get; set; } = Array.Empty<DashboardTaskItemDto>();
     public IReadOnlyCollection<DashboardSlaAlertItemDto> SlaAlerts { get; set; } = Array.Empty<DashboardSlaAlertItemDto>();
+}
+
+public class DashboardPipelineDto
+{
+    public IReadOnlyCollection<DashboardChartPointDto> FunnelStages { get; set; } = Array.Empty<DashboardChartPointDto>();
+    public IReadOnlyCollection<DashboardChartPointDto> OpportunityStageDistribution { get; set; } = Array.Empty<DashboardChartPointDto>();
+    public decimal ForecastAccuracyPercent { get; set; }
+}
+
+public class DashboardRevenueTrendPointDto
+{
+    public string Month { get; set; } = string.Empty;
+    public decimal ActualRevenue { get; set; }
+    public decimal ForecastRevenue { get; set; }
+}
+
+public class DashboardRevenueDto
+{
+    public decimal RevenueThisMonth { get; set; }
+    public decimal RevenueThisQuarter { get; set; }
+    public IReadOnlyCollection<DashboardRevenueTrendPointDto> MonthlyTrend { get; set; } = Array.Empty<DashboardRevenueTrendPointDto>();
+}
+
+public class DashboardCustomerInsightItemDto
+{
+    public Guid AccountId { get; set; }
+    public string AccountName { get; set; } = string.Empty;
+    public decimal Revenue { get; set; }
+    public int OpenOpportunities { get; set; }
+    public string? Reason { get; set; }
+    public DateTime? CreatedAt { get; set; }
+}
+
+public class DashboardCustomersDto
+{
+    public IReadOnlyCollection<DashboardCustomerInsightItemDto> TopCustomers { get; set; } = Array.Empty<DashboardCustomerInsightItemDto>();
+    public IReadOnlyCollection<DashboardCustomerInsightItemDto> AtRiskCustomers { get; set; } = Array.Empty<DashboardCustomerInsightItemDto>();
+    public IReadOnlyCollection<DashboardCustomerInsightItemDto> NewCustomers { get; set; } = Array.Empty<DashboardCustomerInsightItemDto>();
+}
+
+public class DashboardServiceDto
+{
+    public IReadOnlyCollection<DashboardChartPointDto> CasesByPriority { get; set; } = Array.Empty<DashboardChartPointDto>();
+    public IReadOnlyCollection<DashboardChartPointDto> CasesByStatus { get; set; } = Array.Empty<DashboardChartPointDto>();
+    public decimal SlaCompliancePercent { get; set; }
+    public IReadOnlyCollection<DashboardCaseListItemDto> CasesRequiringAttention { get; set; } = Array.Empty<DashboardCaseListItemDto>();
+}
+
+public class DashboardSalespersonPerformanceDto
+{
+    public Guid UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public decimal Revenue { get; set; }
+    public int OpportunitiesWon { get; set; }
+    public decimal WinRate { get; set; }
+}
+
+public class DashboardTeamPerformanceDto
+{
+    public Guid TeamId { get; set; }
+    public string TeamName { get; set; } = string.Empty;
+    public decimal Target { get; set; }
+    public decimal Actual { get; set; }
+    public decimal AchievementPercent { get; set; }
+}
+
+public class DashboardManagementDto
+{
+    public bool IsVisible { get; set; }
+    public IReadOnlyCollection<DashboardSalespersonPerformanceDto> TopSalespeople { get; set; } = Array.Empty<DashboardSalespersonPerformanceDto>();
+    public IReadOnlyCollection<DashboardTeamPerformanceDto> TeamPerformance { get; set; } = Array.Empty<DashboardTeamPerformanceDto>();
+    public IReadOnlyCollection<DashboardChartPointDto> LeadConversionTrend { get; set; } = Array.Empty<DashboardChartPointDto>();
+    public IReadOnlyCollection<DashboardChartPointDto> RevenueByTeam { get; set; } = Array.Empty<DashboardChartPointDto>();
+}
+
+public class DashboardActivityFeedItemDto
+{
+    public Guid Id { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public string Entity { get; set; } = string.Empty;
+    public DateTime Timestamp { get; set; }
+    public string Route { get; set; } = string.Empty;
+}
+
+public class DashboardActivityFeedDto
+{
+    public IReadOnlyCollection<DashboardActivityFeedItemDto> Items { get; set; } = Array.Empty<DashboardActivityFeedItemDto>();
+}
+
+public class DashboardWidgetPreferenceDto
+{
+    public string WidgetId { get; set; } = string.Empty;
+    public int Order { get; set; }
+    public bool IsVisible { get; set; } = true;
+    public bool IsPinned { get; set; }
+}
+
+public class DashboardLayoutPreferenceDto
+{
+    public string LayoutVersion { get; set; } = "v1";
+    public IReadOnlyCollection<DashboardWidgetPreferenceDto> Widgets { get; set; } = Array.Empty<DashboardWidgetPreferenceDto>();
 }
 
 public class DashboardMyWorkDto

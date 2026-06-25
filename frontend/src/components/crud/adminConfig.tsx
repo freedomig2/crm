@@ -72,10 +72,18 @@ export type EntityConfig<TItem extends { id: string }> = {
   mapCreatePayload: (form: FormState) => unknown
   mapUpdatePayload: (form: FormState, item: TItem) => unknown
   details: (item: TItem) => Array<{ label: string; value: string }>
-  listRowActions?: Array<{ key: string; label: string; to: (item: TItem) => string }>
+  listSelectionActions?: Array<{
+    key: string
+    label: string
+    to: (item: TItem) => string
+    requiresSelection?: 'single' | 'multiple' | 'any'
+    allowBulk?: boolean
+    permission?: string
+  }>
   readOnly?: boolean
   generatedNumber?: { fieldKey: string; sequenceCode: string }
   listFilterKeys?: string[]
+  primaryListColumnKey?: keyof TItem
 }
 
 export const settingDataTypeOptions = [
@@ -131,6 +139,7 @@ export const usersConfig: EntityConfig<User> = {
     { label: 'Roles', value: item.roles.join(', ') },
   ],
   listFilterKeys: ['isEnabled', 'isLocked', 'createdFrom', 'createdTo'],
+  primaryListColumnKey: 'email',
 }
 
 export const rolesConfig: EntityConfig<Role> = {
@@ -683,7 +692,7 @@ export const integrationConnectionsConfig: EntityConfig<IntegrationConnection> =
     { label: 'Description', value: item.description ?? '' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'test', label: 'Test', to: (item) => `/integrations/connections/${item.id}/test` },
     { key: 'sync', label: 'Run Sync', to: (item) => `/integrations/connections/${item.id}/sync` },
   ],
@@ -1218,6 +1227,7 @@ export const accountsConfig: EntityConfig<Account> = {
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
   listFilterKeys: ['accountTypeId', 'industryId', 'customerStatusId', 'customerSegmentId', 'ownerUserId', 'isActive', 'createdFrom', 'createdTo'],
+  primaryListColumnKey: 'accountNumber',
 }
 
 export const contactsConfig: EntityConfig<Contact> = {
@@ -1334,6 +1344,7 @@ export const contactsConfig: EntityConfig<Contact> = {
     { label: 'Primary Contact', value: item.isPrimaryContact ? 'Yes' : 'No' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
+  primaryListColumnKey: 'fullName',
 }
 
 export const accountAddressesConfig: EntityConfig<AccountAddress> = {
@@ -1752,6 +1763,7 @@ export const productsConfig: EntityConfig<Product> = {
     { label: 'Price', value: String(item.standardPrice ?? '') },
     { label: 'Status', value: item.isActive ? 'Active' : 'Inactive' },
   ],
+  primaryListColumnKey: 'productCode',
 }
 
 export const productCategoriesConfig: EntityConfig<ProductCategory> = {
@@ -1866,7 +1878,7 @@ export const priceListsConfig: EntityConfig<PriceList> = {
     { label: 'Default', value: item.isDefault ? 'Yes' : 'No' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-items', label: 'Manage Items', to: (item) => `/sales/price-lists/${item.id}/items` },
   ],
 }
@@ -1978,7 +1990,7 @@ export const productBundlesConfig: EntityConfig<ProductBundle> = {
     { label: 'Allow Component Override', value: item.allowComponentOverride ? 'Yes' : 'No' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-items', label: 'Manage Items', to: (item) => `/sales/product-bundles/${item.id}/items` },
   ],
 }
@@ -2213,11 +2225,12 @@ export const quotesConfig: EntityConfig<Quote> = {
     { label: 'Valid To', value: item.validTo ?? '' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-lines', label: 'Manage Lines', to: (item) => `/sales/quotes/${item.id}/lines` },
   ],
   generatedNumber: { fieldKey: 'quoteNumber', sequenceCode: 'QUOTE' },
   listFilterKeys: ['accountId', 'quoteStatusId', 'approvalStatusId', 'validFrom', 'validTo', 'createdFrom', 'createdTo'],
+  primaryListColumnKey: 'quoteNumber',
 }
 
 export const ordersConfig: EntityConfig<Order> = {
@@ -2333,11 +2346,12 @@ export const ordersConfig: EntityConfig<Order> = {
     { label: 'Total', value: String(item.totalAmount) },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-lines', label: 'Manage Lines', to: (item) => `/sales/orders/${item.id}/lines` },
   ],
   generatedNumber: { fieldKey: 'orderNumber', sequenceCode: 'ORDER' },
   listFilterKeys: ['accountId', 'orderStatusId', 'deliveryStatusId', 'orderDateFrom', 'orderDateTo', 'createdFrom', 'createdTo'],
+  primaryListColumnKey: 'orderNumber',
 }
 
 export const invoicesConfig: EntityConfig<Invoice> = {
@@ -2449,11 +2463,12 @@ export const invoicesConfig: EntityConfig<Invoice> = {
     { label: 'Due Date', value: item.dueDate ?? '' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-lines', label: 'Manage Lines', to: (item) => `/sales/invoices/${item.id}/lines` },
   ],
   generatedNumber: { fieldKey: 'invoiceNumber', sequenceCode: 'INVOICE' },
   listFilterKeys: ['accountId', 'invoiceStatusId', 'paymentStatusId', 'dueDateFrom', 'dueDateTo', 'createdFrom', 'createdTo'],
+  primaryListColumnKey: 'invoiceNumber',
 }
 
 export const casesConfig: EntityConfig<Case> = {
@@ -2582,11 +2597,12 @@ export const casesConfig: EntityConfig<Case> = {
     { label: 'Resolution Summary', value: item.resolutionSummary ?? '' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-comments', label: 'Manage Comments', to: (item) => `/service/cases/${item.id}/comments` },
   ],
   generatedNumber: { fieldKey: 'caseNumber', sequenceCode: 'CASE' },
   listFilterKeys: ['accountId', 'categoryId', 'caseStatusId', 'priorityId', 'assignedToUserId', 'slaId', 'isActive', 'createdFrom', 'createdTo'],
+  primaryListColumnKey: 'caseNumber',
 }
 
 export const caseCommentsConfig: EntityConfig<CaseComment> = {
@@ -2742,7 +2758,7 @@ export const activitiesConfig: EntityConfig<Activity> = {
     { label: 'Private', value: item.isPrivate ? 'Yes' : 'No' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-comments', label: 'Manage Comments', to: (item) => `/activities/tasks/${item.id}/comments` },
   ],
   generatedNumber: { fieldKey: 'activityNumber', sequenceCode: 'ACTIVITY' },
@@ -2900,11 +2916,12 @@ export const documentsConfig: EntityConfig<Document> = {
     { label: 'Confidential', value: item.isConfidential ? 'Yes' : 'No' },
     { label: 'Active', value: item.isActive ? 'Yes' : 'No' },
   ],
-  listRowActions: [
+  listSelectionActions: [
     { key: 'manage-versions', label: 'Manage Versions', to: (item) => `/documents/${item.id}/versions` },
   ],
   generatedNumber: { fieldKey: 'documentNumber', sequenceCode: 'DOCUMENT' },
   listFilterKeys: ['documentCategoryId', 'documentStatusId', 'accountId', 'isConfidential', 'isActive', 'createdFrom', 'createdTo'],
+  primaryListColumnKey: 'title',
 }
 
 export const documentVersionsConfig: EntityConfig<DocumentVersion> = {

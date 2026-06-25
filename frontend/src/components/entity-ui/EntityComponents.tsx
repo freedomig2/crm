@@ -15,6 +15,7 @@ import {
 import { Breadcrumbs } from '../../layout/components/Breadcrumbs'
 import styles from './EntityDesign.module.css'
 import { loadLookupOptions, type LookupOption } from './referenceData'
+import { getActionIcon } from '../actions/actionIcons'
 
 export type EntityHeaderAction = {
   key: string
@@ -81,6 +82,7 @@ export function EntityHeader({
                 key={action.key}
                 size="small"
                 appearance={action.appearance ?? 'subtle'}
+                icon={getActionIcon(action.key, action.label)}
                 onClick={action.onClick}
                 disabled={action.disabled}
               >
@@ -147,6 +149,7 @@ export function StickySaveBar({
   onDelete,
   disableActions,
   showDelete,
+  message,
 }: {
   onSave: () => void
   onSaveAndClose: () => void
@@ -154,26 +157,82 @@ export function StickySaveBar({
   onDelete?: () => void
   disableActions?: boolean
   showDelete?: boolean
+  message?: string
+}) {
+  const actions: StickyActionBarAction[] = [
+    {
+      key: 'cancel',
+      label: 'Cancel',
+      onClick: onCancel,
+      appearance: 'subtle',
+      disabled: false,
+    },
+    {
+      key: 'save-close',
+      label: 'Save & Close',
+      onClick: onSaveAndClose,
+      appearance: 'secondary',
+      disabled: Boolean(disableActions),
+    },
+    {
+      key: 'save',
+      label: 'Save',
+      onClick: onSave,
+      appearance: 'primary',
+      disabled: Boolean(disableActions),
+    },
+  ]
+
+  if (showDelete && onDelete) {
+    actions.unshift({
+      key: 'delete',
+      label: 'Delete',
+      onClick: onDelete,
+      appearance: 'subtle',
+      disabled: Boolean(disableActions),
+    })
+  }
+
+  return <StickyActionBar actions={actions} message={message ?? 'You may have unsaved changes.'} />
+}
+
+export type StickyActionBarAction = {
+  key: string
+  label: string
+  onClick: () => void
+  appearance?: ButtonProps['appearance']
+  disabled?: boolean
+}
+
+export function StickyActionBar({
+  actions,
+  message,
+}: {
+  actions: StickyActionBarAction[]
+  message?: string
 }) {
   return (
-    <div className={styles.stickyBar}>
-      <Button size="small" appearance="primary" onClick={onSave} disabled={disableActions}>
-        Save
-      </Button>
-      <Button size="small" appearance="secondary" onClick={onSaveAndClose} disabled={disableActions}>
-        Save and Close
-      </Button>
-      {showDelete && onDelete ? (
-        <Button size="small" appearance="subtle" onClick={onDelete} disabled={disableActions}>
-          Delete
-        </Button>
-      ) : null}
-      <Button size="small" appearance="subtle" onClick={onCancel}>
-        Cancel
-      </Button>
+    <div className={styles.stickyBar} data-testid="sticky-action-bar">
+      <div className={styles.stickyMessage}>{message ?? ''}</div>
+      <div className={styles.stickyButtons}>
+        {actions.map((action) => (
+          <Button
+            key={action.key}
+            size="small"
+            appearance={action.appearance ?? 'subtle'}
+            icon={getActionIcon(action.key, action.label)}
+            onClick={action.onClick}
+            disabled={action.disabled}
+          >
+            {action.label}
+          </Button>
+        ))}
+      </div>
     </div>
   )
 }
+
+export const SaveActionBar = StickySaveBar
 
 export function EntitySummaryCard({
   title,

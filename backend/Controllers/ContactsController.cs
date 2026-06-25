@@ -93,6 +93,12 @@ public class ContactsController : ControllerBase
             return BadRequest("Account is required.");
         }
 
+        var lookupValidation = await ValidateLookupAssignmentsAsync(dto);
+        if (lookupValidation is not null)
+        {
+            return BadRequest(lookupValidation);
+        }
+
         var contact = new Contact
         {
             Id = Guid.NewGuid(),
@@ -132,6 +138,12 @@ public class ContactsController : ControllerBase
         if (!await _dbContext.Accounts.AnyAsync(x => x.Id == dto.AccountId))
         {
             return BadRequest("Account is required.");
+        }
+
+        var lookupValidation = await ValidateLookupAssignmentsAsync(dto);
+        if (lookupValidation is not null)
+        {
+            return BadRequest(lookupValidation);
         }
 
         await ApplyContactValuesAsync(contact, dto);
@@ -189,6 +201,36 @@ public class ContactsController : ControllerBase
     private bool CanSetPrimary()
     {
         return User.HasClaim("permission", SetPrimaryPermission);
+    }
+
+    private async Task<string?> ValidateLookupAssignmentsAsync(UpsertContactRequestDto dto)
+    {
+        var checks = new (Guid? LookupId, string CategoryCode, string Label)[]
+        {
+            (dto.ContactRoleId, "CONTACT_ROLE", "Contact role"),
+            (dto.SalutationLookupId, "SALUTATION", "Contact title"),
+            (dto.GenderLookupId, "GENDER", "Gender"),
+            (dto.PreferredContactMethodId, "CONTACT_METHOD", "Preferred communication method"),
+            (dto.PreferredLanguageId, "LANGUAGE", "Preferred language"),
+            (dto.PreferredTimeZoneId, "TIME_ZONE", "Preferred time zone")
+        };
+
+        foreach (var (lookupId, categoryCode, label) in checks)
+        {
+            if (!lookupId.HasValue)
+            {
+                continue;
+            }
+
+            var exists = await _dbContext.LookupValues
+                .AnyAsync(x => x.Id == lookupId.Value && x.LookupCategory.Code == categoryCode && x.IsActive);
+            if (!exists)
+            {
+                return $"{label} is invalid.";
+            }
+        }
+
+        return null;
     }
 
     private async Task ApplyContactValuesAsync(Contact contact, UpsertContactRequestDto dto)

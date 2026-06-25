@@ -1,11 +1,16 @@
 .sidebar {
+  width: var(--sidebar-width, 272px);
+  height: 100vh;
   background: #0f3a5c;
   color: #f3f4f6;
   border-right: 1px solid rgba(255, 255, 255, 0.12);
-  min-height: 100vh;
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: 0;
+  bottom: 0;
+  z-index: 1000;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .brand {

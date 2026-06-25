@@ -4,7 +4,7 @@ import { BranchRequestRegular } from '@fluentui/react-icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { EntityDetailsGrid, EntityHeader, EntityPageLayout, FormSectionCard, LookupCombobox } from '../components/entity-ui/EntityComponents'
+import { EntityDetailsGrid, EntityHeader, EntityPageLayout, FormSectionCard, LookupCombobox, StickyActionBar } from '../components/entity-ui/EntityComponents'
 import type { Lead, LeadConversionResult } from '../types/models'
 import { formatCurrency, formatDate, formatDateTime, nullIfBlank } from './leadUtils'
 import styles from '../contacts/Contacts.module.css'
@@ -109,10 +109,30 @@ export function LeadConversionPage() {
     { key: 'back', label: 'Back to Lead', onClick: () => navigate(id ? `/leads/${id}` : '/leads'), appearance: 'subtle' as const },
   ]
 
+  const actionBarActions = result
+    ? [
+      { key: 'cancel', label: 'Cancel', onClick: () => navigate('/leads'), appearance: 'subtle' as const },
+      { key: 'open-lead', label: 'Open Lead', onClick: () => navigate(`/leads/${result.leadId}`), appearance: 'secondary' as const },
+      ...(result.convertedOpportunityId
+        ? [{ key: 'open-opportunity', label: 'Open Opportunity', onClick: () => navigate(`/opportunities/${result.convertedOpportunityId}`), appearance: 'primary' as const }]
+        : []),
+    ]
+    : [
+      { key: 'cancel', label: 'Cancel', onClick: () => navigate(id ? `/leads/${id}` : '/leads'), appearance: 'subtle' as const },
+      {
+        key: 'convert',
+        label: 'Convert Lead',
+        onClick: () => { void submit() },
+        appearance: 'primary' as const,
+        disabled: saving || Boolean(validationMessage) || activeStep !== 4,
+      },
+    ]
+
   return (
     <EntityPageLayout
       header={<EntityHeader icon={<BranchRequestRegular />} title="Convert Lead" subtitle={lead?.leadNumber} status={lead?.leadStatusName} actions={headerActions} />}
       alerts={[...(error ? [{ intent: 'error' as const, text: error }] : []), ...(validationMessage ? [{ intent: 'warning' as const, text: validationMessage }] : [])]}
+      stickyBar={<StickyActionBar actions={actionBarActions} message={result ? 'Lead conversion completed.' : 'Review details and complete conversion.'} />}
     >
       {!canConvert ? (
         <MessageBar intent="error">
@@ -193,11 +213,6 @@ export function LeadConversionPage() {
           <Field label="Opportunity Action">
             <Input size="small" value={createOpportunity ? 'Create linked opportunity' : 'Skip opportunity'} readOnly />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button appearance="primary" size="small" onClick={() => void submit()} disabled={saving || Boolean(validationMessage)}>
-              Convert Lead
-            </Button>
-          </div>
         </FormSectionCard>
       ) : null}
 
@@ -212,10 +227,6 @@ export function LeadConversionPage() {
           <Field label="Opportunity">
             <Input size="small" value={result.convertedOpportunityId ? 'Opportunity created' : result.opportunityMessage ?? 'No opportunity created'} readOnly />
           </Field>
-          <div className={styles.inlineActions}>
-            <Button size="small" appearance="secondary" onClick={() => navigate(`/leads/${result.leadId}`)}>Open Lead</Button>
-            {result.convertedOpportunityId ? <Button size="small" appearance="secondary" onClick={() => navigate(`/opportunities/${result.convertedOpportunityId}`)}>Open Opportunity</Button> : null}
-          </div>
         </FormSectionCard>
       ) : null}
     </EntityPageLayout>

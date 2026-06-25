@@ -158,8 +158,9 @@ public static class SeedData
 
         await EnsureLookupCategoryAsync(db, "Lead Source", "LEAD_SOURCE", new[]
         {
-            ("Website", "WEBSITE"), ("Referral", "REFERRAL"), ("Email Campaign", "EMAIL_CAMPAIGN"), ("Social Media", "SOCIAL_MEDIA"),
-            ("Event", "EVENT"), ("Phone Inquiry", "PHONE_INQUIRY"), ("Partner", "PARTNER"), ("Imported List", "IMPORTED_LIST"), ("Other", "OTHER")
+            ("Website", "WEBSITE"), ("Referral", "REFERRAL"), ("Cold Call", "COLD_CALL"), ("Email Campaign", "EMAIL_CAMPAIGN"),
+            ("Social Media", "SOCIAL_MEDIA"), ("Trade Show", "TRADE_SHOW"), ("Advertisement", "ADVERTISEMENT"), ("Partner", "PARTNER"),
+            ("Existing Customer", "EXISTING_CUSTOMER"), ("Walk-In", "WALK_IN"), ("Direct Inquiry", "DIRECT_INQUIRY"), ("Other", "OTHER")
         });
 
         await EnsureLookupCategoryAsync(db, "Lead Status", "LEAD_STATUS", new[]
@@ -190,8 +191,37 @@ public static class SeedData
 
         await EnsureLookupCategoryAsync(db, "Industry", "INDUSTRY", new[]
         {
-            ("Technology", "TECHNOLOGY"), ("Financial Services", "FINANCIAL_SERVICES"), ("Healthcare", "HEALTHCARE"), ("Manufacturing", "MANUFACTURING"),
-            ("Retail", "RETAIL"), ("Education", "EDUCATION"), ("Government", "GOVERNMENT"), ("Professional Services", "PROFESSIONAL_SERVICES"), ("Other", "OTHER")
+            ("Agriculture", "AGRICULTURE"), ("Banking", "BANKING"), ("Construction", "CONSTRUCTION"), ("Education", "EDUCATION"),
+            ("Energy", "ENERGY"), ("Engineering", "ENGINEERING"), ("Financial Services", "FINANCIAL_SERVICES"), ("Government", "GOVERNMENT"),
+            ("Healthcare", "HEALTHCARE"), ("Hospitality", "HOSPITALITY"), ("Insurance", "INSURANCE"), ("IT & Technology", "IT_TECHNOLOGY"),
+            ("Logistics", "LOGISTICS"), ("Manufacturing", "MANUFACTURING"), ("Mining", "MINING"), ("Retail", "RETAIL"),
+            ("Telecommunications", "TELECOMMUNICATIONS"), ("Transport", "TRANSPORT"), ("Utilities", "UTILITIES")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Account Type", "ACCOUNT_TYPE", new[]
+        {
+            ("Customer", "CUSTOMER"), ("Partner", "PARTNER"), ("Vendor", "VENDOR"), ("Reseller", "RESELLER"), ("Distributor", "DISTRIBUTOR")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Ownership Type", "OWNERSHIP_TYPE", new[]
+        {
+            ("Private Company", "PRIVATE_COMPANY"), ("Public Company", "PUBLIC_COMPANY"), ("Government", "GOVERNMENT"), ("NGO", "NGO"),
+            ("Partnership", "PARTNERSHIP"), ("Sole Proprietorship", "SOLE_PROPRIETORSHIP"), ("Trust", "TRUST"), ("Cooperative", "COOPERATIVE"),
+            ("Joint Venture", "JOINT_VENTURE"), ("Subsidiary", "SUBSIDIARY")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Customer Status", "CUSTOMER_STATUS", new[]
+        {
+            ("Prospect", "PROSPECT"), ("Lead", "LEAD"), ("Active Customer", "ACTIVE_CUSTOMER"), ("Inactive Customer", "INACTIVE_CUSTOMER"),
+            ("On Hold", "ON_HOLD"), ("Lost Customer", "LOST_CUSTOMER"), ("Blacklisted", "BLACKLISTED"), ("Partner", "PARTNER"),
+            ("Vendor", "VENDOR"), ("Former Customer", "FORMER_CUSTOMER")
+        });
+
+        await EnsureLookupCategoryAsync(db, "Customer Segment", "CUSTOMER_SEGMENT", new[]
+        {
+            ("Enterprise", "ENTERPRISE"), ("Large Business", "LARGE_BUSINESS"), ("Mid-Market", "MID_MARKET"), ("Small Business", "SMALL_BUSINESS"),
+            ("Startup", "STARTUP"), ("Government", "GOVERNMENT"), ("Non-Profit", "NON_PROFIT"), ("Education", "EDUCATION"),
+            ("Healthcare", "HEALTHCARE"), ("Retail", "RETAIL"), ("Manufacturing", "MANUFACTURING")
         });
 
         await EnsureLookupCategoryAsync(db, "Priority", "PRIORITY", new[]
@@ -233,7 +263,7 @@ public static class SeedData
 
         await EnsureLookupCategoryAsync(db, "Case Priority", "CASE_PRIORITY", new[]
         {
-            ("Low", "LOW"), ("Normal", "NORMAL"), ("High", "HIGH"), ("Urgent", "URGENT")
+            ("Critical", "CRITICAL"), ("High", "HIGH"), ("Medium", "MEDIUM"), ("Low", "LOW")
         });
 
         await EnsureLookupCategoryAsync(db, "Case Severity", "CASE_SEVERITY", new[]
@@ -308,7 +338,8 @@ public static class SeedData
 
         await EnsureLookupCategoryAsync(db, "Opportunity Stage", "OPPORTUNITY_STAGE", new[]
         {
-            ("Qualify", "QUALIFY"), ("Develop", "DEVELOP"), ("Propose", "PROPOSE"), ("Negotiate", "NEGOTIATE"), ("Close", "CLOSE")
+            ("Qualify", "QUALIFY"), ("Develop", "DEVELOP"), ("Propose", "PROPOSE"), ("Negotiate", "NEGOTIATE"),
+            ("Close", "CLOSE"), ("Won", "WON"), ("Lost", "LOST")
         });
 
         await EnsureLookupCategoryAsync(db, "Opportunity Status", "OPPORTUNITY_STATUS", new[]
@@ -439,7 +470,7 @@ public static class SeedData
 
         await EnsureLookupCategoryAsync(db, "Salutation", "SALUTATION", new[]
         {
-            ("Mr", "MR"), ("Mrs", "MRS"), ("Ms", "MS"), ("Dr", "DR"), ("Prof", "PROF")
+            ("Mr", "MR"), ("Mrs", "MRS"), ("Ms", "MS"), ("Dr", "DR"), ("Prof", "PROF"), ("Adv", "ADV"), ("Hon", "HON"), ("Rev", "REV")
         });
 
         await EnsureLookupCategoryAsync(db, "Gender", "GENDER", new[]
@@ -449,13 +480,14 @@ public static class SeedData
 
         await EnsureLookupCategoryAsync(db, "Contact Method", "CONTACT_METHOD", new[]
         {
-            ("Email", "EMAIL"), ("Phone", "PHONE"), ("Mobile", "MOBILE"), ("SMS", "SMS"), ("WhatsApp", "WHATSAPP"), ("Teams", "TEAMS"), ("In Person", "IN_PERSON")
+            ("Email", "EMAIL"), ("Phone", "PHONE"), ("SMS", "SMS"), ("WhatsApp", "WHATSAPP"), ("Teams", "TEAMS"), ("In Person", "IN_PERSON")
         });
 
         await EnsureLookupCategoryAsync(db, "Contact Role", "CONTACT_ROLE", new[]
         {
-            ("Decision Maker", "DECISION_MAKER"), ("Influencer", "INFLUENCER"), ("Technical Contact", "TECHNICAL_CONTACT"), ("Billing Contact", "BILLING_CONTACT"),
-            ("Procurement Contact", "PROCUREMENT_CONTACT"), ("Executive Sponsor", "EXECUTIVE_SPONSOR"), ("End User", "END_USER")
+            ("Decision Maker", "DECISION_MAKER"), ("Influencer", "INFLUENCER"), ("Executive Sponsor", "EXECUTIVE_SPONSOR"), ("End User", "END_USER"),
+            ("Billing Contact", "BILLING_CONTACT"), ("Technical Contact", "TECHNICAL_CONTACT"), ("Procurement Contact", "PROCUREMENT_CONTACT"),
+            ("Legal Contact", "LEGAL_CONTACT"), ("Operations Contact", "OPERATIONS_CONTACT")
         });
 
         await EnsureLookupCategoryAsync(db, "Communication Type", "COMMUNICATION_TYPE", new[]
@@ -497,6 +529,196 @@ public static class SeedData
 
         await db.SaveChangesAsync();
 
+        await EnforceLookupCategoryAsync(
+            db,
+            "CUSTOMER_STATUS",
+            [
+                ("Prospect", "PROSPECT", ["PROSPECT"]),
+                ("Lead", "LEAD", ["LEAD"]),
+                ("Active Customer", "ACTIVE_CUSTOMER", ["ACTIVE", "CUSTOMER"]),
+                ("Inactive Customer", "INACTIVE_CUSTOMER", ["INACTIVE"]),
+                ("On Hold", "ON_HOLD", ["HOLD"]),
+                ("Lost Customer", "LOST_CUSTOMER", ["LOST"]),
+                ("Blacklisted", "BLACKLISTED", ["BLACKLIST"]),
+                ("Partner", "PARTNER", ["PARTNER"]),
+                ("Vendor", "VENDOR", ["SUPPLIER"]),
+                ("Former Customer", "FORMER_CUSTOMER", ["FORMER"])
+            ],
+            "PROSPECT");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "OWNERSHIP_TYPE",
+            [
+                ("Private Company", "PRIVATE_COMPANY", ["PRIVATE"]),
+                ("Public Company", "PUBLIC_COMPANY", ["PUBLIC"]),
+                ("Government", "GOVERNMENT", ["STATE"]),
+                ("NGO", "NGO", ["NON_PROFIT", "NONPROFIT"]),
+                ("Partnership", "PARTNERSHIP", ["PARTNERHIP"]),
+                ("Sole Proprietorship", "SOLE_PROPRIETORSHIP", ["SOLE_PROPRIETOR"]),
+                ("Trust", "TRUST", ["TRUST"]),
+                ("Cooperative", "COOPERATIVE", ["COOP"]),
+                ("Joint Venture", "JOINT_VENTURE", ["JV"]),
+                ("Subsidiary", "SUBSIDIARY", ["SUBSIDIARY"])
+            ],
+            "PRIVATE_COMPANY");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "CUSTOMER_SEGMENT",
+            [
+                ("Enterprise", "ENTERPRISE", ["ENTERPRISE"]),
+                ("Large Business", "LARGE_BUSINESS", ["LARGE"]),
+                ("Mid-Market", "MID_MARKET", ["MIDMARKET", "MID_MARKET"]),
+                ("Small Business", "SMALL_BUSINESS", ["SMB", "SMALL"]),
+                ("Startup", "STARTUP", ["STARTUP"]),
+                ("Government", "GOVERNMENT", ["PUBLIC_SECTOR"]),
+                ("Non-Profit", "NON_PROFIT", ["NONPROFIT"]),
+                ("Education", "EDUCATION", ["EDU"]),
+                ("Healthcare", "HEALTHCARE", ["HEALTH"]),
+                ("Retail", "RETAIL", ["RETAIL"]),
+                ("Manufacturing", "MANUFACTURING", ["MANUFACTURING"])
+            ],
+            "SMALL_BUSINESS");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "INDUSTRY",
+            [
+                ("Agriculture", "AGRICULTURE", ["AGRI"]),
+                ("Banking", "BANKING", ["BANK"]),
+                ("Construction", "CONSTRUCTION", ["CONSTRUCTION"]),
+                ("Education", "EDUCATION", ["EDU"]),
+                ("Energy", "ENERGY", ["POWER"]),
+                ("Engineering", "ENGINEERING", ["ENGINEERING"]),
+                ("Financial Services", "FINANCIAL_SERVICES", ["FINANCIAL"]),
+                ("Government", "GOVERNMENT", ["PUBLIC_SECTOR"]),
+                ("Healthcare", "HEALTHCARE", ["HEALTH"]),
+                ("Hospitality", "HOSPITALITY", ["HOSPITALITY"]),
+                ("Insurance", "INSURANCE", ["INSURANCE"]),
+                ("IT & Technology", "IT_TECHNOLOGY", ["TECHNOLOGY", "IT"]),
+                ("Logistics", "LOGISTICS", ["SUPPLY_CHAIN"]),
+                ("Manufacturing", "MANUFACTURING", ["MANUFACTURING"]),
+                ("Mining", "MINING", ["MINING"]),
+                ("Retail", "RETAIL", ["RETAIL"]),
+                ("Telecommunications", "TELECOMMUNICATIONS", ["TELECOM"]),
+                ("Transport", "TRANSPORT", ["TRANSPORTATION"]),
+                ("Utilities", "UTILITIES", ["UTILITY"])
+            ],
+            "IT_TECHNOLOGY");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "LEAD_SOURCE",
+            [
+                ("Website", "WEBSITE", ["WEB"]),
+                ("Referral", "REFERRAL", ["REFERAL"]),
+                ("Cold Call", "COLD_CALL", ["COLDCALL"]),
+                ("Email Campaign", "EMAIL_CAMPAIGN", ["EMAIL"]),
+                ("Social Media", "SOCIAL_MEDIA", ["SOCIAL"]),
+                ("Trade Show", "TRADE_SHOW", ["EVENT"]),
+                ("Advertisement", "ADVERTISEMENT", ["AD"]),
+                ("Partner", "PARTNER", ["PARTNER"]),
+                ("Existing Customer", "EXISTING_CUSTOMER", ["CUSTOMER"]),
+                ("Walk-In", "WALK_IN", ["WALKIN"]),
+                ("Direct Inquiry", "DIRECT_INQUIRY", ["DIRECT"]),
+                ("Other", "OTHER", ["OTHER"])
+            ],
+            "OTHER");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "SALUTATION",
+            [
+                ("Mr", "MR", ["MR"]),
+                ("Mrs", "MRS", ["MRS"]),
+                ("Ms", "MS", ["MS"]),
+                ("Dr", "DR", ["DR"]),
+                ("Prof", "PROF", ["PROF"]),
+                ("Adv", "ADV", ["ADV"]),
+                ("Hon", "HON", ["HON"]),
+                ("Rev", "REV", ["REV"])
+            ],
+            "MR");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "GENDER",
+            [
+                ("Male", "MALE", ["MALE"]),
+                ("Female", "FEMALE", ["FEMALE"]),
+                ("Non-Binary", "NON_BINARY", ["NONBINARY"]),
+                ("Prefer Not To Say", "PREFER_NOT_TO_SAY", ["PREFER_NOT"])
+            ],
+            "PREFER_NOT_TO_SAY");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "CONTACT_METHOD",
+            [
+                ("Email", "EMAIL", ["EMAIL"]),
+                ("Phone", "PHONE", ["WORK_PHONE", "HOME_PHONE", "MOBILE"]),
+                ("SMS", "SMS", ["SMS"]),
+                ("WhatsApp", "WHATSAPP", ["WHATS_APP"]),
+                ("Teams", "TEAMS", ["MICROSOFT_TEAMS"]),
+                ("In Person", "IN_PERSON", ["INPERSON"])
+            ],
+            "EMAIL");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "CONTACT_ROLE",
+            [
+                ("Decision Maker", "DECISION_MAKER", ["DECISIONMAKER"]),
+                ("Influencer", "INFLUENCER", ["INFLUENCER"]),
+                ("Executive Sponsor", "EXECUTIVE_SPONSOR", ["SPONSOR"]),
+                ("End User", "END_USER", ["ENDUSER"]),
+                ("Billing Contact", "BILLING_CONTACT", ["BILLING"]),
+                ("Technical Contact", "TECHNICAL_CONTACT", ["TECHNICAL"]),
+                ("Procurement Contact", "PROCUREMENT_CONTACT", ["PROCUREMENT"]),
+                ("Legal Contact", "LEGAL_CONTACT", ["LEGAL"]),
+                ("Operations Contact", "OPERATIONS_CONTACT", ["OPERATIONS"])
+            ],
+            "DECISION_MAKER");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "CASE_PRIORITY",
+            [
+                ("Critical", "CRITICAL", ["URGENT"]),
+                ("High", "HIGH", ["HIGH"]),
+                ("Medium", "MEDIUM", ["NORMAL"]),
+                ("Low", "LOW", ["LOW"])
+            ],
+            "MEDIUM");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "OPPORTUNITY_RATING",
+            [
+                ("Hot", "HOT", ["HOT"]),
+                ("Warm", "WARM", ["WARM"]),
+                ("Cold", "COLD", ["COLD"])
+            ],
+            "WARM");
+
+        await EnforceLookupCategoryAsync(
+            db,
+            "OPPORTUNITY_STAGE",
+            [
+                ("Qualify", "QUALIFY", ["QUALIFY"]),
+                ("Develop", "DEVELOP", ["DEVELOP"]),
+                ("Propose", "PROPOSE", ["PROPOSE"]),
+                ("Negotiate", "NEGOTIATE", ["NEGOTIATE"]),
+                ("Close", "CLOSE", ["CLOSE"]),
+                ("Won", "WON", ["WON"]),
+                ("Lost", "LOST", ["LOST"])
+            ],
+            "QUALIFY");
+
+        await ResolveLookupCodeCollisionsAsync(db);
+        await db.SaveChangesAsync();
+
         await EnsureNumberSequenceAsync(db, "Account", "ACCOUNT", "ACC", false, "NEVER");
         await EnsureNumberSequenceAsync(db, "Contact", "CONTACT", "CON", false, "NEVER");
         await EnsureNumberSequenceAsync(db, "Lead", "LEAD", "LEAD", true, "YEARLY");
@@ -522,43 +744,259 @@ public static class SeedData
 
     private static async Task EnsureLookupCategoryAsync(AppDbContext db, string name, string code, IEnumerable<(string Name, string Code)>? values = null)
     {
-        var category = await db.LookupCategories.FirstOrDefaultAsync(x => x.Code == code);
+        var category = await db.LookupCategories
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.Code == code);
         if (category is null)
         {
             category = new LookupCategory
             {
                 Name = name,
                 Code = code,
-                IsActive = true
+                IsActive = true,
+                IsDeleted = false
             };
             db.LookupCategories.Add(category);
             await db.SaveChangesAsync();
         }
+
+        category.Name = name;
+        category.IsActive = true;
+        category.IsDeleted = false;
 
         if (values is null)
         {
             return;
         }
 
+        var existingValues = await db.LookupValues
+            .IgnoreQueryFilters()
+            .Where(x => x.LookupCategoryId == category.Id)
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.CreatedAt)
+            .ToListAsync();
+
         var sortOrder = 10;
         foreach (var (valueName, valueCode) in values)
         {
-            if (await db.LookupValues.AnyAsync(x => x.LookupCategoryId == category.Id && x.Code == valueCode))
+            var normalizedCode = valueCode.ToUpperInvariant();
+            var existingValue = existingValues.FirstOrDefault(x =>
+                x.Code.Equals(normalizedCode, StringComparison.OrdinalIgnoreCase));
+
+            if (existingValue is not null)
             {
+                existingValue.Name = valueName;
+                existingValue.Code = normalizedCode;
+                existingValue.SortOrder = sortOrder;
+                existingValue.IsActive = true;
+                existingValue.IsDeleted = false;
                 sortOrder += 10;
                 continue;
             }
 
-            db.LookupValues.Add(new LookupValue
+            var createdValue = new LookupValue
             {
                 LookupCategoryId = category.Id,
                 Name = valueName,
-                Code = valueCode,
+                Code = normalizedCode,
                 SortOrder = sortOrder,
-                IsActive = true
-            });
+                IsActive = true,
+                IsDeleted = false
+            };
+            db.LookupValues.Add(createdValue);
+            existingValues.Add(createdValue);
             sortOrder += 10;
         }
+    }
+
+    private static async Task ResolveLookupCodeCollisionsAsync(AppDbContext db)
+    {
+        var values = await db.LookupValues
+            .IgnoreQueryFilters()
+            .OrderBy(x => x.LookupCategoryId)
+            .ThenBy(x => x.SortOrder)
+            .ThenBy(x => x.CreatedAt)
+            .ToListAsync();
+
+        var duplicateGroups = values
+            .GroupBy(x => new { x.LookupCategoryId, Code = x.Code.ToUpperInvariant() })
+            .Where(g => g.Count() > 1)
+            .ToList();
+
+        foreach (var group in duplicateGroups)
+        {
+            var winner = group
+                .OrderByDescending(x => !x.IsDeleted)
+                .ThenByDescending(x => x.IsActive)
+                .ThenBy(x => x.SortOrder)
+                .ThenBy(x => x.CreatedAt)
+                .First();
+
+            foreach (var duplicate in group)
+            {
+                if (duplicate.Id == winner.Id)
+                {
+                    duplicate.IsDeleted = false;
+                    duplicate.IsActive = true;
+                    continue;
+                }
+
+                await RemapLookupReferencesAsync(db, duplicate.Id, winner.Id);
+                duplicate.IsActive = false;
+                duplicate.IsDeleted = true;
+                duplicate.Code = $"ARCHIVED_{duplicate.Id:N}";
+            }
+        }
+    }
+
+    private static async Task EnforceLookupCategoryAsync(
+        AppDbContext db,
+        string categoryCode,
+        IReadOnlyList<(string Name, string Code, string[] Aliases)> allowedValues,
+        string fallbackCode)
+    {
+        var category = await db.LookupCategories.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Code == categoryCode);
+        if (category is null)
+        {
+            category = new LookupCategory
+            {
+                Name = categoryCode.Replace('_', ' '),
+                Code = categoryCode,
+                IsActive = true
+            };
+            db.LookupCategories.Add(category);
+            await db.SaveChangesAsync();
+        }
+
+        category.IsDeleted = false;
+        category.IsActive = true;
+
+        var values = await db.LookupValues
+            .IgnoreQueryFilters()
+            .Where(x => x.LookupCategoryId == category.Id)
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.CreatedAt)
+            .ToListAsync();
+
+        var canonicalByCode = new Dictionary<string, LookupValue>(StringComparer.OrdinalIgnoreCase);
+
+        var order = 10;
+        foreach (var (name, code, _) in allowedValues)
+        {
+            var normalizedCode = code.ToUpperInvariant();
+            var value = values.FirstOrDefault(x => x.Code.Equals(normalizedCode, StringComparison.OrdinalIgnoreCase));
+            if (value is null)
+            {
+                value = new LookupValue
+                {
+                    LookupCategoryId = category.Id,
+                    Name = name,
+                    Code = normalizedCode,
+                    IsActive = true,
+                    IsDeleted = false
+                };
+                db.LookupValues.Add(value);
+                values.Add(value);
+            }
+
+            value.Name = name;
+            value.SortOrder = order;
+            value.IsActive = true;
+            value.IsDeleted = false;
+            canonicalByCode[normalizedCode] = value;
+            order += 10;
+        }
+
+        var fallbackValue = canonicalByCode.TryGetValue(fallbackCode.ToUpperInvariant(), out var configuredFallback)
+            ? configuredFallback
+            : canonicalByCode.Values.First();
+
+        var canonicalIds = new HashSet<Guid>(canonicalByCode.Values.Select(x => x.Id));
+
+        var aliasMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (name, code, aliases) in allowedValues)
+        {
+            var normalizedCode = code.ToUpperInvariant();
+            aliasMap[NormalizeLookupToken(normalizedCode)] = normalizedCode;
+            aliasMap[NormalizeLookupToken(name)] = normalizedCode;
+            foreach (var alias in aliases)
+            {
+                aliasMap[NormalizeLookupToken(alias)] = normalizedCode;
+            }
+        }
+
+        foreach (var value in values)
+        {
+            if (canonicalIds.Contains(value.Id))
+            {
+                continue;
+            }
+
+            var normalizedCode = NormalizeLookupToken(value.Code);
+            var normalizedName = NormalizeLookupToken(value.Name);
+            var targetCode = aliasMap.TryGetValue(normalizedCode, out var codeMatch)
+                ? codeMatch
+                : aliasMap.TryGetValue(normalizedName, out var nameMatch)
+                    ? nameMatch
+                    : fallbackValue.Code;
+
+            if (!canonicalByCode.TryGetValue(targetCode, out var targetValue))
+            {
+                targetValue = fallbackValue;
+            }
+
+            if (targetValue.Id != value.Id)
+            {
+                await RemapLookupReferencesAsync(db, value.Id, targetValue.Id);
+                value.IsActive = false;
+                value.IsDeleted = true;
+                value.Code = $"ARCHIVED_{value.Id:N}";
+            }
+        }
+    }
+
+    private static string NormalizeLookupToken(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return new string(value
+            .Trim()
+            .ToUpperInvariant()
+            .Where(char.IsLetterOrDigit)
+            .ToArray());
+    }
+
+    private static async Task RemapLookupReferencesAsync(AppDbContext db, Guid sourceLookupId, Guid targetLookupId)
+    {
+        if (sourceLookupId == targetLookupId)
+        {
+            return;
+        }
+
+        foreach (var account in await db.Accounts.Where(x => x.AccountTypeId == sourceLookupId).ToListAsync()) account.AccountTypeId = targetLookupId;
+        foreach (var account in await db.Accounts.Where(x => x.IndustryId == sourceLookupId).ToListAsync()) account.IndustryId = targetLookupId;
+        foreach (var account in await db.Accounts.Where(x => x.OwnershipTypeId == sourceLookupId).ToListAsync()) account.OwnershipTypeId = targetLookupId;
+        foreach (var account in await db.Accounts.Where(x => x.CustomerStatusId == sourceLookupId).ToListAsync()) account.CustomerStatusId = targetLookupId;
+        foreach (var account in await db.Accounts.Where(x => x.CustomerSegmentId == sourceLookupId).ToListAsync()) account.CustomerSegmentId = targetLookupId;
+
+        foreach (var contact in await db.Contacts.Where(x => x.ContactRoleId == sourceLookupId).ToListAsync()) contact.ContactRoleId = targetLookupId;
+        foreach (var contact in await db.Contacts.Where(x => x.SalutationLookupId == sourceLookupId).ToListAsync()) contact.SalutationLookupId = targetLookupId;
+        foreach (var contact in await db.Contacts.Where(x => x.GenderLookupId == sourceLookupId).ToListAsync()) contact.GenderLookupId = targetLookupId;
+        foreach (var contact in await db.Contacts.Where(x => x.PreferredContactMethodId == sourceLookupId).ToListAsync()) contact.PreferredContactMethodId = targetLookupId;
+
+        foreach (var lead in await db.Leads.Where(x => x.LeadSourceId == sourceLookupId).ToListAsync()) lead.LeadSourceId = targetLookupId;
+        foreach (var lead in await db.Leads.Where(x => x.IndustryId == sourceLookupId).ToListAsync()) lead.IndustryId = targetLookupId;
+        foreach (var lead in await db.Leads.Where(x => x.RatingId == sourceLookupId).ToListAsync()) lead.RatingId = targetLookupId;
+
+        foreach (var opportunity in await db.Opportunities.Where(x => x.OpportunityStageId == sourceLookupId).ToListAsync()) opportunity.OpportunityStageId = targetLookupId;
+        foreach (var opportunity in await db.Opportunities.Where(x => x.RatingId == sourceLookupId).ToListAsync()) opportunity.RatingId = targetLookupId;
+        foreach (var history in await db.OpportunityStageHistory.Where(x => x.NewStageId == sourceLookupId).ToListAsync()) history.NewStageId = targetLookupId;
+        foreach (var history in await db.OpportunityStageHistory.Where(x => x.PreviousStageId == sourceLookupId).ToListAsync()) history.PreviousStageId = targetLookupId;
+
+        foreach (var serviceCase in await db.ServiceCases.Where(x => x.PriorityId == sourceLookupId).ToListAsync()) serviceCase.PriorityId = targetLookupId;
     }
 
     private static async Task EnsureLeadScoreRuleAsync(

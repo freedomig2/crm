@@ -133,6 +133,12 @@ public class AccountsController : ControllerBase
     [HasPermission("Accounts.Create")]
     public async Task<ActionResult<AccountDto>> CreateAccount(UpsertAccountRequestDto dto)
     {
+        var lookupValidation = await ValidateLookupAssignmentsAsync(dto);
+        if (lookupValidation is not null)
+        {
+            return BadRequest(lookupValidation);
+        }
+
         var item = new Account
         {
             AccountNumber = await _numberSequenceService.GenerateNextAsync("ACCOUNT"),
@@ -204,6 +210,12 @@ public class AccountsController : ControllerBase
             return NotFound();
         }
 
+        var lookupValidation = await ValidateLookupAssignmentsAsync(dto);
+        if (lookupValidation is not null)
+        {
+            return BadRequest(lookupValidation);
+        }
+
         var policy = await _securityPolicyService.GetPolicyAsync(AccountSecurityEntityName);
         if (!await _securityPolicyService.CanAccessAccountAsync(item, policy))
         {
@@ -262,5 +274,34 @@ public class AccountsController : ControllerBase
         item.IsDeleted = true;
         await _dbContext.SaveChangesAsync();
         return NoContent();
+    }
+
+    private async Task<string?> ValidateLookupAssignmentsAsync(UpsertAccountRequestDto dto)
+    {
+        var checks = new (Guid? LookupId, string CategoryCode, string Label)[]
+        {
+            (dto.AccountTypeId, "ACCOUNT_TYPE", "Account type"),
+            (dto.IndustryId, "INDUSTRY", "Industry"),
+            (dto.OwnershipTypeId, "OWNERSHIP_TYPE", "Ownership type"),
+            (dto.CustomerStatusId, "CUSTOMER_STATUS", "Customer status"),
+            (dto.CustomerSegmentId, "CUSTOMER_SEGMENT", "Customer segment")
+        };
+
+        foreach (var (lookupId, categoryCode, label) in checks)
+        {
+            if (!lookupId.HasValue)
+            {
+                continue;
+            }
+
+            var exists = await _dbContext.LookupValues
+                .AnyAsync(x => x.Id == lookupId.Value && x.LookupCategory.Code == categoryCode && x.IsActive);
+            if (!exists)
+            {
+                return $"{label} is invalid.";
+            }
+        }
+
+        return null;
     }
 }

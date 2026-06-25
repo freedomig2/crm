@@ -25,7 +25,7 @@ export function ListCommandBar({
         onChange={(_, data) => onSearchChange(data.value)}
       />
 
-      <div className={styles.toolbarActions}>{rightActions}</div>
+      <div className={styles.toolbarActions} data-testid="grid-commandbar-actions">{rightActions}</div>
     </div>
   )
 }

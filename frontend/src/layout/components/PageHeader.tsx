@@ -2,6 +2,7 @@ import { Button, type ButtonProps } from '@fluentui/react-components'
 import { AddRegular } from '@fluentui/react-icons'
 import styles from './PageChrome.module.css'
 import { Breadcrumbs } from './Breadcrumbs'
+import { getActionIcon } from '../../components/actions/actionIcons'
 
 export type HeaderAction = {
   key: string
@@ -43,7 +44,7 @@ export function PageHeader({
                 key={action.key}
                 size="small"
                 appearance={action.appearance ?? 'subtle'}
-                icon={index === 0 && action.appearance === 'primary' ? <AddRegular /> : undefined}
+                icon={getActionIcon(action.key, action.label) ?? (index === 0 && action.appearance === 'primary' ? <AddRegular /> : undefined)}
                 onClick={action.onClick}
                 disabled={action.disabled}
               >
